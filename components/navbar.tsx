@@ -12,13 +12,24 @@ import {
   Home as HomeIcon,
   QrCode,
   Menu,
-  X
+  X,
+  Scan
 } from "lucide-react";
 import { Button } from "./ui/button";
 
 const navItems = [
   {
-    title: "Overview",
+    title: "หน้าแรก",
+    href: "/",
+    icon: HomeIcon,
+  },
+  {
+    title: "สแกน QR",
+    href: "/scan",
+    icon: Scan,
+  },
+  {
+    title: "Dashboard",
     href: "/dashboard",
     icon: LayoutDashboard,
   },
@@ -28,14 +39,9 @@ const navItems = [
     icon: Package,
   },
   {
-    title: "รายการแจ้งซ่อม",
+    title: "แจ้งซ่อม",
     href: "/dashboard/services",
     icon: Wrench,
-  },
-  {
-    title: "รายงาน",
-    href: "/dashboard/reports",
-    icon: FileBarChart,
   },
 ];
 
@@ -44,66 +50,94 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4 max-w-7xl">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <div className="bg-blue-600 p-1.5 rounded-lg text-white">
+    <nav className="sticky top-0 z-[100] w-full border-b border-indigo-100 bg-white/70 backdrop-blur-xl">
+      <div className="container mx-auto flex h-16 items-center justify-between px-6 max-w-7xl">
+        <div className="flex items-center gap-8">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-all active:scale-95">
+            <div className="bg-gradient-to-br from-indigo-600 to-blue-600 p-2 rounded-xl text-white shadow-lg shadow-indigo-200">
               <QrCode size={20} />
             </div>
-            <span className="text-xl font-bold tracking-tight hidden sm:block">
+            <span className="text-xl font-black tracking-tight text-indigo-950">
               Asset<span className="text-blue-600">Track</span>
             </span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-1">
+          {/* Desktop Nav */}
+          <div className="hidden lg:flex items-center gap-1">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium transition-colors",
+                  "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300",
                   pathname === item.href 
-                    ? "bg-blue-50 text-blue-600" 
-                    : "text-muted-foreground hover:bg-slate-100 hover:text-foreground"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-100" 
+                    : "text-indigo-400 hover:text-indigo-700 hover:bg-indigo-50"
                 )}
               >
-                <item.icon size={18} />
+                <item.icon size={16} />
                 {item.title}
               </Link>
             ))}
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          {/* ปุ่ม Hamburger สำหรับมือถือ */}
-          <div className="md:hidden">
-            <Button variant="ghost" size="icon" onClick={() => setIsOpen(!isOpen)}>
+        <div className="flex items-center gap-3">
+          {/* Scan Button (Desktop Only) */}
+          <Link href="/scan" className="hidden sm:block">
+            <Button className="bg-indigo-600 hover:bg-indigo-700 rounded-xl font-bold gap-2 shadow-lg shadow-indigo-100">
+              <Scan size={18} />
+              สแกนด่วน
+            </Button>
+          </Link>
+
+          {/* Hamburger (Mobile Only) */}
+          <div className="lg:hidden">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="rounded-xl text-indigo-600 hover:bg-indigo-50"
+              onClick={() => setIsOpen(!isOpen)}
+            >
               {isOpen ? <X size={24} /> : <Menu size={24} />}
             </Button>
           </div>
         </div>
       </div>
 
-      {/* เมนูสำหรับมือถือ (Mobile Menu Overlay) */}
+      {/* Mobile Menu Overlay */}
       {isOpen && (
-        <div className="md:hidden border-t bg-white p-4 space-y-2 animate-in slide-in-from-top duration-300">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setIsOpen(false)}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-lg text-base font-medium transition-colors",
-                pathname === item.href 
-                  ? "bg-blue-50 text-blue-600" 
-                  : "text-muted-foreground hover:bg-slate-100 hover:text-foreground"
-              )}
-            >
-              <item.icon size={20} />
-              {item.title}
-            </Link>
-          ))}
+        <div className="lg:hidden fixed inset-x-0 top-16 bottom-0 z-50 bg-white/95 backdrop-blur-md animate-in slide-in-from-top duration-300">
+          <div className="p-6 space-y-3">
+            {navItems.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setIsOpen(false)}
+                className={cn(
+                  "flex items-center gap-4 px-6 py-4 rounded-2xl text-lg font-black transition-all",
+                  pathname === item.href 
+                    ? "bg-indigo-600 text-white shadow-xl shadow-indigo-200" 
+                    : "text-indigo-400 hover:bg-indigo-50"
+                )}
+              >
+                <div className={cn(
+                  "p-2 rounded-xl",
+                  pathname === item.href ? "bg-white/20" : "bg-indigo-50 text-indigo-600"
+                )}>
+                  <item.icon size={20} />
+                </div>
+                {item.title}
+              </Link>
+            ))}
+            
+            <div className="pt-6 border-t border-indigo-50 mt-6">
+              <p className="text-[10px] text-center font-black text-indigo-200 uppercase tracking-[0.3em]">
+                พัฒนาโดยฝ่าย MIS
+              </p>
+            </div>
+          </div>
         </div>
       )}
     </nav>

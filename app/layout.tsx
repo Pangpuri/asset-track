@@ -9,6 +9,8 @@ const notoThai = Noto_Sans_Thai({
   variable: "--font-noto-thai",
 });
 
+import { Navbar } from "@/components/navbar";
+
 export default function RootLayout({
   children,
 }: {
@@ -17,7 +19,10 @@ export default function RootLayout({
   return (
     <html lang="th" className={notoThai.variable}>
       <body className={notoThai.className}>
-        {children}
+        <Navbar />
+        <main className="min-h-[calc(100vh-64px)]">
+          {children}
+        </main>
         <Toaster />
       </body>
     </html>
