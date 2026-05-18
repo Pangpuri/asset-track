@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Monitor, Printer, Network, Laptop, Wrench, History, QrCode } from "lucide-react";
+import { Monitor, Printer, Network, Laptop, Wrench, History, QrCode, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
