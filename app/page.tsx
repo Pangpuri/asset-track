@@ -8,24 +8,14 @@ export default function Home() {
     <div className="bg-white min-h-screen">
       <main className="max-w-lg mx-auto w-full">             
         {/* IG Post Style Main Action */}
-        <div className="border-b border-gray-100">
-          <div className="flex items-center justify-between p-3">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center text-white">
-                <QrCode size={16} />
-              </div>
-              <span className="text-sm font-bold">Asset Scanner</span>
-            </div>
-            <MoreHorizontal size={20} className="text-gray-400" />
-          </div>
-          
+        <div className="border-b border-gray-100">          
           <Link href="/scan">
             <div className="aspect-square bg-gray-50 flex flex-col items-center justify-center gap-4 group active:opacity-90 transition-opacity relative overflow-hidden border-y border-gray-100">
               <QrCode size={80} strokeWidth={1} className="text-black/10 absolute scale-150 rotate-12" />
               <div className="w-24 h-24 border border-black/20 flex items-center justify-center relative z-10 bg-white">
                 <QrCode size={48} className="text-black" />
               </div>
-              <p className="text-black font-bold text-lg tracking-tight relative z-10">Tab to Scan</p>
+              <p className="text-black font-bold text-lg tracking-tight relative z-10">เริ่มการสแกน</p>
             </div>
           </Link>
 
@@ -39,12 +29,11 @@ export default function Home() {
           </div>
           
           <div className="px-4 pb-4">
-            <p className="text-sm font-bold mb-1">MIS Management</p>
+            <p className="text-sm font-bold mb-1">การบริหารจัดการอุปกรณ์ไอทีผ่าน QR Code</p>
             <p className="text-sm text-gray-800 leading-snug">
-              <span className="font-bold mr-2">asset_track</span>
-              ระบบบริหารจัดการและติดตามอุปกรณ์ไอทีผ่าน QR Code สำหรับฝ่าย MIS
+              <span className="font-bold mr-2">ASSET-TRACK</span>
+              ระพัฒนาระบบโดยฝ่าย MIS
             </p>
-            <p className="text-xs text-gray-400 mt-2 uppercase font-medium tracking-tight">January 18 • See Translation</p>
           </div>
         </div>
 

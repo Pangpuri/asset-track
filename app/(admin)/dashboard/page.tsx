@@ -77,10 +77,6 @@ export default async function DashboardPage() {
         {/* Header - IG Style */}
         <div className="flex items-center justify-between px-4 h-14 border-b border-gray-100 sticky top-0 bg-white z-10">
           <h1 className="text-xl font-bold tracking-tight text-black">Dashboard</h1>
-          <div className="flex gap-4">
-             <Link href="/dashboard/assets/new"><Plus size={24} className="text-black" /></Link>
-             <button><MoreHorizontal size={24} className="text-black" /></button>
-          </div>
         </div>
 
         {/* Notifications / Alerts - IG Post Style */}
@@ -92,8 +88,8 @@ export default async function DashboardPage() {
                   <Wrench size={18} />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-bold">New Service Tickets</p>
-                  <p className="text-xs text-gray-500">{stats.services.pending} tickets awaiting action</p>
+                  <p className="text-sm font-bold">รายการ แจ้งซ่อม และเปลี่ยนอุปกรณ์</p>
+                  <p className="text-xs text-gray-500">{stats.services.pending} รายการ</p>
                 </div>
                 <ArrowRight size={16} className="text-gray-300" />
               </div>
@@ -107,8 +103,8 @@ export default async function DashboardPage() {
                   <QrCode size={18} />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-bold">Unregistered Assets</p>
-                  <p className="text-xs text-gray-500">{stats.pending} new QR codes detected</p>
+                  <p className="text-sm font-bold">QR CODE ที่ยังไม่ได้ลงทะเบียน</p>
+                  <p className="text-xs text-gray-500">{stats.pending} รายการ</p>
                 </div>
                 <ArrowRight size={16} className="text-gray-300" />
               </div>
@@ -119,19 +115,19 @@ export default async function DashboardPage() {
         {/* Stats Grid - Simple 2x2 */}
         <div className="p-4 grid grid-cols-2 gap-4">
            <div className="p-4 border border-gray-100 flex flex-col gap-1">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Assets</span>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">รายการทั้งหมด</span>
               <span className="text-2xl font-black">{stats.total}</span>
            </div>
            <div className="p-4 border border-gray-100 flex flex-col gap-1">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Ready</span>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">อุปกรณ์ที่ใช้งาน</span>
               <span className="text-2xl font-black text-black">{stats.active}</span>
            </div>
            <div className="p-4 border border-gray-100 flex flex-col gap-1">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Maintenance</span>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">อุปกรณ์ซ่อมแซม</span>
               <span className="text-2xl font-black text-black">{stats.maintenance}</span>
            </div>
            <div className="p-4 border border-gray-100 flex flex-col gap-1">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Broken</span>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">อุปกรณ์เสีย</span>
               <span className="text-2xl font-black text-black">{stats.broken}</span>
            </div>
         </div>
@@ -139,7 +135,7 @@ export default async function DashboardPage() {
         {/* Categories Section */}
         <div className="mt-4 border-t border-gray-100">
            <div className="px-4 py-3 flex items-center justify-between">
-              <h2 className="text-xs font-bold uppercase tracking-widest">By Category</h2>
+              <h2 className="text-xs font-bold uppercase tracking-widest">ประเภทอุปกรณ์</h2>
            </div>
            
            <div className="grid grid-cols-3 gap-[1px] bg-gray-100 border-b border-gray-100">
@@ -155,6 +151,10 @@ export default async function DashboardPage() {
                  <Monitor size={24} strokeWidth={1.5} />
                  <span className="text-[10px] font-bold">{stats.categories.monitor}</span>
               </Link>
+              <Link href="/dashboard/assets?category=network" className="aspect-square bg-white flex flex-col items-center justify-center gap-2 active:bg-gray-50">
+                 <Package size={24} strokeWidth={1.5} />
+                 <span className="text-[10px] font-bold">{stats.categories.network}</span>
+              </Link>             
            </div>
         </div>
 
@@ -165,9 +165,6 @@ export default async function DashboardPage() {
                 Print QR Batch
              </Button>
           </Link>
-          <p className="text-[10px] text-gray-300 text-center mt-8 uppercase font-bold tracking-[0.3em]">
-             MIS Department Management System
-          </p>
         </div>
       </div>
     </div>

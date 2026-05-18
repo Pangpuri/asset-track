@@ -94,9 +94,9 @@ export default function BulkPrintPage() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
             <QrCode className="h-8 w-8 text-blue-600" />
-            พิมพ์ QR Code ชุดใหญ่ (Bulk Print)
+            พิมพ์ QR Code ไม่เก็บข้อมูล
           </h1>
-          <p className="text-muted-foreground">สร้าง QR Code เปล่าที่ยังไม่มีข้อมูล เพื่อนำไปติดอุปกรณ์หน้างาน</p>
+          <p className="text-muted-foreground">สร้าง QR Code เปล่าที่ใช้ทะเบียนภายหลัง</p>
         </div>
       </div>
 
