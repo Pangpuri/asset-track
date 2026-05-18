@@ -153,8 +153,20 @@ export default function AssetsPage({
       </div>
 
       <Card className="glass-card border-none shadow-2xl rounded-[2rem] overflow-hidden">
-        <CardContent className="p-0 overflow-auto">
-          <Table>
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="py-20 text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto text-indigo-600" />
+            </div>
+          ) : allAssets.length === 0 ? (
+            <div className="py-20 text-center text-indigo-300 italic font-medium">
+              ไม่พบข้อมูลอุปกรณ์
+            </div>
+          ) : (
+            <>
+              {/* Desktop View - Table Mode */}
+              <div className="hidden md:block overflow-auto">
+                <Table>
             <TableHeader>
               <TableRow className="bg-indigo-50/50 border-none h-16">
                 <TableHead className="w-[50px] pl-6"></TableHead>
@@ -166,20 +178,7 @@ export default function AssetsPage({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-20">
-                    <Loader2 className="h-8 w-8 animate-spin mx-auto text-indigo-600" />
-                  </TableCell>
-                </TableRow>
-              ) : allAssets.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-20 text-indigo-300 italic font-medium">
-                    ไม่พบข้อมูลอุปกรณ์
-                  </TableCell>
-                </TableRow>
-              ) : (
-                allAssets.map((asset) => (
+                {allAssets.map((asset) => (
                   <TableRow 
                     key={asset.id} 
                     className={`hover:bg-indigo-50/30 transition-colors border-indigo-100/30 h-20 ${selectedIds.includes(asset.id) ? 'bg-indigo-50/50' : ''}`}
@@ -242,9 +241,77 @@ export default function AssetsPage({
                     </TableCell>
                   </TableRow>
                 ))
-              )}
             </TableBody>
           </Table>
+              </div>
+
+              {/* Mobile View - Card Mode */}
+              <div className="md:hidden divide-y divide-indigo-50">
+                {allAssets.map((asset) => (
+                  <div 
+                    key={asset.id} 
+                    className={`p-5 flex gap-4 transition-colors ${selectedIds.includes(asset.id) ? 'bg-indigo-50/50' : ''}`}
+                  >
+                    <div className="pt-1">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className={`h-8 w-8 rounded-full border-2 transition-all ${selectedIds.includes(asset.id) ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-indigo-100 text-transparent'}`}
+                        onClick={() => toggleSelect(asset.id)}
+                      >
+                        <CheckCircle2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+
+                    <div className="flex-1 min-w-0 space-y-3">
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="space-y-1">
+                          <span className="font-mono font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded text-[10px] border border-indigo-100">
+                            {asset.assetCode || "PENDING"}
+                          </span>
+                          <div className="flex items-center gap-2 mt-1">
+                            <h3 className="font-black text-indigo-950 truncate text-sm">{asset.category || "-"}</h3>
+                            {asset.isIncomplete && (
+                              <div className="bg-rose-500 w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse" />
+                            )}
+                          </div>
+                        </div>
+                        <Badge className={`border-none font-black text-[8px] px-2 py-0.5 rounded-full ${
+                          asset.status === 'active' ? 'bg-emerald-500 text-white' : 
+                          asset.status === 'broken' ? 'bg-rose-500 text-white' : 
+                          asset.status === 'pending' ? 'bg-amber-500 text-white' : 'bg-indigo-200 text-indigo-700'
+                        }`}>
+                          {asset.status.toUpperCase()}
+                        </Badge>
+                      </div>
+
+                      <div className="flex justify-between items-end">
+                        <span className="text-[10px] font-bold text-indigo-400 uppercase truncate pr-2">
+                          {asset.brand} {asset.model}
+                        </span>
+                        <div className="flex gap-1.5">
+                          <QRPrintWrapper qrData={asset.qrData} assetCode={asset.assetCode || "NEW-QR"} />
+                          <Link href={`/dashboard/assets/${asset.id}`}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg bg-white border border-indigo-50 text-indigo-600 shadow-sm">
+                              <Edit2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </Link>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 rounded-lg bg-white border border-rose-50 text-rose-500 shadow-sm"
+                            onClick={() => handleDelete(asset.id, asset.assetCode)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 
