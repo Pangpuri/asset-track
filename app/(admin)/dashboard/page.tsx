@@ -138,7 +138,7 @@ export default async function DashboardPage() {
               <h2 className="text-xs font-bold uppercase tracking-widest">ประเภทอุปกรณ์</h2>
            </div>
            
-           <div className="grid grid-cols-3 gap-[1px] bg-gray-100 border-b border-gray-100">
+           <div className="grid grid-cols-2 gap-[1px] bg-gray-100 border-b border-gray-100">
               <Link href="/dashboard/assets?category=computer" className="aspect-square bg-white flex flex-col items-center justify-center gap-2 active:bg-gray-50">
                  <Laptop size={24} strokeWidth={1.5} />
                  <span className="text-[10px] font-bold">{stats.categories.computer}</span>
@@ -152,7 +152,7 @@ export default async function DashboardPage() {
                  <span className="text-[10px] font-bold">{stats.categories.monitor}</span>
               </Link>
               <Link href="/dashboard/assets?category=network" className="aspect-square bg-white flex flex-col items-center justify-center gap-2 active:bg-gray-50">
-                 <Package size={24} strokeWidth={1.5} />
+                 <Network size={24} strokeWidth={1.5} />
                  <span className="text-[10px] font-bold">{stats.categories.network}</span>
               </Link>             
            </div>
