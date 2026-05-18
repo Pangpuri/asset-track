@@ -7,9 +7,11 @@ import * as relations from "./schema/relations";
 
 const connectionString = process.env.DATABASE_URL!;
 
-// แยกเฉพาะส่วน URL หลักออกมา (ตัด query params ออกถ้ามีปัญหา)
+// สำหรับ Serverless Environment (Vercel) + Supabase
 const client = postgres(connectionString, {
-  prepare: false, // จำเป็นสำหรับบาง Provider เช่น Supabase/Neon ที่ใช้ connection pooling
+  prepare: false, 
+  ssl: 'require', // บังคับ SSL สำหรับ Supabase
+  max: 1,         // จำกัด connection ต่อ 1 instance เพื่อไม่ให้เกิน limit ของ Supabase
 });
 
 // รวมทุก schema เข้าด้วยกัน

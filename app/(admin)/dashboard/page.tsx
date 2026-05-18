@@ -21,41 +21,51 @@ import { Button } from "@/components/ui/button";
 export const dynamic = "force-dynamic";
 
 async function getStats() {
-  const [stats] = await db.select({
-    total: sql<string>`count(*)`,
-    active: sql<string>`count(*) filter (where ${assets.status} = 'active')`,
-    maintenance: sql<string>`count(*) filter (where ${assets.status} = 'maintenance')`,
-    broken: sql<string>`count(*) filter (where ${assets.status} = 'broken')`,
-    pending: sql<string>`count(*) filter (where ${assets.status} = 'pending')`,
-    incomplete: sql<string>`count(*) filter (where ${assets.status} = 'active' and (${assets.serialNumber} is null or ${assets.brand} is null or ${assets.location} is null))`,
-    computer: sql<string>`count(*) filter (where ${assets.category} = 'computer')`,
-    printer: sql<string>`count(*) filter (where ${assets.category} = 'printer')`,
-    monitor: sql<string>`count(*) filter (where ${assets.category} = 'monitor')`,
-    network: sql<string>`count(*) filter (where ${assets.category} = 'network')`,
-  }).from(assets);
+  try {
+    const [stats] = await db.select({
+      total: sql<string>`count(*)`,
+      active: sql<string>`count(*) filter (where ${assets.status} = 'active')`,
+      maintenance: sql<string>`count(*) filter (where ${assets.status} = 'maintenance')`,
+      broken: sql<string>`count(*) filter (where ${assets.status} = 'broken')`,
+      pending: sql<string>`count(*) filter (where ${assets.status} = 'pending')`,
+      incomplete: sql<string>`count(*) filter (where ${assets.status} = 'active' and (${assets.serialNumber} is null or ${assets.brand} is null or ${assets.location} is null))`,
+      computer: sql<string>`count(*) filter (where ${assets.category} = 'computer')`,
+      printer: sql<string>`count(*) filter (where ${assets.category} = 'printer')`,
+      monitor: sql<string>`count(*) filter (where ${assets.category} = 'monitor')`,
+      network: sql<string>`count(*) filter (where ${assets.category} = 'network')`,
+    }).from(assets);
 
-  // ดึงสถิติจากตารางแจ้งซ่อม (Service Tickets)
-  const [serviceStats] = await db.select({
-    pending: sql<string>`count(*) filter (where ${services.status} = 'pending')`,
-  }).from(services);
+    // ดึงสถิติจากตารางแจ้งซ่อม (Service Tickets)
+    const [serviceStats] = await db.select({
+      pending: sql<string>`count(*) filter (where ${services.status} = 'pending')`,
+    }).from(services);
 
-  return {
-    total: Number(stats.total),
-    active: Number(stats.active),
-    maintenance: Number(stats.maintenance),
-    broken: Number(stats.broken),
-    pending: Number(stats.pending),
-    incomplete: Number(stats.incomplete),
-    categories: {
-      computer: Number(stats.computer),
-      printer: Number(stats.printer),
-      monitor: Number(stats.monitor),
-      network: Number(stats.network),
-    },
-    services: {
-      pending: Number(serviceStats.pending),
-    }
-  };
+    return {
+      total: Number(stats?.total || 0),
+      active: Number(stats?.active || 0),
+      maintenance: Number(stats?.maintenance || 0),
+      broken: Number(stats?.broken || 0),
+      pending: Number(stats?.pending || 0),
+      incomplete: Number(stats?.incomplete || 0),
+      categories: {
+        computer: Number(stats?.computer || 0),
+        printer: Number(stats?.printer || 0),
+        monitor: Number(stats?.monitor || 0),
+        network: Number(stats?.network || 0),
+      },
+      services: {
+        pending: Number(serviceStats?.pending || 0),
+      }
+    };
+  } catch (error) {
+    console.error("Database connection error in getStats:", error);
+    // ส่งข้อมูลเปล่ากลับไปเพื่อให้หน้าเว็บไม่พัง (500)
+    return {
+      total: 0, active: 0, maintenance: 0, broken: 0, pending: 0, incomplete: 0,
+      categories: { computer: 0, printer: 0, monitor: 0, network: 0 },
+      services: { pending: 0 }
+    };
+  }
 }
 
 export default async function DashboardPage() {
@@ -63,6 +73,13 @@ export default async function DashboardPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-8 relative">
+      {/* แจ้งเตือนกรณี DB มีปัญหา */}
+      {stats.total === 0 && (
+        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-center gap-3 mb-4">
+          <AlertTriangle className="h-5 w-5" />
+          <p className="text-sm font-bold">ไม่สามารถเชื่อมต่อฐานข้อมูลได้ หรือยังไม่มีข้อมูลในระบบ</p>
+        </div>
+      )}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="space-y-1">
           <h1 className="text-4xl font-black tracking-tight text-indigo-950 flex items-center gap-3">
