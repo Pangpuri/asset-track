@@ -22,6 +22,11 @@ const assetSchema = z.object({
   location: z.string().optional(),
   computerName: z.string().optional(),
   monitorSize: z.string().optional(),
+  warrantyUntil: z.string().optional(),
+  deliveryDate: z.string().optional(),
+  receivedBy: z.string().optional(),
+  deliveredBy: z.string().optional(),
+  ipAddress: z.string().optional(),
   status: z.string().optional(),
 });
 
@@ -120,14 +125,39 @@ export default function AssetEntryPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="serialNumber" className="font-bold text-indigo-900/70 text-[10px] uppercase tracking-widest">Serial Number</Label>
-              <Input id="serialNumber" {...register("serialNumber")} className="h-12 rounded-xl border-indigo-100 bg-white/50 font-mono text-sm" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="serialNumber" className="font-bold text-indigo-900/70 text-[10px] uppercase tracking-widest">Serial Number</Label>
+                <Input id="serialNumber" {...register("serialNumber")} className="h-12 rounded-xl border-indigo-100 bg-white/50 font-mono text-sm" />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="warrantyUntil" className="font-bold text-indigo-900/70 text-[10px] uppercase tracking-widest">วันหมดประกัน</Label>
+                <Input id="warrantyUntil" type="date" {...register("warrantyUntil")} className="h-12 rounded-xl border-indigo-100 bg-white/50" />
+              </div>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="location" className="font-bold text-indigo-900/70 text-[10px] uppercase tracking-widest">จุดติดตั้ง (Location)</Label>
               <Input id="location" {...register("location")} placeholder="เช่น แผนกบัญชี ชั้น 2" className="h-12 rounded-xl border-indigo-100 bg-white/50" />
+            </div>
+
+            {/* ข้อมูลการส่งมอบ (Delivery Info) */}
+            <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">การส่งมอบ (Delivery)</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="deliveryDate" className="text-xs">วันที่ส่งมอบ</Label>
+                  <Input id="deliveryDate" type="date" {...register("deliveryDate")} className="h-10 bg-white" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="deliveredBy" className="text-xs">ผู้ส่งมอบ</Label>
+                  <Input id="deliveredBy" {...register("deliveredBy")} placeholder="ชื่อ Admin" className="h-10 bg-white" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="receivedBy" className="text-xs">ผู้รับมอบ/ผู้ใช้งาน</Label>
+                <Input id="receivedBy" {...register("receivedBy")} placeholder="ชื่อพนักงาน" className="h-10 bg-white" />
+              </div>
             </div>
 
             {/* ส่วนขยายตามประเภทอุปกรณ์ */}
@@ -147,6 +177,16 @@ export default function AssetEntryPage() {
                 <div className="space-y-2">
                   <Label htmlFor="monitorSize">ขนาดหน้าจอ (Size)</Label>
                   <Input id="monitorSize" {...register("monitorSize")} placeholder="เช่น 24 inch" className="h-11 rounded-lg bg-white" />
+                </div>
+              </div>
+            )}
+
+            {selectedCategory === "network" && (
+              <div className="p-6 bg-indigo-50/50 rounded-2xl border border-indigo-100 space-y-4 animate-in slide-in-from-top-2 duration-300">
+                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Network Specifics</p>
+                <div className="space-y-2">
+                  <Label htmlFor="ipAddress">IP Address</Label>
+                  <Input id="ipAddress" {...register("ipAddress")} placeholder="192.168.1.XX" className="h-11 rounded-lg bg-white" />
                 </div>
               </div>
             )}

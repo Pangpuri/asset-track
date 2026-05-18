@@ -1,9 +1,14 @@
+"use client";
+
+import { useState } from "react";
 import { CameraScanner } from "@/components/camera-scanner";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MoreHorizontal } from "lucide-react";
+import { ArrowLeft, Zap, ZapOff } from "lucide-react";
 import Link from "next/link";
 
 export default function ScanPage() {
+  const [isFlashOn, setIsFlashOn] = useState(false);
+
   return (
     <div className="min-h-screen bg-white flex flex-col items-center">
       <div className="w-full max-w-lg">
@@ -13,35 +18,38 @@ export default function ScanPage() {
             <Link href="/" className="active:opacity-50">
               <ArrowLeft className="h-6 w-6 text-black" />
             </Link>
-            <h1 className="text-base font-bold text-black">Scan QR Code</h1>
+            <h1 className="text-base font-bold text-black">สแกน QR Code</h1>
           </div>
-          <button className="active:opacity-50">
-            <MoreHorizontal className="h-6 w-6 text-black" />
+          <button 
+            onClick={() => setIsFlashOn(!isFlashOn)} 
+            className="active:opacity-50 p-2 transition-colors"
+          >
+            {isFlashOn ? <ZapOff className="h-6 w-6 text-amber-500 fill-amber-500" /> : <Zap className="h-6 w-6 text-black" />}
           </button>
         </div>
 
         {/* Camera Scanner Container */}
         <div className="w-full">
-          <CameraScanner />
+          <CameraScanner isFlashOn={isFlashOn} />
         </div>
 
         {/* Instructions - Simplified/Flat */}
         <div className="p-6 space-y-4 border-t border-gray-100 mt-6">
           <h3 className="text-black font-bold text-sm uppercase tracking-wider">
-            How to use
+            วิธีใช้งาน
           </h3>
           <ul className="space-y-4 text-sm text-gray-600">
             <li className="flex gap-3 items-center">
               <span className="w-1.5 h-1.5 bg-black" />
-              <span>Allow camera access when prompted</span>
+              <span>กดอนุญาตให้เข้าถึงกล้องถ่ายรูปเมื่อมีป๊อปอัพแจ้งเตือน</span>
             </li>
             <li className="flex gap-3 items-center">
               <span className="w-1.5 h-1.5 bg-black" />
-              <span>Align the QR Code within the square frame</span>
+              <span>วาง QR Code ให้ตรงกับกรอบสี่เหลี่ยมบนหน้าจอ</span>
             </li>
             <li className="flex gap-3 items-center">
               <span className="w-1.5 h-1.5 bg-black" />
-              <span>System will automatically detect and redirect</span>
+              <span>ระบบจะตรวจจับและนำคุณไปยังหน้าข้อมูลโดยอัตโนมัติ</span>
             </li>
           </ul>
         </div>

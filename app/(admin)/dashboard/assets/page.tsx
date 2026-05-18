@@ -235,7 +235,9 @@ export default function AssetsPage({
                     </TableCell>
                     <TableCell className="font-mono font-black">
                       {asset.assetCode ? (
-                        <span className="text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 shadow-sm">{asset.assetCode}</span>
+                        <Link href={`/dashboard/assets/${asset.id}`} className="group cursor-pointer">
+                          <span className="text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">{asset.assetCode}</span>
+                        </Link>
                       ) : (
                         <Badge variant="outline" className="opacity-40 border-dashed text-[10px] font-black tracking-widest">PENDING</Badge>
                       )}
@@ -306,9 +308,11 @@ export default function AssetsPage({
                     <div className="flex-1 min-w-0 space-y-3">
                       <div className="flex justify-between items-start gap-2">
                         <div className="space-y-1">
-                          <span className="font-mono font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded text-[10px] border border-indigo-100">
-                            {asset.assetCode || "PENDING"}
-                          </span>
+                          <Link href={`/dashboard/assets/${asset.id}`}>
+                            <span className="font-mono font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded text-[10px] border border-indigo-100 active:bg-indigo-600 active:text-white">
+                              {asset.assetCode || "PENDING"}
+                            </span>
+                          </Link>
                           <div className="flex items-center gap-2 mt-1">
                             <h3 className="font-black text-indigo-950 truncate text-sm">{asset.category || "-"}</h3>
                             {asset.isIncomplete && (
