@@ -32,7 +32,7 @@ export default function Home() {
             <p className="text-sm font-bold mb-1">การบริหารจัดการอุปกรณ์ไอทีผ่าน QR Code</p>
             <p className="text-sm text-gray-800 leading-snug">
               <span className="font-bold mr-2">ASSET-TRACK</span>
-              ระพัฒนาระบบโดยฝ่าย MIS
+              พัฒนาระบบโดยฝ่าย MIS
             </p>
           </div>
         </div>
