@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit2, Package, QrCode, AlertTriangle, Filter, Trash2, CheckCircle2 } from "lucide-react";
+import { Plus, Edit2, Package, QrCode, AlertTriangle, Filter, Trash2, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { generateAssetQRCode } from "@/lib/qr";
