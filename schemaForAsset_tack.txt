@@ -1,0 +1,45 @@
+ตาราง printer
+รหัสอุปกรณ์
+ยี่ห้อ
+ประเภท
+จุดติดตั้ง
+serial_number
+start_date
+expire_date
+
+ตาราง network
+รหัสอุปกรณ์
+ยี่ห้อ
+ประเภท
+จุดติดตั้ง
+serial_number
+start_date
+expire_date
+
+ตาราง computer
+รหัสอุปกรณ์
+ชื่อ
+ยี่ห้อ
+ประเภท
+จุดติดตั้ง
+serial_number
+start_date
+expire_date
+
+ตาราง monitor
+รหัสอุปกรณ์
+ประเภท
+ยี่ห้อ
+ไซส์
+จุดติดตั้ง
+serial_number
+start_date
+expire_date
+
+
+ตาราง ผู้เบิก
+รหัสพนักงาน
+ชื่อ
+เบอร์โทร
+แผนก
+วันที่ส่งมอบ
