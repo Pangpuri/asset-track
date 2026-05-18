@@ -19,9 +19,19 @@ async function getAsset(id: string) {
   return result[0];
 }
 
-export default async function TrackPage({ params }: { params: { id: string } }) {
+export default async function TrackPage({ 
+  params 
+}: { 
+  params: Promise<{ id: string }> 
+}) {
+  const { id } = await params;
+
   try {
-    const asset = await getAsset(params.id);
+    // ตรวจสอบเบื้องต้นว่าเป็น UUID หรือไม่ (กัน Error จาก Drizzle/Postgres)
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    if (!isUuid) return notFound();
+
+    const asset = await getAsset(id);
 
     if (!asset) return notFound();
 
