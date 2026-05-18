@@ -280,7 +280,7 @@ export default function AssetsPage({
                       </div>
                     </TableCell>
                   </TableRow>
-                ))
+                ))}
             </TableBody>
           </Table>
               </div>
