@@ -41,13 +41,29 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/assets?id=${assetId}`)
-      .then(res => res.json())
-      .then(data => {
-        setAsset(data);
+    // ดึงข้อมูล Asset ล่าสุดจาก DB เพื่อเช็คว่าเป็น QR เปล่าหรือไม่
+    const fetchAsset = async () => {
+      try {
+        const res = await fetch(`/api/assets?id=${assetId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setAsset(data);
+          
+          // ถ้ามีข้อมูลเดิมอยู่แล้ว ให้นำมาใส่ในฟอร์มเบื้องต้น
+          if (data.assetCode) setValue("assetCode", data.assetCode);
+          if (data.category) setValue("category", data.category);
+          if (data.brand) setValue("brand", data.brand);
+          if (data.model) setValue("model", data.model);
+          if (data.serialNumber) setValue("serialNumber", data.serialNumber);
+          if (data.location) setValue("location", data.location);
+        }
+      } catch (err) {
+        console.error("Fetch Error:", err);
+      } finally {
         setLoading(false);
-      })
-      .catch(() => setLoading(false));
+      }
+    };
+    fetchAsset();
   }, [assetId]);
 
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<RegisterFormValues>({
