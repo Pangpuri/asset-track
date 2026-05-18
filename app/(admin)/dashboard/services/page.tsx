@@ -20,28 +20,40 @@ import { ServiceStatusUpdate } from "@/components/service-status-update";
 export const dynamic = "force-dynamic";
 
 async function getServiceTickets() {
-  return await db
-    .select({
-      id: services.id,
-      title: services.title,
-      status: services.status,
-      priority: services.priority,
-      serviceType: services.serviceType,
-      reportedBy: services.reportedBy,
-      reportedAt: services.reportedAt,
-      assetCode: assets.assetCode,
-      category: assets.category,
-    })
-    .from(services)
-    .leftJoin(assets, eq(services.assetId, assets.id))
-    .orderBy(desc(services.reportedAt));
+  try {
+    return await db
+      .select({
+        id: services.id,
+        title: services.title,
+        status: services.status,
+        priority: services.priority,
+        serviceType: services.serviceType,
+        reportedBy: services.reportedBy,
+        reportedAt: services.reportedAt,
+        assetCode: assets.assetCode,
+        category: assets.category,
+      })
+      .from(services)
+      .leftJoin(assets, eq(services.assetId, assets.id))
+      .orderBy(desc(services.reportedAt));
+  } catch (error) {
+    console.error("Error in getServiceTickets:", error);
+    return [];
+  }
 }
 
-export default async function AdminServicesPage() {
+export default async function ServicesPage() {
   const tickets = await getServiceTickets();
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto p-6 space-y-8 relative">
+      {tickets.length === 0 && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-700 p-4 rounded-xl flex items-center gap-3 mb-4">
+          <AlertTriangle className="h-5 w-5" />
+          <p className="text-sm font-bold">ไม่พบรายการแจ้งซ่อม หรือมีปัญหาในการเชื่อมต่อฐานข้อมูล</p>
+        </div>
+      )}
+
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">รายการแจ้งซ่อม (Service Tickets)</h1>

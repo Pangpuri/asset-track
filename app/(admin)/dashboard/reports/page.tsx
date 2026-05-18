@@ -9,29 +9,40 @@ import { Download, FileBarChart, PieChart, BarChart3, Package, Wrench, FileText,
 export const dynamic = "force-dynamic";
 
 async function getReportData() {
-  const categoryStats = await db.select({
-    category: assets.category,
-    count: sql<number>`count(*)`,
-  }).from(assets).groupBy(assets.category);
+  try {
+    const categoryStats = await db.select({
+      category: assets.category,
+      count: sql<number>`count(*)`,
+    }).from(assets).groupBy(assets.category);
 
-  const statusStats = await db.select({
-    status: assets.status,
-    count: sql<number>`count(*)`,
-  }).from(assets).groupBy(assets.status);
+    const statusStats = await db.select({
+      status: assets.status,
+      count: sql<number>`count(*)`,
+    }).from(assets).groupBy(assets.status);
 
-  const serviceStats = await db.select({
-    status: services.status,
-    count: sql<number>`count(*)`,
-  }).from(services).groupBy(services.status);
+    const serviceStats = await db.select({
+      status: services.status,
+      count: sql<number>`count(*)`,
+    }).from(services).groupBy(services.status);
 
-  return { categoryStats, statusStats, serviceStats };
+    return { categoryStats, statusStats, serviceStats };
+  } catch (error) {
+    console.error("Error in getReportData:", error);
+    return { categoryStats: [], statusStats: [], serviceStats: [] };
+  }
 }
 
 export default async function ReportsPage() {
   const { categoryStats, statusStats, serviceStats } = await getReportData();
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
+    <div className="container mx-auto p-6 space-y-8 relative">
+      {(categoryStats.length === 0 && statusStats.length === 0) && (
+        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex items-center gap-3 mb-4">
+          <AlertTriangle className="h-5 w-5" />
+          <p className="text-sm font-bold">ไม่สามารถโหลดข้อมูลรายงานได้ กรุณาตรวจสอบการเชื่อมต่อฐานข้อมูล</p>
+        </div>
+      )}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">

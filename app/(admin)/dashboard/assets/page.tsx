@@ -20,43 +20,48 @@ import { QRPrintWrapper } from "@/components/qr-print-wrapper";
 export const dynamic = "force-dynamic";
 
 async function getAssets(filter?: string, status?: string) {
-  let query = db.select().from(assets);
-  
-  const conditions = [];
-  
-  if (filter === "incomplete") {
-    conditions.push(
-      and(
-        eq(assets.status, "active"),
-        or(
-          isNull(assets.serialNumber),
-          isNull(assets.brand),
-          isNull(assets.location)
+  try {
+    let query = db.select().from(assets);
+    
+    const conditions = [];
+    
+    if (filter === "incomplete") {
+      conditions.push(
+        and(
+          eq(assets.status, "active"),
+          or(
+            isNull(assets.serialNumber),
+            isNull(assets.brand),
+            isNull(assets.location)
+          )
         )
-      )
-    );
-  }
+      );
+    }
 
-  if (status) {
-    conditions.push(eq(assets.status, status as any));
-  }
+    if (status) {
+      conditions.push(eq(assets.status, status as any));
+    }
 
-  // @ts-ignore
-  if (conditions.length > 0) {
     // @ts-ignore
-    query = query.where(and(...conditions));
-  }
+    if (conditions.length > 0) {
+      // @ts-ignore
+      query = query.where(and(...conditions));
+    }
 
-  const rawAssets = await query.orderBy(desc(assets.createdAt));
-  
-  // ดึง QR Data สำหรับทุก Asset
-  const allAssets = await Promise.all(rawAssets.map(async (asset) => ({
-    ...asset,
-    qrData: await generateAssetQRCode(asset.id),
-    isIncomplete: asset.status === 'active' && (!asset.serialNumber || !asset.brand || !asset.location)
-  })));
-  
-  return allAssets;
+    const rawAssets = await query.orderBy(desc(assets.createdAt));
+    
+    // ดึง QR Data สำหรับทุก Asset
+    const allAssets = await Promise.all(rawAssets.map(async (asset) => ({
+      ...asset,
+      qrData: await generateAssetQRCode(asset.id),
+      isIncomplete: asset.status === 'active' && (!asset.serialNumber || !asset.brand || !asset.location)
+    })));
+    
+    return allAssets;
+  } catch (error) {
+    console.error("Error in getAssets:", error);
+    return [];
+  }
 }
 
 export default async function AssetsPage({ 
@@ -69,6 +74,12 @@ export default async function AssetsPage({
 
   return (
     <div className="container mx-auto p-6 space-y-8 relative">
+      {allAssets.length === 0 && !filter && !status && (
+        <div className="bg-amber-50 border border-amber-200 text-amber-700 p-4 rounded-xl flex items-center gap-3 mb-4">
+          <AlertTriangle className="h-5 w-5" />
+          <p className="text-sm font-bold">ไม่พบข้อมูลอุปกรณ์ หรือมีปัญหาในการเชื่อมต่อฐานข้อมูล</p>
+        </div>
+      )}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="space-y-1">
           <h1 className="text-4xl font-black tracking-tight text-indigo-950 flex items-center gap-3">
