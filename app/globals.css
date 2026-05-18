@@ -7,7 +7,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
   
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
@@ -25,67 +24,62 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
 }
 
 :root {
-  /* Futuristic Blue/Indigo/Violet Theme */
-  --background: oklch(0.98 0.02 260); /* Very light cool blue */
-  --foreground: oklch(0.25 0.08 260); /* Deep indigo */
+  /* Instagram-inspired Minimalist Theme */
+  --background: oklch(1 0 0); /* Pure White */
+  --foreground: oklch(0.15 0 0); /* Near Black */
   
-  --card: oklch(1 0 0 / 80%); /* Semi-transparent white for glass effect */
-  --card-foreground: oklch(0.25 0.08 260);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0 0);
   
-  --primary: oklch(0.55 0.22 260); /* Vibrant Indigo */
-  --primary-foreground: oklch(0.98 0.02 260);
+  --primary: oklch(0.2 0 0); /* Black for Primary Actions */
+  --primary-foreground: oklch(1 0 0);
   
-  --secondary: oklch(0.92 0.04 260);
-  --secondary-foreground: oklch(0.55 0.22 260);
+  --secondary: oklch(0.97 0 0); /* Very Light Gray */
+  --secondary-foreground: oklch(0.15 0 0);
   
-  --accent: oklch(0.7 0.18 190); /* Cyan Neon */
-  --accent-foreground: oklch(0.25 0.08 260);
+  --accent: oklch(0.6 0.2 330); /* Instagram-ish Pink/Purple Accent for highlights */
+  --accent-foreground: oklch(1 0 0);
   
-  --muted: oklch(0.95 0.02 260);
-  --muted-foreground: oklch(0.45 0.05 260);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.5 0 0);
   
-  --destructive: oklch(0.6 0.18 25); /* Vibrant Red-Orange */
+  --destructive: oklch(0.6 0.18 25);
   
-  --border: oklch(0.9 0.05 260);
-  --input: oklch(0.9 0.05 260);
-  --ring: oklch(0.55 0.22 260 / 50%);
+  --border: oklch(0.92 0 0); /* Thin gray lines */
+  --input: oklch(0.98 0 0);
+  --ring: oklch(0.15 0 0 / 10%);
   
-  --radius: 1rem; /* More rounded for "modern" look */
+  --radius: 0px; /* Square everything per request */
 }
 
-/* Base styles for readability and futuristic touch */
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    border-radius: 0 !important; /* Force square */
   }
   body {
-    @apply bg-background text-foreground;
-    background-image: 
-      radial-gradient(at 0% 0%, oklch(0.95 0.05 260) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, oklch(0.92 0.1 280) 0px, transparent 50%),
-      radial-gradient(at 100% 100%, oklch(0.95 0.05 200) 0px, transparent 50%);
-    background-attachment: fixed;
-  }
-  
-  h1, h2, h3, h4, h5, h6 {
-    @apply tracking-tight font-bold;
+    @apply bg-background text-foreground antialiased;
   }
 }
 
 @layer components {
-  .glass-card {
-    @apply bg-white/40 backdrop-blur-md border border-white/20 shadow-xl;
+  .ig-container {
+    @apply max-w-lg mx-auto w-full min-h-screen bg-white;
   }
   
-  .neo-button {
-    @apply transition-all duration-300 active:scale-95 hover:shadow-lg hover:shadow-primary/20;
+  .ig-border {
+    @apply border-b border-gray-100;
+  }
+  
+  .ig-button {
+    @apply font-bold text-sm transition-opacity active:opacity-70;
   }
 }

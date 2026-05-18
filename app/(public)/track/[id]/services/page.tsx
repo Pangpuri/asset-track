@@ -6,19 +6,18 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertCircle, ArrowLeft, Wrench } from "lucide-react";
+import { ArrowLeft, MoreHorizontal, Info } from "lucide-react";
 import Link from "next/link";
 
 const serviceSchema = z.object({
-  title: z.string().min(2, "กรุณาระบุหัวข้อปัญหา"),
+  title: z.string().min(2, "Please specify the issue title"),
   description: z.string().optional(),
-  reportedBy: z.string().min(2, "กรุณาระบุชื่อผู้แจ้ง"),
+  reportedBy: z.string().min(2, "Please specify your name"),
   serviceType: z.string().min(1),
   priority: z.enum(["low", "medium", "high", "critical"]),
 });
@@ -49,100 +48,114 @@ export default function PublicServicePage() {
         }),
       });
 
-      if (!response.ok) throw new Error("เกิดข้อผิดพลาด");
+      if (!response.ok) throw new Error("Error submitting");
 
-      toast.success("ส่งข้อมูลแจ้งซ่อมเรียบร้อยแล้ว");
+      toast.success("Service request submitted successfully");
       router.push(`/track/${assetId}`);
     } catch (error) {
-      toast.error("ไม่สามารถส่งข้อมูลได้ กรุณาลองใหม่อีกครั้ง");
+      toast.error("Unable to submit. Please try again.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8 flex items-center justify-center">
-      <div className="max-w-md w-full space-y-4">
-        <Link href={`/track/${assetId}`}>
-          <Button variant="ghost" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" /> กลับ
-          </Button>
-        </Link>
+    <div className="min-h-screen bg-white flex flex-col items-center">
+      <div className="w-full max-w-lg">
+        {/* Header - IG Style */}
+        <div className="flex items-center justify-between px-4 h-14 border-b border-gray-100 sticky top-0 bg-white z-10">
+          <div className="flex items-center gap-4">
+            <Link href={`/track/${assetId}`} className="active:opacity-50">
+              <ArrowLeft className="h-6 w-6 text-black" />
+            </Link>
+            <h1 className="text-base font-bold text-black">Report Issue</h1>
+          </div>
+          <button className="active:opacity-50">
+            <MoreHorizontal className="h-6 w-6 text-black" />
+          </button>
+        </div>
 
-        <Card className="border-2 shadow-lg">
-          <CardHeader className="bg-orange-600 text-white rounded-t-xl">
-            <CardTitle className="flex items-center gap-2">
-              <Wrench className="h-5 w-5" /> แจ้งปัญหา / ส่งซ่อม
-            </CardTitle>
-            <CardDescription className="text-orange-100">
-              กรุณาระบุรายละเอียดปัญหาเพื่อให้เจ้าหน้าที่ตรวจสอบ
-            </CardDescription>
-          </CardHeader>
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-6">
+          <div className="flex items-start gap-3 p-4 bg-gray-50 border border-gray-100">
+             <Info size={20} className="text-gray-400 mt-0.5" />
+             <p className="text-xs text-gray-500 leading-normal">
+               Please provide details about the issue. Our MIS team will review and contact you shortly.
+             </p>
+          </div>
 
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <CardContent className="pt-6 space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">หัวข้อปัญหา *</Label>
-                <Input
-                  id="title"
-                  placeholder="เช่น เปิดไม่ติด, จอแตก, พิมพ์ไม่ได้"
-                  {...register("title")}
-                  className={errors.title ? "border-red-500" : ""}
-                />
-                {errors.title && <p className="text-xs text-red-500">{errors.title.message}</p>}
-              </div>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="title" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Issue Title *</Label>
+              <Input
+                id="title"
+                placeholder="e.g. Cannot power on, Screen broken"
+                {...register("title")}
+                className="h-11 border-gray-200 focus:border-black transition-colors"
+              />
+              {errors.title && <p className="text-[10px] text-red-500 font-bold">{errors.title.message}</p>}
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">รายละเอียดเพิ่มเติม</Label>
-                <Textarea
-                  id="description"
-                  placeholder="อธิบายอาการเสียเพิ่มเติม..."
-                  {...register("description")}
-                  rows={3}
-                />
-              </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="reportedBy" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Your Name / Ext. *</Label>
+              <Input 
+                id="reportedBy" 
+                {...register("reportedBy")} 
+                placeholder="Who should we contact?" 
+                className="h-11 border-gray-200 focus:border-black transition-colors"
+              />
+              {errors.reportedBy && <p className="text-[10px] text-red-500 font-bold">{errors.reportedBy.message}</p>}
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="reportedBy">ชื่อผู้แจ้ง / เบอร์โทร *</Label>
-                <Input id="reportedBy" {...register("reportedBy")} placeholder="ระบุชื่อเพื่อให้เจ้าหน้าที่ติดต่อกลับ" />
-                {errors.reportedBy && <p className="text-xs text-red-500">{errors.reportedBy.message}</p>}
-              </div>
-
-              <div className="space-y-2">
-                <Label>ประเภทการแจ้ง</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Request Type</Label>
                 <Select onValueChange={(v) => setValue("serviceType", v as any)} defaultValue="repair">
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-11 border-gray-200"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="repair">แจ้งซ่อมทั่วไป</SelectItem>
-                    <SelectItem value="replacement">ขอเปลี่ยนอุปกรณ์ (เครื่องเสีย/เก่า)</SelectItem>
-                    <SelectItem value="complaint">ร้องเรียน/อื่นๆ</SelectItem>
+                    <SelectItem value="repair">General Repair</SelectItem>
+                    <SelectItem value="replacement">Replacement</SelectItem>
+                    <SelectItem value="complaint">Other</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <div className="space-y-2">
-                <Label>ความเร่งด่วน</Label>
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Priority</Label>
                 <Select onValueChange={(v) => setValue("priority", v as any)} defaultValue="medium">
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-11 border-gray-200"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">ต่ำ (รอได้)</SelectItem>
-                    <SelectItem value="medium">ปกติ</SelectItem>
-                    <SelectItem value="high">สูง (ด่วน)</SelectItem>
-                    <SelectItem value="critical">วิกฤต (ใช้งานไม่ได้เลย)</SelectItem>
+                    <SelectItem value="low">Low</SelectItem>
+                    <SelectItem value="medium">Normal</SelectItem>
+                    <SelectItem value="high">High</SelectItem>
+                    <SelectItem value="critical">Critical</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            </CardContent>
+            </div>
 
-            <CardFooter className="pt-0">
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="w-full bg-orange-600 hover:bg-orange-700 h-11"
-              >
-                {isSubmitting ? "กำลังส่งข้อมูล..." : "ส่งข้อมูลแจ้งซ่อม"}
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
+            <div className="space-y-1.5">
+              <Label htmlFor="description" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Additional Details</Label>
+              <Textarea
+                id="description"
+                placeholder="Describe the issue in detail..."
+                {...register("description")}
+                rows={4}
+                className="border-gray-200 focus:border-black transition-colors resize-none"
+              />
+            </div>
+          </div>
+
+          <div className="pt-4">
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+              className="w-full bg-black text-white h-12 font-bold text-sm tracking-wide"
+            >
+              {isSubmitting ? "SUBMITTING..." : "SUBMIT REPORT"}
+            </Button>
+            <p className="text-[10px] text-gray-400 text-center mt-4 uppercase font-bold tracking-[0.2em]">
+              MIS Department Support
+            </p>
+          </div>
+        </form>
       </div>
     </div>
   );

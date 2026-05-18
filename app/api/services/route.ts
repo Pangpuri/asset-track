@@ -71,7 +71,7 @@ export async function GET(req: Request) {
     let query = db.select().from(services);
     
     if (conditions.length > 0) {
-      // @ts-ignore
+      //@ts-expect-error: Drizzle and() helper spread operator type mismatch
       query = query.where(and(...conditions));
     }
 

@@ -1,48 +1,47 @@
 import { CameraScanner } from "@/components/camera-scanner";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Camera } from "lucide-react";
+import { ArrowLeft, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 
 export default function ScanPage() {
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center p-4 sm:p-8">
-      <div className="w-full max-w-md space-y-8">
-        {/* ส่วนหัวหน้าสแกน */}
-        <div className="flex items-center gap-4">
-          <Link href="/">
-            <Button variant="outline" size="icon-sm" className="rounded-full bg-white/10 text-white border-white/20 hover:bg-white/20 transition-colors">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
-          <div className="flex items-center gap-2">
-            <Camera className="h-5 w-5 text-blue-400" />
-            <h1 className="text-xl font-bold text-white tracking-tight">สแกน QR Code</h1>
+    <div className="min-h-screen bg-white flex flex-col items-center">
+      <div className="w-full max-w-lg">
+        {/* Header - IG Style */}
+        <div className="flex items-center justify-between px-4 h-14 border-b border-gray-100">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="active:opacity-50">
+              <ArrowLeft className="h-6 w-6 text-black" />
+            </Link>
+            <h1 className="text-base font-bold text-black">Scan QR Code</h1>
           </div>
+          <button className="active:opacity-50">
+            <MoreHorizontal className="h-6 w-6 text-black" />
+          </button>
         </div>
 
-        {/* ส่วนของกล้องสแกน */}
-        <div className="relative">
+        {/* Camera Scanner Container */}
+        <div className="w-full">
           <CameraScanner />
         </div>
 
-        {/* การ์ดแนะนำการใช้งาน */}
-        <div className="bg-white/5 rounded-2xl p-6 border border-white/10 shadow-inner">
-          <h3 className="text-blue-400 font-bold flex items-center gap-2 mb-4">
-            <div className="w-1 h-5 bg-blue-500 rounded-full" />
-            วิธีใช้งาน
+        {/* Instructions - Simplified/Flat */}
+        <div className="p-6 space-y-4 border-t border-gray-100 mt-6">
+          <h3 className="text-black font-bold text-sm uppercase tracking-wider">
+            How to use
           </h3>
-          <ul className="space-y-4 text-sm text-slate-300">
-            <li className="flex gap-3 items-start">
-              <span className="flex-none w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-[10px] font-black border border-blue-500/30">1</span>
-              <span>อนุญาตให้เว็บเข้าถึง <b>กล้องถ่ายรูป</b> เมื่อระบบถาม</span>
+          <ul className="space-y-4 text-sm text-gray-600">
+            <li className="flex gap-3 items-center">
+              <span className="w-1.5 h-1.5 bg-black" />
+              <span>Allow camera access when prompted</span>
             </li>
-            <li className="flex gap-3 items-start">
-              <span className="flex-none w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-[10px] font-black border border-blue-500/30">2</span>
-              <span>นำสติกเกอร์ QR Code ของอุปกรณ์มาวางในกรอบสแกนให้ชัดเจน</span>
+            <li className="flex gap-3 items-center">
+              <span className="w-1.5 h-1.5 bg-black" />
+              <span>Align the QR Code within the square frame</span>
             </li>
-            <li className="flex gap-3 items-start">
-              <span className="flex-none w-5 h-5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-[10px] font-black border border-blue-500/30">3</span>
-              <span>ระบบจะทำการสแกนและพาไปยังหน้าข้อมูลอุปกรณ์โดยอัตโนมัติ</span>
+            <li className="flex gap-3 items-center">
+              <span className="w-1.5 h-1.5 bg-black" />
+              <span>System will automatically detect and redirect</span>
             </li>
           </ul>
         </div>

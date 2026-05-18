@@ -6,27 +6,23 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, ArrowLeft, MoreHorizontal, Info, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
 const registerSchema = z.object({
-  // ข้อมูลอุปกรณ์ (กรณีเป็น QR ใหม่)
-  assetCode: z.string().min(2, "กรุณากรอกรหัสอุปกรณ์").optional().or(z.literal("")),
+  assetCode: z.string().min(2, "Asset code is required").optional().or(z.literal("")),
   category: z.string().optional(),
   brand: z.string().optional(),
   model: z.string().optional(),
   serialNumber: z.string().optional(),
-
-  // ข้อมูลการส่งมอบ
-  assignedTo: z.string().min(2, "กรุณากรอกชื่อผู้รับเบิก"),
-  department: z.string().min(1, "กรุณากรอกแผนก"),
-  location: z.string().min(1, "กรุณากรอกสถานที่/จุดติดตั้ง"),
+  assignedTo: z.string().min(2, "Name is required"),
+  department: z.string().min(1, "Department is required"),
+  location: z.string().min(1, "Location is required"),
   assignedBy: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -41,15 +37,12 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // ดึงข้อมูล Asset ล่าสุดจาก DB เพื่อเช็คว่าเป็น QR เปล่าหรือไม่
     const fetchAsset = async () => {
       try {
         const res = await fetch(`/api/assets?id=${assetId}`);
         if (res.ok) {
           const data = await res.json();
           setAsset(data);
-          
-          // ถ้ามีข้อมูลเดิมอยู่แล้ว ให้นำมาใส่ในฟอร์มเบื้องต้น
           if (data.assetCode) setValue("assetCode", data.assetCode);
           if (data.category) setValue("category", data.category);
           if (data.brand) setValue("brand", data.brand);
@@ -72,10 +65,9 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormValues) => {
     try {
-      // 1. ถ้าเป็น QR ใหม่ (status === 'pending') ต้องอัปเดตข้อมูล Asset ก่อน
       if (asset?.status === "pending") {
         if (!data.assetCode || !data.category) {
-          toast.error("กรุณาระบุรหัสอุปกรณ์และประเภทอุปกรณ์");
+          toast.error("Asset code and category are required");
           return;
         }
 
@@ -89,14 +81,13 @@ export default function RegisterPage() {
             brand: data.brand,
             model: data.model,
             serialNumber: data.serialNumber,
-            status: "active", // เปลี่ยนสถานะเป็น active ทันทีที่ลงทะเบียน
+            status: "active",
           }),
         });
 
-        if (!assetUpdate.ok) throw new Error("ไม่สามารถอัปเดตข้อมูลอุปกรณ์ได้");
+        if (!assetUpdate.ok) throw new Error("Update failed");
       }
 
-      // 2. บันทึก Log การส่งมอบ
       const response = await fetch("/api/logs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -112,143 +103,140 @@ export default function RegisterPage() {
         }),
       });
 
-      if (!response.ok) throw new Error("เกิดข้อผิดพลาดในการบันทึก");
+      if (!response.ok) throw new Error("Logging failed");
 
-      toast.success("บันทึกข้อมูลเรียบร้อยแล้ว");
-      setTimeout(() => router.push(`/track/${assetId}`), 1500);
+      toast.success("Registered successfully");
+      router.push(`/track/${assetId}`);
     } catch (error) {
-      toast.error("ไม่สามารถบันทึกได้ กรุณาลองใหม่อีกครั้ง");
+      toast.error("Unable to save. Please try again.");
     }
   };
 
   if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+    <div className="min-h-screen bg-white flex items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-black" />
     </div>
   );
 
   const isPending = asset?.status === "pending";
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white p-4 md:p-8">
-      <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-gray-900">
-            {isPending ? "🆕 ลงทะเบียนอุปกรณ์ใหม่" : "📝 บันทึกข้อมูลการส่งมอบ"}
-          </h1>
-          <p className="text-gray-600">
-            {isPending ? "กรอกข้อมูลพื้นฐานเพื่อเริ่มต้นการใช้งาน QR Code นี้" : "กรอกข้อมูลการเบิก / ส่งมอบอุปกรณ์"}
-          </p>
+    <div className="min-h-screen bg-white flex flex-col items-center">
+      <div className="w-full max-w-lg">
+        {/* Header - IG Style */}
+        <div className="flex items-center justify-between px-4 h-14 border-b border-gray-100 sticky top-0 bg-white z-10">
+          <div className="flex items-center gap-4">
+            <Link href={`/track/${assetId}`} className="active:opacity-50">
+              <ArrowLeft className="h-6 w-6 text-black" />
+            </Link>
+            <h1 className="text-base font-bold text-black">
+              {isPending ? "Register Device" : "Log Delivery"}
+            </h1>
+          </div>
+          <button className="active:opacity-50">
+            <MoreHorizontal className="h-6 w-6 text-black" />
+          </button>
         </div>
 
-        {/* Form Card */}
-        <Card className="border-2 shadow-xl">
-          <CardHeader className={`bg-gradient-to-r ${isPending ? 'from-amber-500 to-orange-600' : 'from-blue-500 to-blue-600'} text-white rounded-t-lg`}>
-            <CardTitle>{isPending ? "ข้อมูลอุปกรณ์และผู้รับ" : "ข้อมูลการส่งมอบ"}</CardTitle>
-            <CardDescription className="text-blue-50">
-              {isPending ? "ระบุรหัสเครื่องและรายละเอียดเบื้องต้น" : "บันทึกการเคลื่อนไหว หรือเปลี่ยนสถานที่ของอุปกรณ์"}
-            </CardDescription>
-          </CardHeader>
+        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-8 pb-20">
+          <div className="flex flex-col items-center gap-2 py-4">
+             <div className="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center text-black border border-gray-100">
+                <ShieldCheck size={32} />
+             </div>
+             <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-2">Secure Registration</p>
+          </div>
 
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <CardContent className="pt-6 space-y-6">
-              
-              {isPending && (
-                <div className="space-y-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                  <h3 className="font-bold text-amber-900 flex items-center gap-2">
-                    <AlertCircle className="h-4 w-4" /> ส่วนที่ 1: ข้อมูลอุปกรณ์หลัก
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="assetCode">รหัสอุปกรณ์ (Asset Code) *</Label>
-                      <Input id="assetCode" {...register("assetCode")} placeholder="เช่น P001234" />
-                      {errors.assetCode && <p className="text-sm text-red-500">{errors.assetCode.message}</p>}
+          {isPending && (
+            <div className="space-y-6">
+               <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
+                  <span className="text-xs font-bold uppercase tracking-widest">1. Device Details</span>
+               </div>
+               
+               <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="assetCode" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Asset Code *</Label>
+                    <Input id="assetCode" {...register("assetCode")} placeholder="e.g. IT-001" className="h-11 border-gray-200" />
+                    {errors.assetCode && <p className="text-[10px] text-red-500 font-bold">{errors.assetCode.message}</p>}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Category *</Label>
+                    <Select onValueChange={(v) => setValue("category", v as string)}>
+                      <SelectTrigger className="h-11 border-gray-200"><SelectValue placeholder="Select Category" /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="computer">Computer/Laptop</SelectItem>
+                        <SelectItem value="printer">Printer</SelectItem>
+                        <SelectItem value="monitor">Monitor</SelectItem>
+                        <SelectItem value="network">Network</SelectItem>
+                        <SelectItem value="other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="brand" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Brand</Label>
+                      <Input id="brand" {...register("brand")} placeholder="e.g. HP" className="h-11 border-gray-200" />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="category">ประเภทอุปกรณ์ *</Label>
-                      <Select onValueChange={(v) => setValue("category", v as string)}>
-                        <SelectTrigger><SelectValue placeholder="เลือกประเภท" /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="computer">Computer/Laptop</SelectItem>
-                          <SelectItem value="printer">Printer</SelectItem>
-                          <SelectItem value="monitor">Monitor</SelectItem>
-                          <SelectItem value="network">Network</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="model" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Model</Label>
+                      <Input id="model" {...register("model")} placeholder="e.g. ProBook" className="h-11 border-gray-200" />
                     </div>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="brand">ยี่ห้อ</Label>
-                      <Input id="brand" {...register("brand")} placeholder="เช่น HP" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="model">รุ่น</Label>
-                      <Input id="model" {...register("model")} placeholder="เช่น ProBook" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="serialNumber">S/N</Label>
-                      <Input id="serialNumber" {...register("serialNumber")} />
-                    </div>
-                  </div>
-                </div>
-              )}
 
-              <div className="space-y-4">
-                <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                  <div className="w-1 h-4 bg-blue-500 rounded-full" />
-                  {isPending ? "ส่วนที่ 2: ข้อมูลการเบิกจ่าย" : "รายละเอียดการส่งมอบ"}
-                </h3>
-                <div className="space-y-2">
-                  <Label htmlFor="assignedTo">ชื่อผู้รับเบิก / ผู้ถือครอง *</Label>
-                  <Input
-                    id="assignedTo"
-                    placeholder="เช่น นายสมชาย คนขยัน"
-                    {...register("assignedTo")}
-                    className={errors.assignedTo ? "border-red-500" : ""}
-                  />
-                  {errors.assignedTo && <p className="text-sm text-red-500">{errors.assignedTo.message}</p>}
+                  <div className="space-y-1.5">
+                    <Label htmlFor="serialNumber" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Serial Number</Label>
+                    <Input id="serialNumber" {...register("serialNumber")} className="h-11 border-gray-200" />
+                  </div>
+               </div>
+            </div>
+          )}
+
+          <div className="space-y-6">
+             <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
+                <span className="text-xs font-bold uppercase tracking-widest">
+                  {isPending ? "2. Delivery Info" : "Delivery Information"}
+                </span>
+             </div>
+
+             <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <Label htmlFor="assignedTo" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Assigned To *</Label>
+                  <Input id="assignedTo" placeholder="Full Name" {...register("assignedTo")} className="h-11 border-gray-200" />
+                  {errors.assignedTo && <p className="text-[10px] text-red-500 font-bold">{errors.assignedTo.message}</p>}
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="department">แผนก *</Label>
-                    <Input id="department" {...register("department")} placeholder="เช่น ไอที, บัญชี" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="department" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Department *</Label>
+                    <Input id="department" {...register("department")} placeholder="e.g. HR, Sales" className="h-11 border-gray-200" />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="location">สถานที่/จุดติดตั้ง *</Label>
-                    <Input id="location" {...register("location")} placeholder="เช่น อาคาร A ชั้น 3" />
+                  <div className="space-y-1.5">
+                    <Label htmlFor="location" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Location *</Label>
+                    <Input id="location" {...register("location")} placeholder="e.g. Room 302" className="h-11 border-gray-200" />
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="assignedBy">ชื่อผู้ส่งมอบ (ถ้ามี)</Label>
-                  <Input id="assignedBy" {...register("assignedBy")} />
+                <div className="space-y-1.5">
+                  <Label htmlFor="notes" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Additional Notes</Label>
+                  <Textarea id="notes" {...register("notes")} rows={3} placeholder="Any other info..." className="border-gray-200 resize-none" />
                 </div>
+             </div>
+          </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="notes">หมายเหตุ (ข้อมูลที่ยังไม่ครบ สามารถระบุที่นี่)</Label>
-                  <Textarea id="notes" {...register("notes")} rows={3} placeholder="เช่น รออัปเดตซีเรียลนัมเบอร์..." />
-                </div>
-              </div>
-            </CardContent>
-
-            <CardFooter className="bg-gray-50 border-t flex gap-3 p-6">
-              <Link href={`/track/${assetId}`} className="flex-1">
-                <Button type="button" variant="outline" className="w-full h-11">ยกเลิก</Button>
-              </Link>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className={`flex-1 h-11 ${isPending ? 'bg-orange-600 hover:bg-orange-700' : 'bg-blue-600 hover:bg-blue-700'}`}
-              >
-                {isSubmitting ? <Loader2 className="animate-spin" /> : "บันทึกข้อมูล"}
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 flex gap-2 max-w-lg mx-auto z-20">
+            <Link href={`/track/${assetId}`} className="flex-1">
+              <Button type="button" variant="outline" className="w-full h-11 border-gray-200 text-black font-bold">CANCEL</Button>
+            </Link>
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              className="flex-[2] h-11 bg-black text-white font-bold"
+            >
+              {isSubmitting ? <Loader2 className="animate-spin" /> : "SAVE RECORD"}
+            </Button>
+          </div>
+        </form>
       </div>
     </div>
   );
