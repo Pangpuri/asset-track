@@ -5,13 +5,23 @@ import * as logsSchema from "./schema/logs";
 import * as servicesSchema from "./schema/services";
 import * as relations from "./schema/relations";
 
-const connectionString = process.env.DATABASE_URL!;
+// ตรวจสอบว่ามี DATABASE_URL หรือไม่
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is not defined in environment variables");
+}
 
-// สำหรับ Serverless Environment (Vercel) + Supabase
+const connectionString = process.env.DATABASE_URL;
+
+/**
+ * สำหรับการเชื่อมต่อ Supabase บน Serverless (Vercel)
+ * เราใช้ postgres-js พร้อมการตั้งค่าที่เหมาะสมกับ Connection Pooler (Port 6543)
+ */
 const client = postgres(connectionString, {
-  prepare: false, 
-  ssl: 'require', // บังคับ SSL สำหรับ Supabase
-  max: 1,         // จำกัด connection ต่อ 1 instance เพื่อไม่ให้เกิน limit ของ Supabase
+  prepare: false,      // ต้องเป็น false เมื่อใช้ Supabase Transaction Pooler (Port 6543)
+  ssl: 'require',      // Supabase บังคับใช้ SSL
+  max: 1,              // สำคัญ: Serverless 1 ฟังก์ชันควรเปิดแค่ 1 connection
+  idle_timeout: 20,    // ปิด connection ที่ไม่ได้ใช้งานใน 20 วินาที
+  connect_timeout: 10, // timeout ถ้าเชื่อมต่อไม่ได้ใน 10 วินาที
 });
 
 // รวมทุก schema เข้าด้วยกัน
