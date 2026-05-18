@@ -1,10 +1,10 @@
-CREATE TYPE "public"."asset_status" AS ENUM('active', 'maintenance', 'broken', 'lost', 'retired');--> statement-breakpoint
+CREATE TYPE "public"."asset_status" AS ENUM('active', 'maintenance', 'broken', 'lost', 'retired', 'pending');--> statement-breakpoint
 CREATE TYPE "public"."priority" AS ENUM('low', 'medium', 'high', 'critical');--> statement-breakpoint
 CREATE TYPE "public"."service_status" AS ENUM('pending', 'in_progress', 'resolved', 'cancelled', 'on_hold');--> statement-breakpoint
 CREATE TABLE "assets" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"asset_code" varchar(50) NOT NULL,
-	"category" varchar(50) NOT NULL,
+	"asset_code" varchar(50),
+	"category" varchar(50),
 	"brand" text,
 	"model" text,
 	"serial_number" varchar(100),

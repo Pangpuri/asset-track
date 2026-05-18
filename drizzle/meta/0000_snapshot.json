@@ -1,5 +1,5 @@
 {
-  "id": "3939bacf-1825-4af8-92e5-e40be63dbecf",
+  "id": "6aa17545-1c76-4bcd-a940-3f79bafaa76a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -19,13 +19,13 @@
           "name": "asset_code",
           "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "category": {
           "name": "category",
           "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "brand": {
           "name": "brand",
@@ -605,7 +605,8 @@
         "maintenance",
         "broken",
         "lost",
-        "retired"
+        "retired",
+        "pending"
       ]
     },
     "public.priority": {

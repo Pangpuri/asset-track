@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1778916819006,
-      "tag": "0000_faithful_saracen",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1779066793034,
-      "tag": "0001_fluffy_ozymandias",
+      "when": 1779069949525,
+      "tag": "0000_first_archangel",
       "breakpoints": true
     }
   ]
