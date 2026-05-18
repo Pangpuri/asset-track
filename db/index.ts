@@ -5,12 +5,7 @@ import * as logsSchema from "./schema/logs";
 import * as servicesSchema from "./schema/services";
 import * as relations from "./schema/relations";
 
-// ตรวจสอบว่ามี DATABASE_URL หรือไม่
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is not defined in environment variables");
-}
-
-const connectionString = process.env.DATABASE_URL;
+const connectionString = process.env.DATABASE_URL || "";
 
 /**
  * สำหรับการเชื่อมต่อ Supabase บน Serverless (Vercel)
