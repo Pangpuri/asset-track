@@ -122,7 +122,7 @@ export default function AssetsPage({
   return (
     <div className="container mx-auto p-6 space-y-8 relative">
       {!loading && allAssets.length === 0 && !searchParams.filter && !searchParams.status && !searchParams.q && (
-        <div className="bg-amber-50 border border-amber-200 text-amber-700 p-4 rounded-xl flex items-center gap-3 mb-4 text-sm font-bold">
+        <div className="bg-amber-50 text-amber-700 p-4 rounded-xl flex items-center gap-3 mb-4 text-sm font-bold">
           <AlertTriangle className="h-5 w-5" />
           ไม่พบข้อมูลอุปกรณ์ในระบบ
         </div>
@@ -132,7 +132,7 @@ export default function AssetsPage({
         <div className="space-y-1">
           <h1 className="text-4xl font-black tracking-tight text-indigo-950 flex items-center gap-3">
             <Package className="h-10 w-10 text-indigo-600" />
-            คลังอุปกรณ์
+            คลัง
           </h1>
           <p className="text-indigo-600/60 font-medium ml-1">จัดการข้อมูลและสั่งพิมพ์ QR Code แบบกลุ่ม</p>
         </div>
@@ -150,12 +150,12 @@ export default function AssetsPage({
         </div>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-4 bg-white/40 backdrop-blur-sm p-3 rounded-2xl border border-white/20 shadow-sm items-center">
+      <div className="flex flex-col md:flex-row gap-4 items-center border-b border-indigo-50 pb-6">
         <div className="relative flex-1 w-full">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-indigo-400" />
           <input
             type="text"
-            placeholder="ค้นหารหัส, ประเภท, ยี่ห้อ หรือสถานที่..."
+            placeholder="ค้นหาอุปกรณ์..."
             className="w-full pl-12 pr-4 h-12 bg-white/60 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 outline-none font-bold text-indigo-950 placeholder:text-indigo-300 transition-all shadow-sm"
             defaultValue={searchParams.q || ""}
             onKeyDown={(e) => {
@@ -192,107 +192,106 @@ export default function AssetsPage({
         </div>
       </div>
 
-      <Card className="glass-card border-none shadow-2xl rounded-[2rem] overflow-hidden">
-        <CardContent className="p-0">
-          {loading ? (
-            <div className="py-20 text-center">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto text-indigo-600" />
-            </div>
-          ) : allAssets.length === 0 ? (
-            <div className="py-20 text-center text-indigo-300 italic font-medium">
-              ไม่พบข้อมูลอุปกรณ์
-            </div>
-          ) : (
-            <>
-              {/* Desktop View - Table Mode */}
-              <div className="hidden md:block overflow-auto">
-                <Table>
-            <TableHeader>
-              <TableRow className="bg-indigo-50/50 border-none h-16">
-                <TableHead className="w-[50px] pl-6"></TableHead>
-                <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">Asset Code</TableHead>
-                <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">ประเภท/ยี่ห้อ</TableHead>
-                <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">สถานที่ติดตั้ง</TableHead>
-                <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">สถานะ</TableHead>
-                <TableHead className="text-right font-black text-indigo-900/40 uppercase tracking-widest text-[10px] pr-8">การจัดการ</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-                {allAssets.map((asset) => (
-                  <TableRow 
-                    key={asset.id} 
-                    className={`hover:bg-indigo-50/30 transition-colors border-indigo-100/30 h-20 ${selectedIds.includes(asset.id) ? 'bg-indigo-50/50' : ''}`}
-                  >
-                    <TableCell className="pl-6">
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className={`h-8 w-8 rounded-full border-2 transition-all ${selectedIds.includes(asset.id) ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-indigo-100 text-transparent hover:border-indigo-300'}`}
-                        onClick={() => toggleSelect(asset.id)}
-                      >
-                        <CheckCircle2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                    <TableCell className="font-mono font-black">
-                      {asset.assetCode ? (
-                        <Link href={`/dashboard/assets/${asset.id}`} className="group cursor-pointer">
-                          <span className="text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">{asset.assetCode}</span>
-                        </Link>
-                      ) : (
-                        <Badge variant="outline" className="opacity-40 border-dashed text-[10px] font-black tracking-widest">PENDING</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <div className="flex items-center gap-2">
-                          <span className="font-black text-indigo-950 capitalize">{asset.category || "-"}</span>
-                          {asset.isIncomplete && (
-                            <div className="bg-rose-500 w-2 h-2 rounded-full animate-ping" title="ข้อมูลไม่สมบูรณ์" />
-                          )}
-                        </div>
-                        <span className="text-xs font-bold text-indigo-400 uppercase tracking-tight">{asset.brand} {asset.model}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-sm font-bold text-indigo-900/70">{asset.location || "-"}</TableCell>
-                    <TableCell>
-                      <Badge className={`border-none font-black text-[10px] px-3 py-1 rounded-full shadow-sm ${
-                        asset.status === 'active' ? 'bg-emerald-500 text-white' : 
-                        asset.status === 'broken' ? 'bg-rose-500 text-white' : 
-                        asset.status === 'pending' ? 'bg-amber-500 text-white' : 'bg-indigo-200 text-indigo-700'
-                      }`}>
-                        {asset.status.toUpperCase()}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right pr-8">
-                      <div className="flex justify-end gap-2">
-                        <QRPrintWrapper qrData={asset.qrData} assetCode={asset.assetCode || "NEW-QR"} />
-                        <Link href={`/dashboard/assets/${asset.id}`}>
-                          <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl bg-white border border-indigo-50 shadow-sm text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all">
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-9 w-9 rounded-xl bg-white border border-rose-50 shadow-sm text-rose-500 hover:bg-rose-600 hover:text-white transition-all"
-                          onClick={() => handleDelete(asset.id, asset.assetCode)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
+      <div className="w-full">
+        {loading ? (
+          <div className="py-20 text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-indigo-600" />
+          </div>
+        ) : allAssets.length === 0 ? (
+          <div className="py-20 text-center text-indigo-300 italic font-medium">
+            ไม่พบข้อมูลอุปกรณ์
+          </div>
+        ) : (
+          <>
+            {/* Desktop View - Table Mode */}
+            <div className="hidden md:block overflow-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-b border-indigo-50 hover:bg-transparent">
+                    <TableHead className="w-[50px]"></TableHead>
+                    <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">Asset Code</TableHead>
+                    <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">ประเภท/ยี่ห้อ</TableHead>
+                    <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">สถานที่ติดตั้ง</TableHead>
+                    <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">สถานะ</TableHead>
+                    <TableHead className="text-right font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">การจัดการ</TableHead>
                   </TableRow>
-                ))}
-            </TableBody>
-          </Table>
-              </div>
+                </TableHeader>
+                <TableBody>
+                    {allAssets.map((asset) => (
+                      <TableRow 
+                        key={asset.id} 
+                        className={`hover:bg-indigo-50/20 transition-colors border-b border-indigo-50/50 h-20 ${selectedIds.includes(asset.id) ? 'bg-indigo-50/40' : ''}`}
+                      >
+                        <TableCell>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className={`h-8 w-8 rounded-full border-2 transition-all ${selectedIds.includes(asset.id) ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-indigo-100 text-transparent hover:border-indigo-300'}`}
+                            onClick={() => toggleSelect(asset.id)}
+                          >
+                            <CheckCircle2 className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                        <TableCell className="font-mono font-black">
+                          {asset.assetCode ? (
+                            <Link href={`/dashboard/assets/${asset.id}`} className="group cursor-pointer">
+                              <span className="text-indigo-600 bg-indigo-50/50 px-3 py-1.5 rounded-lg border border-indigo-100 shadow-sm group-hover:bg-indigo-600 group-hover:text-white transition-all">{asset.assetCode}</span>
+                            </Link>
+                          ) : (
+                            <Badge variant="outline" className="opacity-40 border-dashed text-[10px] font-black tracking-widest">PENDING</Badge>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                              <span className="font-black text-indigo-950 capitalize">{asset.category || "-"}</span>
+                              {asset.isIncomplete && (
+                                <div className="bg-rose-500 w-2 h-2 rounded-full animate-ping" title="ข้อมูลไม่สมบูรณ์" />
+                              )}
+                            </div>
+                            <span className="text-xs font-bold text-indigo-400 uppercase tracking-tight">{asset.brand} {asset.model}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm font-bold text-indigo-900/70">{asset.location || "-"}</TableCell>
+                        <TableCell>
+                          <Badge className={`border-none font-black text-[10px] px-3 py-1 rounded-full shadow-sm ${
+                            asset.status === 'active' ? 'bg-emerald-500 text-white' : 
+                            asset.status === 'broken' ? 'bg-rose-500 text-white' : 
+                            asset.status === 'pending' ? 'bg-amber-500 text-white' : 'bg-indigo-200 text-indigo-700'
+                          }`}>
+                            {asset.status.toUpperCase()}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <QRPrintWrapper qrData={asset.qrData} assetCode={asset.assetCode || "NEW-QR"} />
+                            <Link href={`/dashboard/assets/${asset.id}`}>
+                              <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl bg-white border border-indigo-50 shadow-sm text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all">
+                                <Edit2 className="h-4 w-4" />
+                              </Button>
+                            </Link>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-9 w-9 rounded-xl bg-white border border-rose-50 shadow-sm text-rose-500 hover:bg-rose-600 hover:text-white transition-all"
+                              onClick={() => handleDelete(asset.id, asset.assetCode)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </div>
 
               {/* Mobile View - Card Mode */}
-              <div className="md:hidden divide-y divide-indigo-50">
+              <div className="md:hidden space-y-4">
                 {allAssets.map((asset) => (
                   <div 
                     key={asset.id} 
-                    className={`p-5 flex gap-4 transition-colors ${selectedIds.includes(asset.id) ? 'bg-indigo-50/50' : ''}`}
+                    className={`p-5 flex gap-4 transition-colors border-b border-indigo-50 ${selectedIds.includes(asset.id) ? 'bg-indigo-50/30' : ''}`}
                   >
                     <div className="pt-1">
                       <Button 
@@ -354,10 +353,9 @@ export default function AssetsPage({
                   </div>
                 ))}
               </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
+          </>
+        )}
+      </div>
 
       {/* Bulk Print Overlay */}
       {selectedIds.length > 0 && (

@@ -82,135 +82,133 @@ export default function EditAssetPage() {
   if (loading) return <div className="flex h-screen items-center justify-center"><Loader2 className="animate-spin" /> กำลังโหลดข้อมูล...</div>;
 
   return (
-    <div className="container mx-auto p-4 max-w-2xl mt-10">
-      <div className="flex justify-between items-center mb-4">
-        <Button variant="ghost" className="gap-2" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4" /> กลับหน้าคลังอุปกรณ์
-        </Button>
-        <Button 
-          variant="outline" 
-          className="gap-2 border-orange-200 text-orange-600 hover:bg-orange-50"
-          onClick={() => setShowReplaceDialog(true)}
-        >
-          <RefreshCw className="h-4 w-4" /> เปลี่ยนอุปกรณ์นี้
-        </Button>
+    <div className="min-h-screen bg-white pb-20">
+      {/* Sticky Header IG Style */}
+      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 h-14 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <button onClick={() => router.back()} className="active:opacity-50">
+            <ArrowLeft className="h-6 w-6 text-black" />
+          </button>
+          <h1 className="text-lg font-black tracking-tight text-black">แก้ไข {assetData?.assetCode || "อุปกรณ์"}</h1>
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            variant="ghost" 
+            className="text-orange-500 p-0 hover:bg-transparent"
+            onClick={() => setShowReplaceDialog(true)}
+          >
+            <RefreshCw className="h-5 w-5" />
+          </Button>
+          <Button 
+            onClick={handleSubmit(onSubmit)}
+            disabled={isSubmitting}
+            variant="ghost"
+            className="text-blue-600 font-bold hover:bg-transparent p-0 ml-2"
+          >
+            {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "บันทึก"}
+          </Button>
+        </div>
       </div>
 
       {showReplaceDialog && (
-        <AssetReplaceDialog 
+        <AssetReplaceDialog
           oldAssetId={params.id as string}
           oldAssetCode={assetData?.assetCode || "NEW-QR"}
           onClose={() => setShowReplaceDialog(false)}
         />
       )}
-      
-      <Card className="glass-card border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
-        <CardHeader className="bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-8">
-          <CardTitle className="text-2xl font-black tracking-tight">แก้ไขข้อมูลอุปกรณ์</CardTitle>
-        </CardHeader>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="p-8 space-y-8">
-            {/* 1. General Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+      <div className="max-w-lg mx-auto p-4 pt-8 space-y-10">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label className="font-bold text-indigo-900/70 text-[10px] uppercase tracking-widest">Asset Code</Label>
-                <Input {...register("assetCode")} className="h-12 rounded-xl border-indigo-100" />
+                <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Asset Code</Label>
+                <Input {...register("assetCode")} className="border-none bg-gray-50 h-14 rounded-2xl text-lg font-bold" />
               </div>
               <div className="space-y-2">
-                <Label className="font-bold text-indigo-900/70 text-[10px] uppercase tracking-widest">สถานะการใช้งาน</Label>
+                <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">สถานะ</Label>
                 <Select onValueChange={(v) => setValue("status", v as string)} value={watch("status") ?? "active"}>
-                  <SelectTrigger className="h-12 rounded-xl border-indigo-100"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">พร้อมใช้งาน (Active)</SelectItem>
-                    <SelectItem value="pending">รอลงทะเบียน (Pending)</SelectItem>
-                    <SelectItem value="maintenance">กำลังซ่อม (Maintenance)</SelectItem>
-                    <SelectItem value="broken">ชำรุด (Broken)</SelectItem>
-                    <SelectItem value="lost">สูญหาย (Lost)</SelectItem>
+                  <SelectTrigger className="border-none bg-gray-50 h-14 rounded-2xl font-bold"><SelectValue /></SelectTrigger>
+                  <SelectContent className="rounded-2xl shadow-2xl border-none">
+                    <SelectItem value="active">พร้อมใช้งาน</SelectItem>
+                    <SelectItem value="pending">รอลงทะเบียน</SelectItem>
+                    <SelectItem value="maintenance">กำลังซ่อม</SelectItem>
+                    <SelectItem value="broken">ชำรุด</SelectItem>
+                    <SelectItem value="lost">สูญหาย</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label className="font-bold text-indigo-900/70 text-[10px] uppercase tracking-widest">ยี่ห้อ (Brand)</Label>
-                <Input {...register("brand")} className="h-12 rounded-xl border-indigo-100" />
-              </div>
-              <div className="space-y-2">
-                <Label className="font-bold text-indigo-900/70 text-[10px] uppercase tracking-widest">รุ่น (Model)</Label>
-                <Input {...register("model")} className="h-12 rounded-xl border-indigo-100" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label className="font-bold text-indigo-900/70 text-[10px] uppercase tracking-widest">Serial Number</Label>
-                <Input {...register("serialNumber")} className="h-12 rounded-xl border-indigo-100 font-mono" />
-              </div>
-              <div className="space-y-2">
-                <Label className="font-bold text-indigo-900/70 text-[10px] uppercase tracking-widest">วันหมดประกัน</Label>
-                <Input type="date" {...register("warrantyUntil")} className="h-12 rounded-xl border-indigo-100" />
-              </div>
-            </div>
-
+            {/* 🚩 ส่วนที่แก้ไขเพิ่ม: Category Select เพื่อระบุประเภทอุปกรณ์ */}
             <div className="space-y-2">
-              <Label className="font-bold text-indigo-900/70 text-[10px] uppercase tracking-widest">สถานที่ติดตั้ง (Location)</Label>
-              <Input {...register("location")} className="h-12 rounded-xl border-indigo-100" />
+              <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">ประเภทอุปกรณ์</Label>
+              <Select onValueChange={(v) => setValue("category", v as string)} value={watch("category")}>
+                <SelectTrigger className="border-none bg-gray-50 h-14 rounded-2xl font-bold"><SelectValue placeholder="เลือกประเภท" /></SelectTrigger>
+                <SelectContent className="rounded-2xl shadow-2xl border-none">
+                  <SelectItem value="computer">Computer / Laptop</SelectItem>
+                  <SelectItem value="printer">Printer</SelectItem>
+                  <SelectItem value="network">Network Device</SelectItem>
+                  <SelectItem value="monitor">Monitor</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+          </div>
 
-            {/* 2. Specific Info by Category */}
-            {(selectedCategory === "computer" || selectedCategory === "monitor" || selectedCategory === "network") && (
-              <div className="p-6 bg-indigo-50/50 rounded-2xl border border-indigo-100 space-y-4">
-                <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">ข้อมูลเฉพาะของประเภท {selectedCategory}</p>
-                {selectedCategory === "computer" && (
-                  <div className="space-y-2">
-                    <Label>Computer Name</Label>
-                    <Input {...register("computerName")} className="h-11 bg-white" />
-                  </div>
-                )}
-                {selectedCategory === "monitor" && (
-                  <div className="space-y-2">
-                    <Label>Monitor Size</Label>
-                    <Input {...register("monitorSize")} className="h-11 bg-white" />
-                  </div>
-                )}
-                {selectedCategory === "network" && (
-                  <div className="space-y-2">
-                    <Label>IP Address</Label>
-                    <Input {...register("ipAddress")} className="h-11 bg-white" />
-                  </div>
-                )}
-              </div>
-            )}
+          <div className="grid grid-cols-2 gap-4 border-t border-gray-50 pt-8">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">ยี่ห้อ</Label>
+              <Input {...register("brand")} className="border-none bg-gray-50 h-12 rounded-xl font-bold" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">รุ่น</Label>
+              <Input {...register("model")} className="border-none bg-gray-50 h-12 rounded-xl font-bold" />
+            </div>
+          </div>
 
-            {/* 3. Delivery Info */}
-            <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 space-y-4">
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">ข้อมูลการส่งมอบ (Delivery)</p>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-xs">วันที่ส่งมอบ</Label>
-                  <Input type="date" {...register("deliveryDate")} className="h-10 bg-white" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs">ผู้ส่งมอบ</Label>
-                  <Input {...register("deliveredBy")} className="h-10 bg-white" />
-                </div>
+          <div className="grid grid-cols-1 gap-6">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Serial Number</Label>
+              <Input {...register("serialNumber")} className="border-none bg-gray-50 h-12 rounded-xl font-mono" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">สถานที่ติดตั้ง</Label>
+              <Input {...register("location")} className="border-none bg-gray-50 h-12 rounded-xl font-bold" />
+            </div>
+          </div>
+
+          {/* Dynamic Category Specifics */}
+          {(selectedCategory === "computer" || selectedCategory === "monitor" || selectedCategory === "network") && (
+            <div className="bg-blue-50/50 p-6 rounded-[2rem] space-y-4">
+              <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">ข้อมูลเฉพาะของ {selectedCategory}</p>
+              {selectedCategory === "computer" && <Input {...register("computerName")} placeholder="Computer Name" className="bg-white border-none h-12 rounded-xl font-bold" />}
+              {selectedCategory === "monitor" && <Input {...register("monitorSize")} placeholder="Size (e.g. 24 inch)" className="bg-white border-none h-12 rounded-xl font-bold" />}
+              {selectedCategory === "network" && <Input {...register("ipAddress")} placeholder="IP Address" className="bg-white border-none h-12 rounded-xl font-mono" />}
+            </div>
+          )}
+
+          {/* Delivery Info */}
+          <div className="border-t border-gray-50 pt-8 space-y-6 pb-10">
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">การส่งมอบ</p>
+            <div className="space-y-2">
+              <Label className="text-xs text-gray-500 ml-1">ผู้รับมอบ/ผู้ใช้งาน</Label>
+              <Input {...register("receivedBy")} className="border-none bg-gray-50 h-12 rounded-xl font-bold" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+               <div className="space-y-2">
+                <Label className="text-xs text-gray-500 ml-1">วันที่ส่งมอบ</Label>
+                <Input type="date" {...register("deliveryDate")} className="border-none bg-gray-50 h-12 rounded-xl font-bold uppercase text-[10px]" />
               </div>
               <div className="space-y-2">
-                <Label className="text-xs">ผู้รับมอบ/ผู้ใช้งาน</Label>
-                <Input {...register("receivedBy")} className="h-10 bg-white" />
+                <Label className="text-xs text-gray-500 ml-1">วันหมดประกัน</Label>
+                <Input type="date" {...register("warrantyUntil")} className="border-none bg-gray-50 h-12 rounded-xl font-bold uppercase text-[10px]" />
               </div>
             </div>
-          </CardContent>
-
-          <CardFooter className="bg-indigo-50/30 border-t border-indigo-100 p-8 flex gap-4">
-            <Button type="button" variant="outline" className="flex-1 h-12 rounded-2xl border-2 font-bold" onClick={() => router.back()}>ยกเลิก</Button>
-            <Button type="submit" className="flex-1 h-12 rounded-2xl bg-indigo-600 hover:bg-indigo-700 font-bold" disabled={isSubmitting}>
-              {isSubmitting ? "กำลังบันทึก..." : "บันทึกการเปลี่ยนแปลง"}
-            </Button>
-          </CardFooter>
+          </div>
         </form>
-      </Card>
+      </div>
     </div>
   );
 }
