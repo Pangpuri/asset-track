@@ -143,7 +143,7 @@ export default async function TrackPage({
                ลองใหม่อีกครั้ง
              </Button>
           </div>
-          <p className="text-[10px] text-slate-300 font-bold uppercase tracking-widest">ERROR ID: {params.id.substring(0,8)}</p>
+          <p className="text-[10px] text-slate-300 font-bold uppercase tracking-widest">ERROR ID: {id.substring(0,8)}</p>
         </div>
       </div>
     );
