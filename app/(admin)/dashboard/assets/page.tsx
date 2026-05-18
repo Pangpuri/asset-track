@@ -13,7 +13,18 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Edit2, Package, QrCode, AlertTriangle, Filter, Trash2, CheckCircle2, Loader2 } from "lucide-react";
+import { 
+  Plus, 
+  Edit2, 
+  Package, 
+  QrCode, 
+  AlertTriangle, 
+  Filter, 
+  Trash2, 
+  CheckCircle2, 
+  Loader2,
+  Search 
+} from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { generateAssetQRCode } from "@/lib/qr";
@@ -22,6 +33,13 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { BulkPrintSelected } from "@/components/bulk-print-selected";
 import { useRouter } from "next/navigation";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 
 interface Asset {
   id: string;
@@ -38,7 +56,7 @@ interface Asset {
 export default function AssetsPage({ 
   searchParams 
 }: { 
-  searchParams: { filter?: string, status?: string } 
+  searchParams: { filter?: string, status?: string, q?: string } 
 }) {
   const router = useRouter();
   const [allAssets, setAllAssets] = useState<Asset[]>([]);
@@ -51,6 +69,7 @@ export default function AssetsPage({
       const sp = new URLSearchParams();
       if (searchParams.filter) sp.append("filter", searchParams.filter);
       if (searchParams.status) sp.append("status", searchParams.status);
+      if (searchParams.q) sp.append("q", searchParams.q);
       
       const res = await fetch(`/api/assets?${sp.toString()}`);
       if (res.ok) {
@@ -72,7 +91,7 @@ export default function AssetsPage({
 
   useEffect(() => {
     fetchAssets();
-  }, [searchParams.filter, searchParams.status]);
+  }, [searchParams.filter, searchParams.status, searchParams.q]);
 
   const handleDelete = async (id: string, code: string | null) => {
     if (!confirm(`คุณต้องการลบอุปกรณ์ ${code || id.substring(0,8)} ใช่หรือไม่? ประวัติทั้งหมดจะถูกลบไปด้วย`)) return;
@@ -102,7 +121,7 @@ export default function AssetsPage({
 
   return (
     <div className="container mx-auto p-6 space-y-8 relative">
-      {!loading && allAssets.length === 0 && !searchParams.filter && !searchParams.status && (
+      {!loading && allAssets.length === 0 && !searchParams.filter && !searchParams.status && !searchParams.q && (
         <div className="bg-amber-50 border border-amber-200 text-amber-700 p-4 rounded-xl flex items-center gap-3 mb-4 text-sm font-bold">
           <AlertTriangle className="h-5 w-5" />
           ไม่พบข้อมูลอุปกรณ์ในระบบ
@@ -131,24 +150,45 @@ export default function AssetsPage({
         </div>
       </div>
 
-      <div className="flex items-center justify-between bg-white/40 backdrop-blur-sm p-2 rounded-2xl border border-white/20 shadow-sm">
-        <div className="flex gap-2 items-center text-sm px-2">
-          <Filter className="h-4 w-4 text-indigo-400" />
-          <span className="text-indigo-900/60 font-bold uppercase tracking-wider text-[10px]">ตัวกรอง:</span>
-          <div className="flex gap-1 ml-2">
-            <Link href="/dashboard/assets">
-              <Button variant={!searchParams.filter && !searchParams.status ? "secondary" : "ghost"} size="sm" className="h-9 rounded-xl px-4 font-bold">ทั้งหมด</Button>
-            </Link>
-            <Link href="/dashboard/assets?filter=incomplete">
-              <Button variant={searchParams.filter === "incomplete" ? "secondary" : "ghost"} size="sm" className={`h-9 rounded-xl px-4 font-bold ${searchParams.filter === "incomplete" ? 'bg-rose-100 text-rose-700' : 'text-rose-600'}`}>ข้อมูลไม่สมบูรณ์</Button>
-            </Link>
-            <Link href="/dashboard/assets?status=pending">
-              <Button variant={searchParams.status === "pending" ? "secondary" : "ghost"} size="sm" className={`h-9 rounded-xl px-4 font-bold ${searchParams.status === "pending" ? 'bg-amber-100 text-amber-700' : 'text-amber-600'}`}>รอลงทะเบียน</Button>
-            </Link>
-          </div>
+      <div className="flex flex-col md:flex-row gap-4 bg-white/40 backdrop-blur-sm p-3 rounded-2xl border border-white/20 shadow-sm items-center">
+        <div className="relative flex-1 w-full">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-indigo-400" />
+          <input
+            type="text"
+            placeholder="ค้นหารหัส, ประเภท, ยี่ห้อ หรือสถานที่..."
+            className="w-full pl-12 pr-4 h-12 bg-white/60 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 outline-none font-bold text-indigo-950 placeholder:text-indigo-300 transition-all shadow-sm"
+            defaultValue={searchParams.q || ""}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                const val = (e.currentTarget as HTMLInputElement).value;
+                const params = new URLSearchParams(window.location.search);
+                if (val) params.set("q", val); else params.delete("q");
+                router.push(`/dashboard/assets?${params.toString()}`);
+              }
+            }}
+          />
         </div>
-        <div className="text-[10px] font-black text-indigo-300 pr-4 uppercase tracking-widest">
-          {loading ? "LOADING..." : `${allAssets.length} ITEMS FOUND`}
+        <div className="w-full md:w-auto">
+          <Select 
+            defaultValue={searchParams.filter || searchParams.status || "all"}
+            onValueChange={(val) => {
+              const params = new URLSearchParams(window.location.search);
+              params.delete("filter");
+              params.delete("status");
+              if (val === "incomplete") params.set("filter", "incomplete");
+              else if (val === "pending") params.set("status", "pending");
+              router.push(`/dashboard/assets?${params.toString()}`);
+            }}
+          >
+            <SelectTrigger className="w-full md:w-[220px] h-12 bg-white/60 border-none rounded-2xl font-black text-indigo-900 shadow-sm focus:ring-indigo-600">
+              <SelectValue placeholder="เลือกการกรอง" />
+            </SelectTrigger>
+            <SelectContent className="rounded-2xl border-none shadow-2xl p-2">
+              <SelectItem value="all" className="font-bold rounded-xl focus:bg-indigo-50">อุปกรณ์ทั้งหมด</SelectItem>
+              <SelectItem value="incomplete" className="font-bold text-rose-600 rounded-xl focus:bg-rose-50">ข้อมูลไม่สมบูรณ์</SelectItem>
+              <SelectItem value="pending" className="font-bold text-amber-600 rounded-xl focus:bg-amber-50">รอลงทะเบียน</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
