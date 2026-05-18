@@ -86,14 +86,8 @@ export default function BulkPrintPage() {
   return (
     <div className="container mx-auto p-6 space-y-8">
       <div className="flex items-center gap-4">
-        <Link href="/dashboard/assets">
-          <Button variant="outline" size="icon">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-        </Link>
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            <QrCode className="h-8 w-8 text-blue-600" />
             สร้าง QR ที่ยังไม่ลงทะเบียน 
           </h1>
           <p className="text-muted-foreground">สร้าง QR Code เปล่าที่ใช้ทะเบียนภายหลัง</p>
