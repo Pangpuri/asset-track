@@ -189,7 +189,7 @@ export default function AssetEntryPage() {
                 <SelectTrigger className="border-none bg-gray-50 h-14 rounded-2xl text-base font-bold">
                   <SelectValue placeholder="ระบุประเภท" />
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                <SelectContent className="rounded-2xl border-gray-100 shadow-2xl bg-white z-[60]">
                   <SelectItem value="computer">คอมพิวเตอร์ / โน้ตบุ๊ค</SelectItem>
                   <SelectItem value="printer">เครื่องพิมพ์</SelectItem>
                   <SelectItem value="network">อุปกรณ์เครือข่าย</SelectItem>
@@ -208,7 +208,7 @@ export default function AssetEntryPage() {
               <SelectTrigger className="border-none bg-gray-50 h-14 rounded-2xl text-base font-bold">
                 <SelectValue placeholder="เลือกสถานะ" />
               </SelectTrigger>
-              <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+              <SelectContent className="rounded-2xl border-gray-100 shadow-2xl bg-white z-[60]">
                 <SelectItem value="active">🟢 ใช้งานปกติ (Active)</SelectItem>
                 <SelectItem value="spare">🟡 สำรอง (Spare)</SelectItem>
                 <SelectItem value="repair">🟠 ส่งซ่อม (Under Repair)</SelectItem>

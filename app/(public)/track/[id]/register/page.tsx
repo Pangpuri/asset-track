@@ -251,7 +251,7 @@ export default function RegisterPage() {
                     <Label className="text-[10px] uppercase font-bold tracking-widest text-gray-400">ประเภทอุปกรณ์ *</Label>
                     <Select value={categoryValue} onValueChange={(v) => setValue("category", v as string)}>
                       <SelectTrigger className="h-11 border-gray-200"><SelectValue placeholder="เลือกประเภท" /></SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white z-[60] border-gray-100 rounded-xl shadow-xl">
                         <SelectItem value="computer">คอมพิวเตอร์ / โน้ตบุ๊ค</SelectItem>
                         <SelectItem value="printer">เครื่องพิมพ์</SelectItem>
                         <SelectItem value="monitor">หน้าจอ</SelectItem>
