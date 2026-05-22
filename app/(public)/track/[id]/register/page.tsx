@@ -36,7 +36,7 @@ export default function RegisterPage() {
   const assetId = params.id as string;
 
   // ย้าย useForm ขึ้นมาประกาศก่อนการเรียกใช้ใน useEffect
-  const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<RegisterFormValues>({
+  const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
   });
 
@@ -47,6 +47,9 @@ export default function RegisterPage() {
   const [isScannerOpen, setScannerOpen] = useState(false);
   const [isProcessingOCR, setIsProcessingOCR] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  // ดึงค่า category จาก form เพื่อให้ Select แสดงผลถูกต้อง
+  const categoryValue = watch("category");
 
   useEffect(() => {
     const fetchAsset = async () => {
@@ -184,10 +187,10 @@ export default function RegisterPage() {
              <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-2">ลงทะเบียนข้อมูลที่ปลอดภัย</p>
           </div>
 
-          {isPending && (
-            <div className="space-y-6">
+          {/* ส่วนที่ 1: รายละเอียดอุปกรณ์ - แสดงเสมอเพื่อให้แก้ไขข้อมูลได้ */}
+          <div className="space-y-6">
                <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
-                  <span className="text-xs font-bold uppercase tracking-widest">1. รายละเอียดอุปกรณ์</span>
+                  <span className="text-xs font-bold uppercase tracking-widest">{isPending ? "1. รายละเอียดอุปกรณ์" : "แก้ไขรายละเอียดอุปกรณ์"}</span>
                </div>
                
                <div className="grid grid-cols-1 gap-4">
@@ -199,7 +202,7 @@ export default function RegisterPage() {
 
                   <div className="space-y-1.5">
                     <Label className="text-[10px] uppercase font-bold tracking-widest text-gray-400">ประเภทอุปกรณ์ *</Label>
-                    <Select onValueChange={(v) => setValue("category", v as string)}>
+                    <Select value={categoryValue} onValueChange={(v) => setValue("category", v as string)}>
                       <SelectTrigger className="h-11 border-gray-200"><SelectValue placeholder="เลือกประเภท" /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="computer">คอมพิวเตอร์ / โน้ตบุ๊ค</SelectItem>
@@ -237,8 +240,7 @@ export default function RegisterPage() {
                     </div>
                   </div>
                </div>
-            </div>
-          )}
+          </div>
 
           <div className="space-y-6">
              <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
