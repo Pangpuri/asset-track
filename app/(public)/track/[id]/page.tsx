@@ -1,9 +1,32 @@
 import { db } from "@/db";
 import { assets } from "@/db/schema/assets";
-import { eq } from "drizzle-orm";
+import { logs } from "@/db/schema/logs";
+import { eq, desc } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Package, Tag, MapPin } from "lucide-react";
+import { 
+  ArrowLeft, 
+  Package, 
+  Tag, 
+  MapPin, 
+  Cpu, 
+  Calendar, 
+  ShieldCheck, 
+  Clock, 
+  Info,
+  Wrench,
+  User,
+  Hash,
+  Monitor,
+  Laptop,
+  Barcode,
+  Activity,
+  CalendarDays,
+  History,
+  AlertCircle
+} from "lucide-react";
+import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
 
 export default async function TrackAssetPage({
   params,
@@ -12,7 +35,7 @@ export default async function TrackAssetPage({
 }) {
   const { id } = await params;
 
-  // ดึงข้อมูล Asset จาก Database ตาม ID ที่ได้จาก QR Code
+  // ดึงข้อมูล Asset และ Log ล่าสุด
   const asset = await db
     .select()
     .from(assets)
@@ -20,48 +43,222 @@ export default async function TrackAssetPage({
     .limit(1)
     .then((res) => res[0]);
 
-  // 🚩 ลอจิกดักกรณีไม่พบข้อมูลในระบบ (ถูกลบ หรือ ID ผิด)
   if (!asset) {
-    notFound(); // จะไปแสดงผลไฟล์ not-found.tsx อัตโนมัติ
+    notFound();
   }
 
-  // 🚩 ลอจิกดักกรณีพบ ID แต่สถานะเป็น pending (ยังไม่ได้ลงทะเบียนข้อมูล)
   if (asset.status === "pending") {
     redirect(`/track/${id}/register`);
   }
 
+  const latestLog = await db
+    .select()
+    .from(logs)
+    .where(eq(logs.assetId, id))
+    .orderBy(desc(logs.createdAt))
+    .limit(1)
+    .then((res) => res[0]);
+
+  const InfoRow = ({ label, value, icon: Icon, colorClass = "text-gray-400" }: { label: string, value: string | null | undefined, icon: any, colorClass?: string }) => {
+    if (!value) return null;
+    return (
+      <div className="flex items-center gap-4 py-3.5 border-b border-gray-50 last:border-0 active:bg-gray-50/50 transition-colors">
+        <div className={`w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center ${colorClass} flex-shrink-0 border border-gray-100`}>
+          <Icon size={18} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] uppercase font-black tracking-[0.1em] text-gray-400 mb-0.5">{label}</p>
+          <p className="text-[15px] font-semibold text-gray-900 truncate">{value}</p>
+        </div>
+      </div>
+    );
+  };
+
+  const statusColors: Record<string, string> = {
+    active: "bg-green-500",
+    maintenance: "bg-amber-500",
+    broken: "bg-red-500",
+    lost: "bg-gray-900",
+    retired: "bg-gray-400",
+  };
+
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-lg mx-auto">
-        <div className="flex items-center gap-4 px-4 h-14 border-b border-gray-100 sticky top-0 bg-white z-10">
-          <Link href="/scan" className="active:opacity-50">
-            <ArrowLeft className="h-6 w-6 text-black" />
-          </Link>
-          <h1 className="text-base font-bold text-black">Asset Details</h1>
+    <div className="min-h-screen bg-slate-50/50">
+      <div className="max-w-lg mx-auto bg-white min-h-screen shadow-sm">
+        {/* Header - Modern Sticky */}
+        <div className="flex items-center justify-between px-4 h-16 border-b border-gray-100 sticky top-0 bg-white/80 backdrop-blur-md z-20">
+          <div className="flex items-center gap-3">
+            <Link href="/scan" className="p-2 -ml-2 active:scale-90 transition-transform">
+              <ArrowLeft className="h-6 w-6 text-black" />
+            </Link>
+            <div>
+              <h1 className="text-sm font-black uppercase tracking-tight">Asset Tracking</h1>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none">Real-time Information</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className={`w-2 h-2 rounded-full animate-pulse ${statusColors[asset.status] || "bg-gray-400"}`}></div>
+            <span className="text-[10px] font-black uppercase tracking-tighter">{asset.status}</span>
+          </div>
         </div>
 
-        <div className="p-4 space-y-4">
-          <div className="p-6 border border-gray-100 rounded-2xl bg-gray-50/30 space-y-4">
-            <div className="flex justify-between items-start">
-              <h2 className="text-2xl font-black uppercase">{asset.brand || "Unknown Brand"}</h2>
-              <span className="px-2 py-1 bg-black text-white text-[10px] font-bold rounded uppercase tracking-tighter">
-                {asset.status}
-              </span>
+        <div className="p-4 space-y-6 pb-32">
+          {/* Main Card - High Impact */}
+          <div className="relative overflow-hidden p-6 rounded-[2.5rem] bg-black text-white shadow-2xl shadow-black/10">
+            <div className="absolute top-0 right-0 p-8 opacity-10">
+              <QrCodeIcon size={120} />
             </div>
             
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-3 text-sm">
-                <Package size={16} className="text-gray-400" />
-                <span className="font-mono text-gray-600">{asset.serialNumber || "No Serial"}</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm">
-                <MapPin size={16} className="text-gray-400" />
-                <span className="text-gray-600">{asset.location || "Not specified"}</span>
+            <div className="relative z-10">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-1">Brand & Model</p>
+              <h2 className="text-3xl font-black uppercase leading-none mb-1">
+                {asset.brand || "Generic"}
+              </h2>
+              <p className="text-lg font-medium text-white/80">{asset.model || "Standard Model"}</p>
+              
+              <div className="mt-8 flex items-center gap-2">
+                <div className="px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-sm">
+                  <p className="text-[10px] font-bold tracking-tight uppercase">ID: {asset.assetCode || "---"}</p>
+                </div>
+                <div className="px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-sm">
+                  <p className="text-[10px] font-bold tracking-tight uppercase">{asset.category || "General"}</p>
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-2 gap-3">
+            <Link href={`/track/${id}/services`} className="flex flex-col items-center gap-2 p-4 rounded-3xl bg-red-50 border border-red-100 active:scale-95 transition-transform">
+              <Wrench className="text-red-500" size={24} />
+              <span className="text-[10px] font-black uppercase tracking-widest text-red-600">Report Issue</span>
+            </Link>
+            <Link href={`/track/${id}/register`} className="flex flex-col items-center gap-2 p-4 rounded-3xl bg-indigo-50 border border-indigo-100 active:scale-95 transition-transform">
+              <History className="text-indigo-500" size={24} />
+              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">Update Info</span>
+            </Link>
+          </div>
+
+          {/* Details List */}
+          <div className="space-y-6">
+            <section>
+              <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
+                <Info size={14} /> Basic Information
+              </h3>
+              <div className="bg-gray-50/50 rounded-3xl p-2 border border-gray-100">
+                <InfoRow label="Serial Number" value={asset.serialNumber} icon={Barcode} colorClass="text-blue-500" />
+                <InfoRow label="Location" value={asset.location} icon={MapPin} colorClass="text-rose-500" />
+                <InfoRow label="Category" value={asset.category} icon={Tag} colorClass="text-emerald-500" />
+              </div>
+            </section>
+
+            {asset.specifications && Object.keys(asset.specifications).length > 0 && (
+              <section>
+                <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
+                  <Cpu size={14} /> Technical Specs
+                </h3>
+                <div className="bg-gray-50/50 rounded-3xl p-2 border border-gray-100">
+                  <InfoRow label="Device Name" value={asset.specifications.computerName} icon={Monitor} colorClass="text-indigo-500" />
+                  <InfoRow label="IP Address" value={asset.specifications.ipAddress} icon={Activity} colorClass="text-cyan-500" />
+                  <InfoRow label="Monitor Size" value={asset.specifications.monitorSize} icon={Monitor} colorClass="text-purple-500" />
+                  <InfoRow label="RAM / Memory" value={asset.specifications.ram} icon={Cpu} colorClass="text-orange-500" />
+                  <InfoRow label="Storage" value={asset.specifications.storage} icon={Package} colorClass="text-slate-500" />
+                </div>
+              </section>
+            )}
+
+            <section>
+              <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
+                <User size={14} /> Current Holder
+              </h3>
+              <div className="bg-gray-50/50 rounded-3xl p-4 border border-gray-100">
+                {latestLog ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-black font-bold">
+                        {latestLog.assignedTo?.charAt(0).toUpperCase() || "?"}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-gray-900">{latestLog.assignedTo || "Unassigned"}</p>
+                        <p className="text-[10px] text-gray-500 font-medium">{latestLog.department || "No Department"}</p>
+                      </div>
+                    </div>
+                    <div className="pt-2 border-t border-gray-100 flex justify-between items-center">
+                      <span className="text-[10px] font-bold uppercase text-gray-400">Since</span>
+                      <span className="text-[10px] font-black uppercase">
+                        {latestLog.deliveryDate ? format(new Date(latestLog.deliveryDate), "dd MMM yyyy") : "---"}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-gray-400 text-center py-2 font-medium italic">No assignment history found</p>
+                )}
+              </div>
+            </section>
+
+            <section>
+              <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
+                <CalendarDays size={14} /> Important Dates
+              </h3>
+              <div className="bg-gray-50/50 rounded-3xl p-2 border border-gray-100">
+                <InfoRow 
+                  label="Purchase Date" 
+                  value={asset.purchaseDate ? format(new Date(asset.purchaseDate), "dd MMMM yyyy") : null} 
+                  icon={Calendar} 
+                  colorClass="text-gray-500" 
+                />
+                <InfoRow 
+                  label="Warranty Expire" 
+                  value={asset.warrantyExpire ? format(new Date(asset.warrantyExpire), "dd MMMM yyyy") : null} 
+                  icon={ShieldCheck} 
+                  colorClass={asset.warrantyExpire && new Date(asset.warrantyExpire) < new Date() ? "text-red-500" : "text-green-500"} 
+                />
+                <InfoRow 
+                  label="Last Updated" 
+                  value={format(new Date(asset.updatedAt), "dd MMM yyyy HH:mm")} 
+                  icon={Clock} 
+                  colorClass="text-gray-400" 
+                />
+              </div>
+            </section>
+          </div>
+        </div>
+
+        {/* Floating Action Button for Mobile */}
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-lg px-6 z-30">
+          <Link href={`/track/${id}/services`}>
+            <Button className="w-full h-14 bg-black text-white rounded-2xl shadow-2xl shadow-black/20 font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 active:scale-95 transition-all">
+              <Wrench size={20} />
+              Report Problem
+            </Button>
+          </Link>
         </div>
       </div>
     </div>
+  );
+}
+
+function QrCodeIcon({ size, className }: { size: number, className?: string }) {
+  return (
+    <svg 
+      width={size} 
+      height={size} 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="1.5" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      className={className}
+    >
+      <rect x="3" y="3" width="7" height="7" />
+      <rect x="14" y="3" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" />
+      <rect x="3" y="14" width="7" height="7" />
+      <path d="M7 7h.01" />
+      <path d="M17 7h.01" />
+      <path d="M17 17h.01" />
+      <path d="M7 17h.01" />
+    </svg>
   );
 }
