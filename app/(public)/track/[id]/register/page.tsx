@@ -261,15 +261,16 @@ export default function RegisterPage() {
 
                   <div className="space-y-1.5">
                     <Label htmlFor="serialNumber" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Serial Number (พิมพ์หรือแสกน)</Label>
-                    <div className="flex gap-2">
-                      <Input id="serialNumber" {...register("serialNumber")} className="h-11 border-gray-200 flex-1" />
+                    <div className="flex items-center gap-2">
+                      <Input id="serialNumber" {...register("serialNumber")} placeholder="ระบุหรือสแกนรหัส S/N" className="h-11 border-gray-200 flex-1" />
                       <Button 
                         type="button" 
                         variant="outline" 
-                        className="h-11 px-3 border-gray-200 text-indigo-600"
+                        className="h-11 px-4 border-indigo-100 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-50 flex items-center gap-2 shrink-0"
                         onClick={() => setScannerOpen(true)}
                       >
-                        <Camera size={20} />
+                        <Scan size={18} />
+                        <span className="text-sm font-bold">สแกน</span>
                       </Button>
                     </div>
                   </div>
