@@ -1,17 +1,17 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { QrCode, AlertCircle } from "lucide-react";
+import { QrCode, AlertTriangle } from "lucide-react";
 
 export default function AssetNotFound() {
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8 text-center">
       <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mb-6">
-        <AlertCircle className="h-10 w-10 text-red-500" />
+        <AlertTriangle className="h-10 w-10 text-red-500" />
       </div>
       
-      <h1 className="text-xl font-bold text-black mb-2">ไม่พบข้อมูลอุปกรณ์</h1>
+      <h1 className="text-xl font-bold text-black mb-2">ข้อมูลไม่ถูกต้อง</h1>
       <p className="text-sm text-gray-500 mb-8 max-w-[260px]">
-        ขออภัย QR Code นี้อาจถูกลบออกจากระบบ หรือยังไม่ได้ถูกสร้างขึ้นในฐานข้อมูลหลัก
+        QR Code นี้ไม่เกี่ยวข้องกับระบบจัดการอุปกรณ์ หรืออาจถูกลบออกจากระบบไปแล้ว
       </p>
 
       <div className="w-full max-w-[200px] space-y-3">

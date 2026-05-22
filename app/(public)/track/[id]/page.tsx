@@ -52,14 +52,25 @@ export default async function TrackAssetPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  
+  // ตรวจสอบว่า ID เป็นรูปแบบ UUID ที่ถูกต้องหรือไม่ (ป้องกันการสแกน QR มั่ว)
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(id)) {
+    notFound();
+  }
 
-  // ดึงข้อมูล Asset และ Log ล่าสุด
-  const asset = await db
-    .select()
-    .from(assets)
-    .where(eq(assets.id, id))
-    .limit(1)
-    .then((res) => res[0]);
+  let asset;
+  try {
+    // ดึงข้อมูล Asset และ Log ล่าสุด
+    asset = await db
+      .select()
+      .from(assets)
+      .where(eq(assets.id, id))
+      .limit(1)
+      .then((res) => res[0]);
+  } catch (error) {
+    notFound();
+  }
 
   if (!asset) {
     notFound();
