@@ -20,9 +20,9 @@ const registerSchema = z.object({
   brand: z.string().optional(),
   model: z.string().optional(),
   serialNumber: z.string().optional(),
-  assignedTo: z.string().min(2, "กรุณาระบุชื่อผู้ใช้งาน"),
+  assignedTo: z.string().min(2, "โปรดระบุชื่อผู้ใช้งานหรือผู้รับผิดชอบ"),
   department: z.string().min(1, "กรุณาระบุแผนก"),
-  location: z.string().min(1, "กรุณาระบุสถานที่ติดตั้ง"),
+  location: z.string().min(1, "กรุณาระบุสถานที่ใช้งาน/จุดติดตั้ง"),
   assignedBy: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -322,7 +322,7 @@ export default function RegisterPage() {
              </div>
           </div>
 
-          <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 flex gap-2 max-w-lg mx-auto z-20">
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-gray-100 flex gap-2 max-w-lg mx-auto z-20">
             <Link href={`/track/${assetId}`} className="flex-1">
               <Button type="button" variant="outline" className="w-full h-11 border-gray-200 text-black font-bold">ยกเลิก</Button>
             </Link>

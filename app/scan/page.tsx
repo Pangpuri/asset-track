@@ -35,13 +35,13 @@ export default function ScanPage() {
 
         {/* Instructions - Simplified/Flat */}
         <div className="p-6 space-y-4 border-t border-gray-100 mt-6">
-          <h3 className="text-black font-bold text-sm uppercase tracking-wider">
+          <h3 className="text-black font-black text-sm uppercase tracking-wider">
             วิธีใช้งาน
           </h3>
           <ul className="space-y-4 text-sm text-gray-600">
             <li className="flex gap-3 items-center">
               <span className="w-1.5 h-1.5 bg-black" />
-              <span>กดอนุญาตให้เข้าถึงกล้องถ่ายรูปเมื่อมีป๊อปอัพแจ้งเตือน</span>
+              <span>หากมีข้อความขออนุญาตใช้กล้อง ให้กด <b> อนุญาต (Allow)</b></span>
             </li>
             <li className="flex gap-3 items-center">
               <span className="w-1.5 h-1.5 bg-black" />

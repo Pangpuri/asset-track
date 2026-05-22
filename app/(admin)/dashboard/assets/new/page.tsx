@@ -15,8 +15,8 @@ import { Loader2, ArrowLeft, Save, PackagePlus, Scan, X } from "lucide-react";
 import Link from "next/link";
 
 const assetSchema = z.object({
-  assetCode: z.string().min(2, "รหัสอุปกรณ์ต้องมีอย่างน้อย 2 ตัวอักษร"),
-  category: z.string().min(1, "กรุณาเลือกประเภทอุปกรณ์"),
+  assetCode: z.string().min(2, "รหัสทรัพย์สินต้องมีอย่างน้อย 2 ตัวอักษร"),
+  category: z.string().min(1, "โปรดระบุประเภทอุปกรณ์"),
   brand: z.string().optional(),
   model: z.string().optional(),
   serialNumber: z.string().optional(),
@@ -178,8 +178,8 @@ export default function AssetEntryPage() {
           {/* Section 1: Core Info */}
           <div className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="assetCode" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Asset Code *</Label>
-              <Input id="assetCode" {...register("assetCode")} placeholder="รหัสอุปกรณ์" className="border-none bg-gray-50 h-14 rounded-2xl text-lg font-bold" />
+              <Label htmlFor="assetCode" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">รหัสทรัพย์สิน (Asset Code) *</Label>
+              <Input id="assetCode" {...register("assetCode")} placeholder="ระบุรหัสทรัพย์สิน" className="border-none bg-gray-50 h-14 rounded-2xl text-lg font-bold" />
               {errors.assetCode && <p className="text-[10px] text-red-500 font-bold ml-1">{errors.assetCode.message}</p>}
             </div>
 
@@ -190,11 +190,11 @@ export default function AssetEntryPage() {
                   <SelectValue placeholder="ระบุประเภท" />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
-                  <SelectItem value="computer">Computer / Laptop</SelectItem>
-                  <SelectItem value="printer">Printer</SelectItem>
-                  <SelectItem value="network">Network Device</SelectItem>
-                  <SelectItem value="monitor">Monitor</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="computer">คอมพิวเตอร์ / โน้ตบุ๊ค</SelectItem>
+                  <SelectItem value="printer">เครื่องพิมพ์</SelectItem>
+                  <SelectItem value="network">อุปกรณ์เครือข่าย</SelectItem>
+                  <SelectItem value="monitor">จอภาพ (Monitor)</SelectItem>
+                  <SelectItem value="other">อื่นๆ</SelectItem>
                 </SelectContent>
               </Select>
               {errors.category && <p className="text-[10px] text-red-500 font-bold ml-1">{errors.category.message}</p>}
@@ -232,9 +232,9 @@ export default function AssetEntryPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="serialNumber" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Serial Number</Label>
+            <Label htmlFor="serialNumber" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">หมายเลขซีเรียล (Serial Number)</Label>
             <div className="flex gap-2">
-              <Input id="serialNumber" {...register("serialNumber")} placeholder="S/N" className="border-none bg-gray-50 h-12 rounded-xl font-mono flex-1" />
+              <Input id="serialNumber" {...register("serialNumber")} placeholder="ระบุ S/N" className="border-none bg-gray-50 h-12 rounded-xl font-mono flex-1" />
               <Button 
                 type="button" 
                 variant="outline" 
@@ -248,8 +248,8 @@ export default function AssetEntryPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="location" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">สถานที่ติดตั้ง</Label>
-            <Input id="location" {...register("location")} placeholder="แผนก / ชั้น" className="border-none bg-gray-50 h-12 rounded-xl font-bold" />
+            <Label htmlFor="location" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">สถานที่ใช้งาน / จุดติดตั้ง</Label>
+            <Input id="location" {...register("location")} placeholder="ระบุแผนก หรือ ชั้น" className="border-none bg-gray-50 h-12 rounded-xl font-bold" />
           </div>
 
           {/* Section 3: Dynamic Category Fields */}
@@ -257,13 +257,13 @@ export default function AssetEntryPage() {
             <div className="bg-blue-50/50 p-6 rounded-[2rem] space-y-4">
               <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">ข้อมูลเฉพาะทาง</p>
               {selectedCategory === "computer" && (
-                <Input id="computerName" {...register("computerName")} placeholder="Computer Name" className="bg-white border-none h-12 rounded-xl font-bold" />
+                <Input id="computerName" {...register("computerName")} placeholder="ชื่อเครื่องคอมพิวเตอร์ (Computer Name)" className="bg-white border-none h-12 rounded-xl font-bold" />
               )}
               {selectedCategory === "monitor" && (
-                <Input id="monitorSize" {...register("monitorSize")} placeholder="Screen Size" className="bg-white border-none h-12 rounded-xl font-bold" />
+                <Input id="monitorSize" {...register("monitorSize")} placeholder="ขนาดหน้าจอ (นิ้ว)" className="bg-white border-none h-12 rounded-xl font-bold" />
               )}
               {selectedCategory === "network" && (
-                <Input id="ipAddress" {...register("ipAddress")} placeholder="IP Address" className="bg-white border-none h-12 rounded-xl font-mono" />
+                <Input id="ipAddress" {...register("ipAddress")} placeholder="หมายเลขไอพี (IP Address)" className="bg-white border-none h-12 rounded-xl font-mono" />
               )}
             </div>
           )}
