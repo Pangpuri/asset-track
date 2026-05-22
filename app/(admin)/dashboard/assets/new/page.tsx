@@ -201,6 +201,24 @@ export default function AssetEntryPage() {
             </div>
           </div>
 
+          {/* Section: Status & Condition - สำคัญมากสำหรับการติดตามทรัพย์สิน */}
+          <div className="space-y-2">
+            <Label htmlFor="status" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">สถานะอุปกรณ์</Label>
+            <Select defaultValue="active" onValueChange={(value) => setValue("status", value ?? undefined)}>
+              <SelectTrigger className="border-none bg-gray-50 h-14 rounded-2xl text-base font-bold">
+                <SelectValue placeholder="เลือกสถานะ" />
+              </SelectTrigger>
+              <SelectContent className="rounded-2xl border-gray-100 shadow-2xl">
+                <SelectItem value="active">🟢 ใช้งานปกติ (Active)</SelectItem>
+                <SelectItem value="spare">🟡 สำรอง (Spare)</SelectItem>
+                <SelectItem value="repair">🟠 ส่งซ่อม (Under Repair)</SelectItem>
+                <SelectItem value="damaged">🔴 ชำรุด (Damaged)</SelectItem>
+                <SelectItem value="lost">⚪ หาย (Lost)</SelectItem>
+                <SelectItem value="disposed">✖️ ตัดจำหน่าย (Disposed)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           {/* Section 2: Specs */}
           <div className="grid grid-cols-2 gap-4 border-t border-gray-50 pt-8">
             <div className="space-y-2">
@@ -285,8 +303,14 @@ export default function AssetEntryPage() {
 
           {/* Scanning Frame Area */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-[85%] h-40 border-2 border-white rounded-3xl relative overflow-hidden shadow-[0_0_0_1000px_rgba(0,0,0,0.6)]">
+            <div className="w-[85%] h-40 border-2 border-white/20 rounded-3xl relative overflow-hidden shadow-[0_0_0_1000px_rgba(0,0,0,0.6)]">
               <div className="absolute top-1/2 left-0 w-full h-[2px] bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse" />
+              
+              {/* Visual Corners for scan frame */}
+              <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-white rounded-tl-xl" />
+              <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-white rounded-tr-xl" />
+              <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-white rounded-bl-xl" />
+              <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-white rounded-br-xl" />
             </div>
           </div>
 

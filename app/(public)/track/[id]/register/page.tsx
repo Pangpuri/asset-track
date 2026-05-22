@@ -347,8 +347,14 @@ export default function RegisterPage() {
             </div>
 
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[85%] h-32 border-2 border-white rounded-2xl relative overflow-hidden shadow-[0_0_0_1000px_rgba(0,0,0,0.7)]">
+              <div className="w-[85%] h-32 border-2 border-white/20 rounded-2xl relative overflow-hidden shadow-[0_0_0_1000px_rgba(0,0,0,0.7)]">
                 <div className="absolute top-1/2 left-0 w-full h-[2px] bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse" />
+                
+                {/* Visual Corners for scan frame */}
+                <div className="absolute top-0 left-0 w-5 h-5 border-t-4 border-l-4 border-white rounded-tl-lg" />
+                <div className="absolute top-0 right-0 w-5 h-5 border-t-4 border-r-4 border-white rounded-tr-lg" />
+                <div className="absolute bottom-0 left-0 w-5 h-5 border-b-4 border-l-4 border-white rounded-bl-lg" />
+                <div className="absolute bottom-0 right-0 w-5 h-5 border-b-4 border-r-4 border-white rounded-br-lg" />
               </div>
             </div>
 
