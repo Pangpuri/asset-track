@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { Loader2, ArrowLeft, Save, PackagePlus, Scan, X } from "lucide-react";
 import Link from "next/link";
-import Tesseract from 'tesseract.js';
 
 const assetSchema = z.object({
   assetCode: z.string().min(2, "รหัสอุปกรณ์ต้องมีอย่างน้อย 2 ตัวอักษร"),
@@ -48,55 +47,68 @@ export default function AssetEntryPage() {
 
   // State สำหรับ OCR Scanner
   const [isScannerOpen, setScannerOpen] = useState(false);
-  const [isProcessingOCR, setIsProcessingOCR] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const scanningLoopRef = useRef<number | null>(null);
 
   // Camera Logic
   useEffect(() => {
     let stream: MediaStream | null = null;
+
+    const startBarcodeDetection = async (videoElement: HTMLVideoElement) => {
+      // ตรวจสอบว่า Browser รองรับ BarcodeDetector หรือไม่
+      if (!('BarcodeDetector' in window)) {
+        console.warn("BarcodeDetector is not supported on this browser");
+        return;
+      }
+
+      // @ts-expect-error: BarcodeDetector API is not yet part of the standard TypeScript DOM library types
+      const barcodeDetector = new window.BarcodeDetector({
+        formats: ['code_128', 'code_39', 'qr_code', 'ean_13']
+      });
+
+      const detect = async (time: number) => {
+        if (videoElement && isScannerOpen) {
+          try {
+            const barcodes = await barcodeDetector.detect(videoElement);
+            if (barcodes.length > 0) {
+              const value = barcodes[0].rawValue;
+              setValue("serialNumber", value);
+              toast.success(`แสกนบาร์โค้ดสำเร็จ: ${value}`);
+              setScannerOpen(false);
+              return;
+            }
+          } catch (e) {
+            console.error(e);
+          }
+          scanningLoopRef.current = requestAnimationFrame(detect);
+        }
+      };
+      scanningLoopRef.current = requestAnimationFrame(detect);
+    };
+
     const startCamera = async () => {
       if (isScannerOpen && videoRef.current) {
         try {
           stream = await navigator.mediaDevices.getUserMedia({ 
             video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } 
           });
-          if (videoRef.current) videoRef.current.srcObject = stream;
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            startBarcodeDetection(videoRef.current);
+          }
         } catch (err) {
           toast.error("ไม่สามารถเข้าถึงกล้องได้");
           setScannerOpen(false);
         }
       }
     };
-    startCamera();
-    return () => stream?.getTracks().forEach(t => t.stop());
-  }, [isScannerOpen]);
 
-  const handleCaptureOCR = async () => {
-    if (!videoRef.current || isProcessingOCR) return;
-    try {
-      setIsProcessingOCR(true);
-      const video = videoRef.current;
-      const canvas = document.createElement("canvas");
-      const cropW = video.videoWidth * 0.8;
-      const cropH = video.videoHeight * 0.2;
-      const startX = (video.videoWidth - cropW) / 2;
-      const startY = (video.videoHeight - cropH) / 2;
-      canvas.width = cropW;
-      canvas.height = cropH;
-      const ctx = canvas.getContext("2d");
-      if (!ctx) throw new Error("Canvas error");
-      ctx.drawImage(video, startX, startY, cropW, cropH, 0, 0, cropW, cropH);
-      const result = await Tesseract.recognize(canvas, 'eng');
-      const cleanText = result.data.text.replace(/[^a-zA-Z0-9-]/g, '').trim();
-      if (cleanText.length > 3) {
-        setValue("serialNumber", cleanText);
-        toast.success("อ่านรหัสสำเร็จ: " + cleanText);
-        setScannerOpen(false);
-      } else {
-        toast.error("อ่านรหัสไม่ชัดเจน กรุณาลองใหม่");
-      }
-    } finally { setIsProcessingOCR(false); }
-  };
+    startCamera();
+    return () => {
+      stream?.getTracks().forEach(t => t.stop());
+      if (scanningLoopRef.current) cancelAnimationFrame(scanningLoopRef.current);
+    };
+  }, [isScannerOpen]);
 
   const onSubmit = async (data: AssetFormValues) => {
     try {
@@ -242,18 +254,11 @@ export default function AssetEntryPage() {
             <div className="w-[85%] h-32 border-2 border-white/50 rounded-xl relative overflow-hidden shadow-[0_0_0_1000px_rgba(0,0,0,0.6)]">
               <div className="absolute top-1/2 left-0 w-full h-[2px] bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse" />
             </div>
+            <p className="absolute bottom-32 text-white text-xs font-bold bg-black/50 px-4 py-2 rounded-full">เล็งบาร์โค้ดให้อยู่ในกรอบ</p>
           </div>
           <div className="absolute bottom-10 left-0 right-0 flex justify-center items-center gap-10 px-6">
             <Button type="button" variant="ghost" className="text-white h-12 w-12 rounded-full bg-white/10" onClick={() => setScannerOpen(false)}>
               <X size={24} />
-            </Button>
-            <Button 
-              type="button" 
-              className="h-20 w-20 rounded-full bg-white text-black shadow-xl scale-110"
-              onClick={handleCaptureOCR}
-              disabled={isProcessingOCR}
-            >
-              {isProcessingOCR ? <Loader2 className="animate-spin" size={32} /> : <Scan size={32} />}
             </Button>
           </div>
         </div>
