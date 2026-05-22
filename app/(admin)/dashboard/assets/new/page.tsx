@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -10,8 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { Loader2, ArrowLeft, Save, PackagePlus } from "lucide-react";
+import { Loader2, ArrowLeft, Save, PackagePlus, Scan, X } from "lucide-react";
 import Link from "next/link";
+import Tesseract from 'tesseract.js';
 
 const assetSchema = z.object({
   assetCode: z.string().min(2, "รหัสอุปกรณ์ต้องมีอย่างน้อย 2 ตัวอักษร"),
@@ -43,6 +45,58 @@ export default function AssetEntryPage() {
   });
 
   const selectedCategory = watch("category");
+
+  // State สำหรับ OCR Scanner
+  const [isScannerOpen, setScannerOpen] = useState(false);
+  const [isProcessingOCR, setIsProcessingOCR] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  // Camera Logic
+  useEffect(() => {
+    let stream: MediaStream | null = null;
+    const startCamera = async () => {
+      if (isScannerOpen && videoRef.current) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } 
+          });
+          if (videoRef.current) videoRef.current.srcObject = stream;
+        } catch (err) {
+          toast.error("ไม่สามารถเข้าถึงกล้องได้");
+          setScannerOpen(false);
+        }
+      }
+    };
+    startCamera();
+    return () => stream?.getTracks().forEach(t => t.stop());
+  }, [isScannerOpen]);
+
+  const handleCaptureOCR = async () => {
+    if (!videoRef.current || isProcessingOCR) return;
+    try {
+      setIsProcessingOCR(true);
+      const video = videoRef.current;
+      const canvas = document.createElement("canvas");
+      const cropW = video.videoWidth * 0.8;
+      const cropH = video.videoHeight * 0.2;
+      const startX = (video.videoWidth - cropW) / 2;
+      const startY = (video.videoHeight - cropH) / 2;
+      canvas.width = cropW;
+      canvas.height = cropH;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Canvas error");
+      ctx.drawImage(video, startX, startY, cropW, cropH, 0, 0, cropW, cropH);
+      const result = await Tesseract.recognize(canvas, 'eng');
+      const cleanText = result.data.text.replace(/[^a-zA-Z0-9-]/g, '').trim();
+      if (cleanText.length > 3) {
+        setValue("serialNumber", cleanText);
+        toast.success("อ่านรหัสสำเร็จ: " + cleanText);
+        setScannerOpen(false);
+      } else {
+        toast.error("อ่านรหัสไม่ชัดเจน กรุณาลองใหม่");
+      }
+    } finally { setIsProcessingOCR(false); }
+  };
 
   const onSubmit = async (data: AssetFormValues) => {
     try {
@@ -124,7 +178,18 @@ export default function AssetEntryPage() {
 
           <div className="space-y-2">
             <Label htmlFor="serialNumber" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Serial Number</Label>
-            <Input id="serialNumber" {...register("serialNumber")} placeholder="S/N" className="border-none bg-gray-50 h-12 rounded-xl font-mono" />
+            <div className="flex gap-2">
+              <Input id="serialNumber" {...register("serialNumber")} placeholder="S/N" className="border-none bg-gray-50 h-12 rounded-xl font-mono flex-1" />
+              <Button 
+                type="button" 
+                variant="outline" 
+                className="h-12 px-4 border-none bg-gray-50 rounded-xl text-indigo-600 flex items-center gap-2 shrink-0 hover:bg-gray-100"
+                onClick={() => setScannerOpen(true)}
+              >
+                <Scan size={18} />
+                <span className="text-sm font-bold">สแกน</span>
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-2">
@@ -168,6 +233,31 @@ export default function AssetEntryPage() {
           </div>
         </form>
       </div>
+
+      {/* OCR Scanner Overlay */}
+      {isScannerOpen && (
+        <div className="fixed inset-0 z-[100] bg-black flex flex-col">
+          <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-[85%] h-32 border-2 border-white/50 rounded-xl relative overflow-hidden shadow-[0_0_0_1000px_rgba(0,0,0,0.6)]">
+              <div className="absolute top-1/2 left-0 w-full h-[2px] bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse" />
+            </div>
+          </div>
+          <div className="absolute bottom-10 left-0 right-0 flex justify-center items-center gap-10 px-6">
+            <Button type="button" variant="ghost" className="text-white h-12 w-12 rounded-full bg-white/10" onClick={() => setScannerOpen(false)}>
+              <X size={24} />
+            </Button>
+            <Button 
+              type="button" 
+              className="h-20 w-20 rounded-full bg-white text-black shadow-xl scale-110"
+              onClick={handleCaptureOCR}
+              disabled={isProcessingOCR}
+            >
+              {isProcessingOCR ? <Loader2 className="animate-spin" size={32} /> : <Scan size={32} />}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
