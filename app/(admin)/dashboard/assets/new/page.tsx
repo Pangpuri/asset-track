@@ -48,7 +48,8 @@ export default function AssetEntryPage() {
   // State สำหรับ OCR Scanner
   const [isScannerOpen, setScannerOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const scanningLoopRef = useRef<number | null>(null);
+  const scanningLoopRef = useRef<number | null>(null); // For requestAnimationFrame ID
+  const lastScanTimeRef = useRef<number>(0);
 
   // Camera Logic
   useEffect(() => {
@@ -61,25 +62,48 @@ export default function AssetEntryPage() {
         return;
       }
 
-      // @ts-expect-error: BarcodeDetector API is not yet part of the standard TypeScript DOM library types
+      // ให้เวลาผู้ใช้เล็ง 1.5 วินาทีก่อนเริ่มสแกนครั้งแรก
+      const startTime = Date.now();
+
+      // Regex for common serial number patterns (alphanumeric, hyphens, min 5 chars)
+      const serialNumberRegex = /^[a-zA-Z0-9-]{5,}$/;
+
+      // @ts-expect-error: BarcodeDetector API is not yet part of the standard TypeScript DOM library types.
+      // This is necessary because BarcodeDetector is a relatively new Web API and its types might not be
+      // fully integrated into the default 'dom' lib for all TypeScript versions.
       const barcodeDetector = new window.BarcodeDetector({
         formats: ['code_128', 'code_39', 'qr_code', 'ean_13']
       });
 
       const detect = async (time: number) => {
         if (videoElement && isScannerOpen) {
+          const now = Date.now();
+          
+          // หน่วงเวลา: เริ่มสแกนหลังจากผ่านไป 1.5 วินาที และสแกนทุกๆ 500ms
+          if (now - startTime > 1500 && now - lastScanTimeRef.current > 500) {
+            lastScanTimeRef.current = now;
+            
           try {
             const barcodes = await barcodeDetector.detect(videoElement);
             if (barcodes.length > 0) {
-              const value = barcodes[0].rawValue;
-              setValue("serialNumber", value);
-              toast.success(`แสกนบาร์โค้ดสำเร็จ: ${value}`);
-              setScannerOpen(false);
-              return;
+              const scannedValue = barcodes[0].rawValue.trim(); // Get the raw value and trim whitespace
+
+              if (serialNumberRegex.test(scannedValue)) {
+                setValue("serialNumber", scannedValue);
+                toast.success(`สแกนสำเร็จ: ${scannedValue}`);
+                setScannerOpen(false); // Close scanner on successful and valid scan
+                return; // Stop scanning loop
+              } else {
+                toast.error("ไม่พบ Serial Number ที่ถูกต้อง กรุณาลองใหม่");
+                // Continue scanning if the detected barcode is not a valid serial number
+              }
             }
           } catch (e) {
-            console.error(e);
+              // Non-blocking error logging
+              console.error("Detection attempt failed:", e);
           }
+          }
+
           scanningLoopRef.current = requestAnimationFrame(detect);
         }
       };
@@ -97,6 +121,7 @@ export default function AssetEntryPage() {
             startBarcodeDetection(videoRef.current);
           }
         } catch (err) {
+          console.error("Camera access error:", err); // Added console.error for camera access issues
           toast.error("ไม่สามารถเข้าถึงกล้องได้");
           setScannerOpen(false);
         }
@@ -250,13 +275,28 @@ export default function AssetEntryPage() {
       {isScannerOpen && (
         <div className="fixed inset-0 z-[100] bg-black flex flex-col">
           <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+          
+          {/* Overlay Mask - Top Area */}
+          <div className="absolute top-0 left-0 right-0 bg-black/60 backdrop-blur-[2px] h-[calc(50%-80px)] flex flex-col items-center justify-end pb-8 px-6 text-center">
+             <div className="w-12 h-1 bg-white/30 rounded-full mb-6" />
+             <h2 className="text-white text-lg font-black mb-2">สแกนบาร์โค้ด S/N</h2>
+             <p className="text-white/70 text-sm">จัดวางบาร์โค้ดให้อยู่ในกรอบสี่เหลี่ยมด้านล่าง</p>
+          </div>
+
+          {/* Scanning Frame Area */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-[85%] h-32 border-2 border-white/50 rounded-xl relative overflow-hidden shadow-[0_0_0_1000px_rgba(0,0,0,0.6)]">
+            <div className="w-[85%] h-40 border-2 border-white rounded-3xl relative overflow-hidden shadow-[0_0_0_1000px_rgba(0,0,0,0.6)]">
               <div className="absolute top-1/2 left-0 w-full h-[2px] bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse" />
             </div>
-            <p className="absolute bottom-32 text-white text-xs font-bold bg-black/50 px-4 py-2 rounded-full">เล็งบาร์โค้ดให้อยู่ในกรอบ</p>
           </div>
-          <div className="absolute bottom-10 left-0 right-0 flex justify-center items-center gap-10 px-6">
+
+          {/* Overlay Mask - Bottom Area */}
+          <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-[2px] h-[calc(50%-80px)] pt-10 flex flex-col items-center">
+            <div className="bg-white/10 border border-white/10 rounded-2xl p-4 max-w-[80%] mb-10">
+              <p className="text-white/60 text-[10px] leading-relaxed">
+                เคล็ดลับ: หากสแกนไม่ติด ให้ลองขยับกล้องเข้า-ออกช้าๆ หรือเปิดไฟให้สว่างเพียงพอ
+              </p>
+            </div>
             <Button type="button" variant="ghost" className="text-white h-12 w-12 rounded-full bg-white/10" onClick={() => setScannerOpen(false)}>
               <X size={24} />
             </Button>

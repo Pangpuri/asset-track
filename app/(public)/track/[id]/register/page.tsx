@@ -42,6 +42,7 @@ export default function RegisterPage() {
   const [asset, setAsset] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const scanningLoopRef = useRef<number | null>(null);
+  const lastScanTimeRef = useRef<number>(0);
 
   // Scanner States
   const [isScannerOpen, setScannerOpen] = useState(false);
@@ -80,25 +81,45 @@ export default function RegisterPage() {
     const startBarcodeDetection = async (videoElement: HTMLVideoElement) => {
       if (!('BarcodeDetector' in window)) return;
 
-      // @ts-expect-error: BarcodeDetector API is not yet part of the standard TypeScript DOM library types
+      const startTime = Date.now();
+
+      // Regex for common serial number patterns (alphanumeric, hyphens, min 5 chars)
+      const serialNumberRegex = /^[a-zA-Z0-9-]{5,}$/;
+
+      // @ts-expect-error: BarcodeDetector API is not yet part of the standard TypeScript DOM library types.
+      // This is necessary because BarcodeDetector is a relatively new Web API and its types might not be
+      // fully integrated into the default 'dom' lib for all TypeScript versions.
       const barcodeDetector = new window.BarcodeDetector({
         formats: ['code_128', 'code_39', 'qr_code', 'ean_13']
       });
 
       const detect = async (time: number) => {
         if (videoElement && isScannerOpen) {
+          const now = Date.now();
+          
+          if (now - startTime > 1500 && now - lastScanTimeRef.current > 500) {
+            lastScanTimeRef.current = now;
+            
           try {
             const barcodes = await barcodeDetector.detect(videoElement);
             if (barcodes.length > 0) {
-              const value = barcodes[0].rawValue;
-              setValue("serialNumber", value);
-              toast.success(`สแกนสำเร็จ: ${value}`);
-              setScannerOpen(false);
-              return;
+              const scannedValue = barcodes[0].rawValue.trim(); // Get the raw value and trim whitespace
+
+              if (serialNumberRegex.test(scannedValue)) {
+                setValue("serialNumber", scannedValue);
+                toast.success(`สแกนสำเร็จ: ${scannedValue}`);
+                setScannerOpen(false); // Close scanner on successful and valid scan
+                return; // Stop scanning loop
+              } else {
+                toast.error("ไม่พบ Serial Number ที่ถูกต้อง กรุณาลองใหม่");
+                // Continue scanning if the detected barcode is not a valid serial number
+              }
             }
           } catch (e) {
-            console.error(e);
+              console.error("Detection error:", e);
           }
+          }
+
           scanningLoopRef.current = requestAnimationFrame(detect);
         }
       };
@@ -320,19 +341,22 @@ export default function RegisterPage() {
           <div className="fixed inset-0 z-[100] bg-black flex flex-col">
             <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
             
-            {/* กรอบสแกนสี่เหลี่ยมผืนผ้า พร้อมเส้นแดง */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[85%] h-32 border-2 border-white/50 rounded-xl relative overflow-hidden shadow-[0_0_0_1000px_rgba(0,0,0,0.6)]">
-                <div className="absolute top-1/2 left-0 w-full h-[2px] bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse" />
-              </div>
-              <p className="absolute top-[calc(50%+80px)] text-white text-xs font-bold bg-black/50 px-4 py-2 rounded-full">วาง Serial Number ให้ตรงเส้นสีแดง</p>
+            <div className="absolute top-0 left-0 right-0 bg-black/70 backdrop-blur-sm h-[calc(50%-60px)] flex flex-col items-center justify-end pb-6 px-10 text-center">
+               <h2 className="text-white text-lg font-bold mb-1">สแกนรหัสอุปกรณ์</h2>
+               <p className="text-white/60 text-xs">เล็งเส้นสีแดงให้ตรงกับบาร์โค้ด Serial Number</p>
             </div>
 
-            {/* ปุ่มควบคุม */}
-            <div className="absolute bottom-10 left-0 right-0 flex justify-center items-center gap-10 px-6">
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-[85%] h-32 border-2 border-white rounded-2xl relative overflow-hidden shadow-[0_0_0_1000px_rgba(0,0,0,0.7)]">
+                <div className="absolute top-1/2 left-0 w-full h-[2px] bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse" />
+              </div>
+            </div>
+
+            <div className="absolute bottom-0 left-0 right-0 bg-black/70 backdrop-blur-sm h-[calc(50%-60px)] pt-12 flex flex-col items-center">
               <Button type="button" variant="ghost" className="text-white h-12 w-12 rounded-full bg-white/10" onClick={() => setScannerOpen(false)}>
                 <X size={24} />
               </Button>
+              <p className="text-white/40 text-[10px] mt-10">Asset Tracking System v1.0</p>
             </div>
           </div>
         )}
