@@ -39,7 +39,6 @@ export function CameraScanner({ isFlashOn }: CameraScannerProps) {
             { facingMode: "environment" },
             {
               fps: 10,
-              qrbox: { width: 250, height: 250 },
             },
             (decodedText) => {
               // เมื่อสแกนสำเร็จ: ดึง ID จาก URL หรือข้อความ
@@ -97,12 +96,6 @@ export function CameraScanner({ isFlashOn }: CameraScannerProps) {
         อนุญาต เพื่อเข้าถึงกล้อง
         </div>
       )}
-      {/* UI สำหรับกรอบสแกน */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[240px] h-[240px] border-2 border-white rounded-[2rem] shadow-[0_0_0_1000px_rgba(0,0,0,0.5)]">
-          <div className="absolute inset-0 border border-indigo-500 rounded-[2rem] animate-pulse"></div>
-        </div>
-      </div>
     </div>
   );
 }

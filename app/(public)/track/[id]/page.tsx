@@ -26,7 +26,25 @@ import {
   AlertCircle
 } from "lucide-react";
 import { format } from "date-fns";
+import { th } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
+
+const InfoRow = ({ label, value, icon: Icon, colorClass = "text-gray-400" }: { label: string, value: string | null | undefined, icon: any, colorClass?: string }) => {
+  const isEmpty = !value || value.trim() === "";
+  return (
+    <div className="flex items-center gap-4 py-3.5 border-b border-gray-50 last:border-0 active:bg-gray-50/50 transition-colors">
+      <div className={`w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center ${colorClass} flex-shrink-0 border border-gray-100 ${isEmpty ? "opacity-40 grayscale" : ""}`}>
+        <Icon size={18} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="text-[10px] uppercase font-black tracking-[0.1em] text-gray-400 mb-0.5">{label}</p>
+        <p className={`text-[15px] font-semibold truncate ${isEmpty ? "text-gray-300 italic font-normal" : "text-gray-900"}`}>
+          {isEmpty ? "ไม่ได้ระบุ" : value}
+        </p>
+      </div>
+    </div>
+  );
+};
 
 export default async function TrackAssetPage({
   params,
@@ -59,29 +77,21 @@ export default async function TrackAssetPage({
     .limit(1)
     .then((res) => res[0]);
 
-  const InfoRow = ({ label, value, icon: Icon, colorClass = "text-gray-400" }: { label: string, value: string | null | undefined, icon: any, colorClass?: string }) => {
-    const isEmpty = !value || value.trim() === "";
-    return (
-      <div className="flex items-center gap-4 py-3.5 border-b border-gray-50 last:border-0 active:bg-gray-50/50 transition-colors">
-        <div className={`w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center ${colorClass} flex-shrink-0 border border-gray-100 ${isEmpty ? "opacity-40 grayscale" : ""}`}>
-          <Icon size={18} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-[10px] uppercase font-black tracking-[0.1em] text-gray-400 mb-0.5">{label}</p>
-          <p className={`text-[15px] font-semibold truncate ${isEmpty ? "text-gray-300 italic font-normal" : "text-gray-900"}`}>
-            {isEmpty ? "Not Specified" : value}
-          </p>
-        </div>
-      </div>
-    );
-  };
-
   const statusColors: Record<string, string> = {
     active: "bg-green-500",
     maintenance: "bg-amber-500",
     broken: "bg-red-500",
     lost: "bg-gray-900",
     retired: "bg-gray-400",
+  };
+
+  const statusLabels: Record<string, string> = {
+    active: "ใช้งานปกติ",
+    maintenance: "กำลังซ่อม",
+    broken: "ชำรุด",
+    lost: "สูญหาย",
+    retired: "เลิกใช้งาน",
+    pending: "รอลงทะเบียน",
   };
 
   const specs = asset.specifications || {};
@@ -96,13 +106,13 @@ export default async function TrackAssetPage({
               <ArrowLeft className="h-6 w-6 text-black" />
             </Link>
             <div>
-              <h1 className="text-sm font-black uppercase tracking-tight">Asset Tracking</h1>
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none">Real-time Information</p>
+              <h1 className="text-sm font-black uppercase tracking-tight">ระบบติดตามอุปกรณ์</h1>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none">ข้อมูลแบบเรียลไทม์</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full animate-pulse ${statusColors[asset.status] || "bg-gray-400"}`}></div>
-            <span className="text-[10px] font-black uppercase tracking-tighter">{asset.status}</span>
+            <span className="text-[10px] font-black uppercase tracking-tighter">{statusLabels[asset.status] || asset.status}</span>
           </div>
         </div>
 
@@ -114,18 +124,18 @@ export default async function TrackAssetPage({
             </div>
             
             <div className="relative z-10">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-1">Brand & Model</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-1">ยี่ห้อและรุ่น</p>
               <h2 className="text-3xl font-black uppercase leading-none mb-1">
-                {asset.brand || "Generic"}
+                {asset.brand || "ทั่วไป"}
               </h2>
-              <p className="text-lg font-medium text-white/80">{asset.model || "Standard Model"}</p>
+              <p className="text-lg font-medium text-white/80">{asset.model || "ไม่ระบุรุ่น"}</p>
               
               <div className="mt-8 flex items-center gap-2">
                 <div className="px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-sm">
-                  <p className="text-[10px] font-bold tracking-tight uppercase">ID: {asset.assetCode || "---"}</p>
+                  <p className="text-[10px] font-bold tracking-tight uppercase">รหัส: {asset.assetCode || "---"}</p>
                 </div>
                 <div className="px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-sm">
-                  <p className="text-[10px] font-bold tracking-tight uppercase">{asset.category || "General"}</p>
+                  <p className="text-[10px] font-bold tracking-tight uppercase">{asset.category || "ทั่วไป"}</p>
                 </div>
               </div>
             </div>
@@ -135,11 +145,11 @@ export default async function TrackAssetPage({
           <div className="grid grid-cols-2 gap-3">
             <Link href={`/track/${id}/services`} className="flex flex-col items-center gap-2 p-4 rounded-3xl bg-red-50 border border-red-100 active:scale-95 transition-transform">
               <Wrench className="text-red-500" size={24} />
-              <span className="text-[10px] font-black uppercase tracking-widest text-red-600">Report Issue</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-red-600">แจ้งซ่อม / ปัญหา</span>
             </Link>
             <Link href={`/track/${id}/register`} className="flex flex-col items-center gap-2 p-4 rounded-3xl bg-indigo-50 border border-indigo-100 active:scale-95 transition-transform">
               <History className="text-indigo-500" size={24} />
-              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">Update Info</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">แก้ไขข้อมูล</span>
             </Link>
           </div>
 
@@ -147,31 +157,37 @@ export default async function TrackAssetPage({
           <div className="space-y-6">
             <section>
               <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
-                <Info size={14} /> Basic Information
+                <Info size={14} /> ข้อมูลทั่วไป
               </h3>
               <div className="bg-gray-50/50 rounded-3xl p-2 border border-gray-100">
-                <InfoRow label="Serial Number" value={asset.serialNumber} icon={Barcode} colorClass="text-blue-500" />
-                <InfoRow label="Location" value={asset.location} icon={MapPin} colorClass="text-rose-500" />
-                <InfoRow label="Category" value={asset.category} icon={Tag} colorClass="text-emerald-500" />
+                <InfoRow label="หมายเลขซีเรียล" value={asset.serialNumber} icon={Barcode} colorClass="text-blue-500" />
+                <InfoRow label="สถานที่ติดตั้ง" value={asset.location} icon={MapPin} colorClass="text-rose-500" />
+                <InfoRow label="ประเภทอุปกรณ์" value={asset.category} icon={Tag} colorClass="text-emerald-500" />
+                <InfoRow 
+                  label="วันหมดประกัน" 
+                  value={asset.warrantyExpire ? format(new Date(asset.warrantyExpire), "d MMMM yyyy", { locale: th }) : null} 
+                  icon={Calendar} 
+                  colorClass="text-emerald-500" 
+                />
               </div>
             </section>
 
             <section>
               <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
-                <Cpu size={14} /> Technical Specs
+                <Cpu size={14} /> สเปกเครื่อง
               </h3>
               <div className="bg-gray-50/50 rounded-3xl p-2 border border-gray-100">
-                <InfoRow label="Device Name" value={specs.computerName} icon={Monitor} colorClass="text-indigo-500" />
-                <InfoRow label="IP Address" value={specs.ipAddress} icon={Activity} colorClass="text-cyan-500" />
-                <InfoRow label="Monitor Size" value={specs.monitorSize} icon={Monitor} colorClass="text-purple-500" />
-                <InfoRow label="RAM / Memory" value={specs.ram} icon={Cpu} colorClass="text-orange-500" />
-                <InfoRow label="Storage" value={specs.storage} icon={Package} colorClass="text-slate-500" />
+                <InfoRow label="ชื่อเครื่อง (Host)" value={specs.computerName} icon={Monitor} colorClass="text-indigo-500" />
+                <InfoRow label="เลขไอพี (IP)" value={specs.ipAddress} icon={Activity} colorClass="text-cyan-500" />
+                <InfoRow label="ขนาดจอ" value={specs.monitorSize} icon={Monitor} colorClass="text-purple-500" />
+                <InfoRow label="หน่วยความจำ (RAM)" value={specs.ram} icon={Cpu} colorClass="text-orange-500" />
+                <InfoRow label="ความจุ (Storage)" value={specs.storage} icon={Package} colorClass="text-slate-500" />
               </div>
             </section>
 
             <section>
               <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
-                <User size={14} /> Current Holder
+                <User size={14} /> ผู้ใช้งานปัจจุบัน
               </h3>
               <div className="bg-gray-50/50 rounded-3xl p-4 border border-gray-100">
                 {latestLog ? (
@@ -181,21 +197,21 @@ export default async function TrackAssetPage({
                         {latestLog.assignedTo?.charAt(0).toUpperCase() || "?"}
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-gray-900">{latestLog.assignedTo || "Unassigned"}</p>
-                        <p className="text-[10px] text-gray-500 font-medium">{latestLog.department || "No Department"}</p>
+                        <p className="text-sm font-bold text-gray-900">{latestLog.assignedTo || "ไม่ได้ระบุชื่อ"}</p>
+                        <p className="text-[10px] text-gray-500 font-medium">{latestLog.department || "ไม่ระบุแผนก"}</p>
                       </div>
                     </div>
                     <div className="pt-2 border-t border-gray-100 flex justify-between items-center">
-                      <span className="text-[10px] font-bold uppercase text-gray-400">Since</span>
+                      <span className="text-[10px] font-bold uppercase text-gray-400">เริ่มใช้งานเมื่อ</span>
                       <span className="text-[10px] font-black uppercase">
-                        {latestLog.deliveryDate ? format(new Date(latestLog.deliveryDate), "dd MMM yyyy") : "---"}
+                        {latestLog.deliveryDate ? format(new Date(latestLog.deliveryDate), "d MMM yyyy", { locale: th }) : "---"}
                       </span>
                     </div>
                   </div>
                 ) : (
                   <div className="py-2 space-y-3">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-3 py-1 rounded-full inline-block border border-amber-100">Missing Assignment</p>
-                    <p className="text-xs text-gray-400 font-medium italic">Please update info to assign this device.</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-3 py-1 rounded-full inline-block border border-amber-100">ไม่มีข้อมูลผู้ใช้</p>
+                    <p className="text-xs text-gray-400 font-medium italic">กรุณาอัปเดตข้อมูลเพื่อระบุตัวตนผู้ใช้</p>
                   </div>
                 )}
               </div>
@@ -203,52 +219,24 @@ export default async function TrackAssetPage({
 
             <section>
               <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
-                <CalendarDays size={14} /> Important Dates
+                <CalendarDays size={14} /> วันที่สำคัญ
               </h3>
               <div className="bg-gray-50/50 rounded-3xl p-2 border border-gray-100">
                 <InfoRow 
-                  label="Purchase Date" 
-                  value={asset.purchaseDate ? format(new Date(asset.purchaseDate), "dd MMMM yyyy") : null} 
+                  label="วันที่ซื้อ" 
+                  value={asset.purchaseDate ? format(new Date(asset.purchaseDate), "d MMMM yyyy", { locale: th }) : null} 
                   icon={Calendar} 
                   colorClass="text-gray-500" 
                 />
                 <InfoRow 
-                  label="Warranty Expire" 
-                  value={asset.warrantyExpire ? format(new Date(asset.warrantyExpire), "dd MMMM yyyy") : null} 
+                  label="วันหมดประกัน" 
+                  value={asset.warrantyExpire ? format(new Date(asset.warrantyExpire), "d MMMM yyyy", { locale: th }) : null} 
                   icon={ShieldCheck} 
                   colorClass={asset.warrantyExpire && new Date(asset.warrantyExpire) < new Date() ? "text-red-500" : "text-green-500"} 
                 />
                 <InfoRow 
-                  label="Last Updated" 
-                  value={format(new Date(asset.updatedAt), "dd MMM yyyy HH:mm")} 
-                  icon={Clock} 
-                  colorClass="text-gray-400" 
-                />
-              </div>
-            </section>
-          </div>
-        </div>
-
-            <section>
-              <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
-                <CalendarDays size={14} /> Important Dates
-              </h3>
-              <div className="bg-gray-50/50 rounded-3xl p-2 border border-gray-100">
-                <InfoRow 
-                  label="Purchase Date" 
-                  value={asset.purchaseDate ? format(new Date(asset.purchaseDate), "dd MMMM yyyy") : null} 
-                  icon={Calendar} 
-                  colorClass="text-gray-500" 
-                />
-                <InfoRow 
-                  label="Warranty Expire" 
-                  value={asset.warrantyExpire ? format(new Date(asset.warrantyExpire), "dd MMMM yyyy") : null} 
-                  icon={ShieldCheck} 
-                  colorClass={asset.warrantyExpire && new Date(asset.warrantyExpire) < new Date() ? "text-red-500" : "text-green-500"} 
-                />
-                <InfoRow 
-                  label="Last Updated" 
-                  value={format(new Date(asset.updatedAt), "dd MMM yyyy HH:mm")} 
+                  label="แก้ไขล่าสุด" 
+                  value={format(new Date(asset.updatedAt), "d MMM yyyy HH:mm", { locale: th })} 
                   icon={Clock} 
                   colorClass="text-gray-400" 
                 />
@@ -262,7 +250,7 @@ export default async function TrackAssetPage({
           <Link href={`/track/${id}/services`}>
             <Button className="w-full h-14 bg-black text-white rounded-2xl shadow-2xl shadow-black/20 font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 active:scale-95 transition-all">
               <Wrench size={20} />
-              Report Problem
+              แจ้งปัญหา / แจ้งซ่อม
             </Button>
           </Link>
         </div>
