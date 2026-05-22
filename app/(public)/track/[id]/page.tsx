@@ -60,15 +60,17 @@ export default async function TrackAssetPage({
     .then((res) => res[0]);
 
   const InfoRow = ({ label, value, icon: Icon, colorClass = "text-gray-400" }: { label: string, value: string | null | undefined, icon: any, colorClass?: string }) => {
-    if (!value) return null;
+    const isEmpty = !value || value.trim() === "";
     return (
       <div className="flex items-center gap-4 py-3.5 border-b border-gray-50 last:border-0 active:bg-gray-50/50 transition-colors">
-        <div className={`w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center ${colorClass} flex-shrink-0 border border-gray-100`}>
+        <div className={`w-9 h-9 rounded-xl bg-gray-50 flex items-center justify-center ${colorClass} flex-shrink-0 border border-gray-100 ${isEmpty ? "opacity-40 grayscale" : ""}`}>
           <Icon size={18} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[10px] uppercase font-black tracking-[0.1em] text-gray-400 mb-0.5">{label}</p>
-          <p className="text-[15px] font-semibold text-gray-900 truncate">{value}</p>
+          <p className={`text-[15px] font-semibold truncate ${isEmpty ? "text-gray-300 italic font-normal" : "text-gray-900"}`}>
+            {isEmpty ? "Not Specified" : value}
+          </p>
         </div>
       </div>
     );
@@ -81,6 +83,8 @@ export default async function TrackAssetPage({
     lost: "bg-gray-900",
     retired: "bg-gray-400",
   };
+
+  const specs = asset.specifications || {};
 
   return (
     <div className="min-h-screen bg-slate-50/50">
@@ -152,20 +156,18 @@ export default async function TrackAssetPage({
               </div>
             </section>
 
-            {asset.specifications && Object.keys(asset.specifications).length > 0 && (
-              <section>
-                <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
-                  <Cpu size={14} /> Technical Specs
-                </h3>
-                <div className="bg-gray-50/50 rounded-3xl p-2 border border-gray-100">
-                  <InfoRow label="Device Name" value={asset.specifications.computerName} icon={Monitor} colorClass="text-indigo-500" />
-                  <InfoRow label="IP Address" value={asset.specifications.ipAddress} icon={Activity} colorClass="text-cyan-500" />
-                  <InfoRow label="Monitor Size" value={asset.specifications.monitorSize} icon={Monitor} colorClass="text-purple-500" />
-                  <InfoRow label="RAM / Memory" value={asset.specifications.ram} icon={Cpu} colorClass="text-orange-500" />
-                  <InfoRow label="Storage" value={asset.specifications.storage} icon={Package} colorClass="text-slate-500" />
-                </div>
-              </section>
-            )}
+            <section>
+              <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
+                <Cpu size={14} /> Technical Specs
+              </h3>
+              <div className="bg-gray-50/50 rounded-3xl p-2 border border-gray-100">
+                <InfoRow label="Device Name" value={specs.computerName} icon={Monitor} colorClass="text-indigo-500" />
+                <InfoRow label="IP Address" value={specs.ipAddress} icon={Activity} colorClass="text-cyan-500" />
+                <InfoRow label="Monitor Size" value={specs.monitorSize} icon={Monitor} colorClass="text-purple-500" />
+                <InfoRow label="RAM / Memory" value={specs.ram} icon={Cpu} colorClass="text-orange-500" />
+                <InfoRow label="Storage" value={specs.storage} icon={Package} colorClass="text-slate-500" />
+              </div>
+            </section>
 
             <section>
               <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
@@ -191,10 +193,41 @@ export default async function TrackAssetPage({
                     </div>
                   </div>
                 ) : (
-                  <p className="text-xs text-gray-400 text-center py-2 font-medium italic">No assignment history found</p>
+                  <div className="py-2 space-y-3">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-3 py-1 rounded-full inline-block border border-amber-100">Missing Assignment</p>
+                    <p className="text-xs text-gray-400 font-medium italic">Please update info to assign this device.</p>
+                  </div>
                 )}
               </div>
             </section>
+
+            <section>
+              <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
+                <CalendarDays size={14} /> Important Dates
+              </h3>
+              <div className="bg-gray-50/50 rounded-3xl p-2 border border-gray-100">
+                <InfoRow 
+                  label="Purchase Date" 
+                  value={asset.purchaseDate ? format(new Date(asset.purchaseDate), "dd MMMM yyyy") : null} 
+                  icon={Calendar} 
+                  colorClass="text-gray-500" 
+                />
+                <InfoRow 
+                  label="Warranty Expire" 
+                  value={asset.warrantyExpire ? format(new Date(asset.warrantyExpire), "dd MMMM yyyy") : null} 
+                  icon={ShieldCheck} 
+                  colorClass={asset.warrantyExpire && new Date(asset.warrantyExpire) < new Date() ? "text-red-500" : "text-green-500"} 
+                />
+                <InfoRow 
+                  label="Last Updated" 
+                  value={format(new Date(asset.updatedAt), "dd MMM yyyy HH:mm")} 
+                  icon={Clock} 
+                  colorClass="text-gray-400" 
+                />
+              </div>
+            </section>
+          </div>
+        </div>
 
             <section>
               <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">

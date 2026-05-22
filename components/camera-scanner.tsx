@@ -93,7 +93,8 @@ export function CameraScanner({ isFlashOn }: CameraScannerProps) {
       <div id="reader" className="w-full h-full object-cover"></div>
       {!hasCamera && (
         <div className="absolute inset-0 flex items-center justify-center text-white/50 text-[10px] uppercase font-bold tracking-widest text-center px-10">
-          กรุณากด อนุญาต เพื่อเข้าถึงกล้อง
+          กรุณากด 
+        อนุญาต เพื่อเข้าถึงกล้อง
         </div>
       )}
       {/* UI สำหรับกรอบสแกน */}
