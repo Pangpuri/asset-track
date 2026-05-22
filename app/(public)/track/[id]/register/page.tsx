@@ -74,34 +74,68 @@ export default function RegisterPage() {
     fetchAsset();
   }, [assetId]);
 
-  // ฟังก์ชันเริ่ม/ปิดกล้อง
+  // Improved Camera Stream Logic
   useEffect(() => {
     let stream: MediaStream | null = null;
-    if (isScannerOpen && videoRef.current) {
-      navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } } 
-      }).then(s => {
-        stream = s;
-        if (videoRef.current) videoRef.current.srcObject = s;
-      }).catch(() => toast.error("ไม่สามารถเข้าถึงกล้องได้"));
-    }
+    const startCamera = async () => {
+      if (isScannerOpen && videoRef.current) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } 
+          });
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+          }
+        } catch (err) {
+          console.error("Camera access error:", err);
+          toast.error("ไม่สามารถเข้าถึงกล้องได้");
+          setScannerOpen(false);
+        }
+      }
+    };
+
+    startCamera();
     return () => stream?.getTracks().forEach(t => t.stop());
   }, [isScannerOpen]);
 
   const handleCaptureOCR = async () => {
-    if (!videoRef.current) return;
-    setIsProcessingOCR(true);
-    const canvas = document.createElement("canvas");
-    canvas.width = videoRef.current.videoWidth;
-    canvas.height = videoRef.current.videoHeight;
-    canvas.getContext("2d")?.drawImage(videoRef.current, 0, 0);
+    if (!videoRef.current || isProcessingOCR) return;
     
-    const { data: { text } } = await Tesseract.recognize(canvas, 'eng');
-    const cleanText = text.replace(/[^a-zA-Z0-9-]/g, '').trim();
-    setValue("serialNumber", cleanText);
-    setIsProcessingOCR(false);
-    setScannerOpen(false);
-    toast.success("อ่านรหัสสำเร็จ");
+    try {
+      setIsProcessingOCR(true);
+      const video = videoRef.current;
+      const canvas = document.createElement("canvas");
+      
+      // Crop to the center rectangle (ROI) for better accuracy
+      // We take 80% width and 20% height from the center
+      const cropW = video.videoWidth * 0.8;
+      const cropH = video.videoHeight * 0.2;
+      const startX = (video.videoWidth - cropW) / 2;
+      const startY = (video.videoHeight - cropH) / 2;
+
+      canvas.width = cropW;
+      canvas.height = cropH;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Could not get canvas context");
+
+      ctx.drawImage(video, startX, startY, cropW, cropH, 0, 0, cropW, cropH);
+      
+      const result = await Tesseract.recognize(canvas, 'eng');
+      const cleanText = result.data.text.replace(/[^a-zA-Z0-9-]/g, '').trim();
+      
+      if (cleanText.length > 3) {
+        setValue("serialNumber", cleanText);
+        toast.success("อ่านรหัสสำเร็จ: " + cleanText);
+        setScannerOpen(false);
+      } else {
+        toast.error("อ่านรหัสไม่ชัดเจน กรุณาขยับกล้องแล้วลองอีกครั้ง");
+      }
+    } catch (error) {
+      console.error("OCR Error:", error);
+      toast.error("เกิดข้อผิดพลาดในการประมวลผลรูปภาพ");
+    } finally {
+      setIsProcessingOCR(false);
+    }
   };
 
   const onSubmit = async (data: RegisterFormValues) => {
