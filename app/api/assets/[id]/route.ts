@@ -30,12 +30,12 @@ export async function PATCH(
     const { id } = await params;
     const body = await req.json();
 
-    // 1. แยกค่า id และค่าที่จะเก็บใน specifications ออกมา
+    // 1. แยกค่า id, ค่าสเปก และค่าวันที่ออกมาจัดการพิเศษ
     const { 
       id: _, 
       computerName, ipAddress, monitorSize, 
       purchaseDate, warrantyExpire,
-      assignedTo, // รับค่าจากหน้า Register (ถ้ามี)
+      assignedTo, // รับค่าจากหน้า Register
       ...rest 
     } = body;
 
@@ -43,8 +43,9 @@ export async function PATCH(
       return NextResponse.json({ error: "Missing id" }, { status: 400 });
     }
 
-    // 2. จัดกลุ่มข้อมูลเฉพาะทางลงใน specifications (JSONB)
+    // 2. จัดกลุ่มข้อมูลลงใน specifications (JSONB) และรักษาข้อมูลเก่าไว้ถ้ามีการส่งมา
     const specifications = {
+      ...(rest.specifications || {}),
       ...(computerName && { computerName }),
       ...(ipAddress && { ipAddress }),
       ...(monitorSize && { monitorSize }),
@@ -55,11 +56,11 @@ export async function PATCH(
       .update(assets)
       .set({
         ...rest,
-        receivedBy: rest.receivedBy || assignedTo, // ถ้าส่ง assignedTo มาให้ใช้เป็น receivedBy
+        receivedBy: rest.receivedBy || assignedTo || null, // Map ชื่อจากหน้า Register เข้า Column จริง
         specifications, // บันทึกเข้า JSONB column
-        // ป้องกัน Error หากวันที่เป็นค่าว่าง
-        purchaseDate: purchaseDate && purchaseDate !== "" ? new Date(purchaseDate) : null,
-        warrantyExpire: warrantyExpire && warrantyExpire !== "" ? new Date(warrantyExpire) : null,
+        // จัดการวันที่ให้เป็น Date Object หรือ null
+        purchaseDate: purchaseDate ? new Date(purchaseDate) : null,
+        warrantyExpire: warrantyExpire ? new Date(warrantyExpire) : null,
         updatedAt: new Date(), // อัปเดตเวลาล่าสุด
       })
       .where(eq(assets.id, id))

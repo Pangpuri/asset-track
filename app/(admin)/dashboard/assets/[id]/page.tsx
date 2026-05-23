@@ -59,8 +59,9 @@ export default function EditAssetPage() {
         // แตกค่าจาก specifications ออกมาที่ root เพื่อให้ register() หาเจอ
         reset({
           ...data,
-          ...data.specifications, // ดึง computerName, ipAddress ฯลฯ ออกมา
-          // ตรวจสอบชื่อฟิลด์ให้ตรงกับที่ใช้ใน register(...)
+          computerName: data.specifications?.computerName || "",
+          ipAddress: data.specifications?.ipAddress || "",
+          monitorSize: data.specifications?.monitorSize || "",
           receivedBy: data.receivedBy || "",
           deliveredBy: data.deliveredBy || "",
           purchaseDate: data.purchaseDate ? new Date(data.purchaseDate).toISOString().split('T')[0] : "",
