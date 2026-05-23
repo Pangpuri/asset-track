@@ -34,6 +34,7 @@ export const assets = pgTable("assets", {
   
   // ข้อมูลระบุตัวตน (ยอมให้ Null สำหรับ QR เปล่า)
   assetCode: varchar("asset_code", { length: 50 }).unique(), // เช่น P001234
+  assetName: text("asset_name"), // ชื่ออุปกรณ์ (เช่น "คอมพิวเตอร์สำนักงาน")
   serialNumber: varchar("serial_number", { length: 100 }).unique(),
   
   // หมวดหมู่และประเภท
@@ -48,6 +49,7 @@ export const assets = pgTable("assets", {
   
   // ข้อมูลเฉพาะตามประเภท (เก็บเป็น JSONB)
   specifications: jsonb("specifications").$type<{
+    assetcode?: string;
     computerName?: string;
     ipAddress?: string;
     cpu?: string;

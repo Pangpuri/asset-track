@@ -16,6 +16,7 @@ import Link from "next/link";
 
 const assetSchema = z.object({
   assetCode: z.string().min(2, "รหัสทรัพย์สินต้องมีอย่างน้อย 2 ตัวอักษร"),
+  assetName: z.string().min(2, "ชื่ออุปกรณ์ต้องมีอย่างน้อย 2 ตัวอักษร"),
   category: z.string().min(1, "โปรดระบุประเภทอุปกรณ์"),
   brand: z.string().optional(),
   model: z.string().optional(),
@@ -182,9 +183,15 @@ export default function AssetEntryPage() {
           {/* Section 1: Core Info */}
           <div className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="assetCode" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">รหัสทรัพย์สิน (Asset Code) *</Label>
+              <Label htmlFor="assetCode" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">รหัสอุปกรณ์ (Asset Code) *</Label>
               <Input id="assetCode" {...register("assetCode")} placeholder="ระบุรหัสทรัพย์สิน" className="border-none bg-gray-50 h-14 rounded-2xl text-lg font-bold" />
               {errors.assetCode && <p className="text-[10px] text-red-500 font-bold ml-1">{errors.assetCode.message}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="assetName" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">ชื่ออุปกรณ์ (Asset Name) *</Label>
+              <Input id="assetName" {...register("assetName")} placeholder="ระบุชื่ออุปกรณ์" className="border-none bg-gray-50 h-14 rounded-2xl text-lg font-bold" />
+              {errors.assetName && <p className="text-[10px] text-red-500 font-bold ml-1">{errors.assetName.message}</p>}
             </div>
 
             <div className="space-y-2">

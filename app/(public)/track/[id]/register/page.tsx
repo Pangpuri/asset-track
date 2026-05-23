@@ -16,6 +16,7 @@ import Link from "next/link";
 
 const registerSchema = z.object({
   assetCode: z.string().min(2, "กรุณาระบุรหัสทรัพย์สิน").optional().or(z.literal("")),
+  assetName: z.string().min(2, "กรุณาระบุชื่ออุปกรณ์").optional().or(z.literal("")),
   category: z.string().optional(),
   brand: z.string().optional(),
   model: z.string().optional(),
@@ -176,6 +177,7 @@ export default function RegisterPage() {
       const assetUpdateBody = {
         id: assetId,
         assetCode: data.assetCode,
+        assetName: data.assetName,
         category: data.category,
         brand: data.brand,
         model: data.model,
@@ -265,9 +267,15 @@ export default function RegisterPage() {
                
                <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="assetCode" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">รหัสทรัพย์สิน *</Label>
+                    <Label htmlFor="assetCode" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">รหัสอุปกรณ์ *</Label>
                     <Input id="assetCode" {...register("assetCode")} placeholder="เช่น IT-001" className="h-11 border-gray-200" />
                     {errors.assetCode && <p className="text-[10px] text-red-500 font-bold">{errors.assetCode.message}</p>}
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label htmlFor="assetName" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">ชื่ออุปกรณ์ *</Label>
+                    <Input id="assetName" {...register("assetName")} placeholder="เช่น Notebook" className="h-11 border-gray-200" />
+                    {errors.assetName && <p className="text-[10px] text-red-500 font-bold">{errors.assetName.message}</p>}
                   </div>
 
                   <div className="space-y-1.5">
