@@ -92,7 +92,7 @@ export default function BulkPrintPage() {
     <div className="container mx-auto p-6 space-y-8">
       <div className="flex items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">ย
+          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
             สร้าง QR ที่ยังไม่ลงทะเบียน 
           </h1>
           <p className="text-muted-foreground">สร้าง QR Code เปล่าที่ใช้ทะเบียนภายหลัง</p>
