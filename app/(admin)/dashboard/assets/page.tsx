@@ -146,23 +146,20 @@ export default function AssetsPage({
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div className="space-y-1">
-          <h1 className="text-4xl font-black tracking-tight text-indigo-950 flex items-center gap-3">
-            <Package className="h-10 w-10 text-indigo-600" />
+          <h1 className="text-4xl font-black tracking-tight text-zinc-900 flex items-center gap-3">
+            <Package className="h-10 w-10 text-zinc-900" />
             คลัง
           </h1>
-          <p className="text-indigo-600/60 font-medium ml-1">จัดการข้อมูลและสั่งพิมพ์ QR Code แบบกลุ่ม</p>
+          <p className="text-zinc-400 font-bold uppercase tracking-widest text-[10px] ml-1">Asset Inventory Management</p>
         </div>
         <div className="flex gap-3">
-          <Link href="/dashboard/assets/print-qr">
-            <Button variant="outline" className="h-12 gap-2 border-indigo-200 text-indigo-700 bg-white/50 hover:bg-indigo-50 neo-button rounded-2xl">
-              <QrCode className="h-5 w-5" /> สร้าง QR เปล่า
-            </Button>
-          </Link>
-          <Link href="/dashboard/assets/new">
-            <Button className="h-12 gap-2 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-200 neo-button rounded-2xl">
-              <Plus className="h-5 w-5" /> เพิ่มอุปกรณ์ใหม่
-            </Button>
-          </Link>
+          <div className="p-[2px] rounded-2xl bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 shadow-md">
+            <Link href="/dashboard/assets/new">
+              <Button className="h-11 px-6 gap-2 bg-white text-zinc-900 hover:bg-zinc-50 border-none rounded-[14px] font-black text-sm transition-all">
+                <Plus className="h-5 w-5" /> เพิ่มอุปกรณ์ใหม่
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
 

@@ -66,17 +66,17 @@ export default async function DashboardPage() {
       value: stats.active,
       icon: CheckCircle2,
       color: "text-emerald-600",
-      borderColor: "border-emerald-100",
-      gradient: "from-emerald-50/50 to-white",
+      borderColor: "border-zinc-200",
+      gradient: "from-white to-white",
       href: "/dashboard/assets?status=active"
     },
     {
-      title: "ส่งซ่อม/ชำรุด",
+      title: "ชำรุด/เสียหาย",
       value: stats.broken,
       icon: AlertTriangle,
       color: "text-rose-600",
-      borderColor: "border-rose-100",
-      gradient: "from-rose-50/50 to-white",
+      borderColor: "border-zinc-200",
+      gradient: "from-white to-white",
       href: "/dashboard/assets?status=broken"
     },
     {
@@ -84,8 +84,8 @@ export default async function DashboardPage() {
       value: stats.pending,
       icon: Clock,
       color: "text-amber-600",
-      borderColor: "border-amber-100",
-      gradient: "from-amber-50/50 to-white",
+      borderColor: "border-zinc-200",
+      gradient: "from-white to-white",
       href: "/dashboard/assets?status=pending"
     }
   ];
@@ -131,8 +131,8 @@ export default async function DashboardPage() {
           <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
             {statusCards.map((card) => (
               <Link key={card.title} href={card.href} className="group">
-                <div className={`h-full p-6 bg-gradient-to-br ${card.gradient} border ${card.borderColor} rounded-[2rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300`}>
-                  <div className={`w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform`}>
+                <div className={`h-full p-6 bg-white border border-zinc-200 rounded-[2rem] shadow-sm hover:shadow-md transition-all duration-300`}>
+                  <div className={`w-10 h-10 bg-zinc-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
                     <card.icon className={`${card.color}`} size={24} />
                   </div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{card.title}</p>
@@ -141,19 +141,21 @@ export default async function DashboardPage() {
               </Link>
             ))}
 
-            {/* Summary Statistics Card */}
-            <div className="md:col-span-3 p-8 bg-black rounded-[2.5rem] text-white overflow-hidden relative group">
-              <Package className="absolute -right-8 -bottom-8 w-64 h-64 text-white/5 rotate-12" />
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-black">ความสมบูรณ์ของข้อมูล</h3>
-                  <p className="text-white/60 text-sm max-w-md">ตรวจสอบและปรับปรุงข้อมูลทรัพย์สินเพื่อให้ระบบสามารถติดตามและรายงานผลได้อย่างแม่นยำ 100%</p>
+            {/* Summary Statistics Card with IG Border */}
+            <div className="md:col-span-3 p-[2px] rounded-[2.5rem] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 shadow-lg shadow-pink-500/10">
+              <div className="p-8 bg-white rounded-[2.4rem] overflow-hidden relative group">
+                <Package className="absolute -right-8 -bottom-8 w-64 h-64 text-zinc-100 rotate-12" />
+                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-black text-zinc-900">ความสมบูรณ์ของข้อมูล</h3>
+                    <p className="text-zinc-500 text-sm max-w-md">ตรวจสอบข้อมูลทรัพย์สินเพื่อให้ระบบรายงานผลได้อย่างแม่นยำ</p>
+                  </div>
+                  <Link href="/dashboard/assets?filter=incomplete">
+                    <button className="px-8 h-12 bg-zinc-900 text-white rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-black transition-colors">
+                      ตรวจสอบข้อมูล
+                    </button>
+                  </Link>
                 </div>
-                <Link href="/dashboard/assets?filter=incomplete">
-                  <button className="px-8 h-14 bg-white text-black rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-indigo-50 transition-colors">
-                    ตรวจสอบข้อมูล
-                  </button>
-                </Link>
               </div>
             </div>
           </div>

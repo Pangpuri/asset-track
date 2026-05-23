@@ -54,11 +54,19 @@ export function Navbar() {
 
         {/* Right: Icons (IG Style) */}
         <div className="flex items-center gap-4">
-          <Link href="/dashboard/assets/new" className="text-black active:opacity-50">
-            <PlusSquare size={24} />
+          <Link href="/dashboard/assets/new" className="active:scale-95 transition-transform">
+            <div className="p-[2px] rounded-lg bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600">
+              <div className="bg-white rounded-[6px] p-1 flex items-center justify-center">
+                <PlusSquare size={20} className="text-zinc-900" />
+              </div>
+            </div>
           </Link>
-          <Link href="/scan" className="text-black active:opacity-50">
-            <QrCode size={24} />
+          <Link href="/scan" className="active:scale-95 transition-transform">
+            <div className="p-[2px] rounded-lg bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600">
+              <div className="bg-white rounded-[6px] p-1 flex items-center justify-center">
+                <QrCode size={20} className="text-zinc-900" />
+              </div>
+            </div>
           </Link>
           <button 
             className="text-black active:opacity-50"
@@ -71,7 +79,7 @@ export function Navbar() {
 
       {/* Mobile Menu Overlay - Fully Opaque */}
       {isOpen && (
-        <div className="fixed inset-0 top-0 z-[110] bg-white animate-in slide-in-from-right duration-200">
+        <div className="fixed inset-0 top-0 z-[200] bg-white animate-in slide-in-from-right duration-200">
           <div className="flex flex-col h-full">
             {/* Menu Header */}
             <div className="flex items-center justify-between px-4 h-14 border-b border-gray-100">
