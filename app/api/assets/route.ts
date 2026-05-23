@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { assets } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 
 export async function GET(req: Request) {
   try {
@@ -53,6 +54,9 @@ export async function POST(req: Request) {
       status: body.status || "active",
     }).returning();
 
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/assets");
+
     return NextResponse.json(newAsset[0]);
   } catch (error) {
     console.error("Error creating asset:", error);
@@ -76,6 +80,9 @@ export async function PUT(req: Request) {
       })
       .where(eq(assets.id, id))
       .returning();
+
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/assets");
 
     if (updated.length === 0) return NextResponse.json({ error: "Asset not found" }, { status: 404 });
     return NextResponse.json(updated[0]);

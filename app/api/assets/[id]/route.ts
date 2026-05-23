@@ -85,6 +85,7 @@ export async function PATCH(
     // ล้าง Cache เพื่อให้หน้า Dashboard และหน้าติดตามแสดงข้อมูลใหม่ทันที
     revalidatePath("/dashboard/assets");
     revalidatePath(`/track/${id}`);
+    revalidatePath("/dashboard");
 
     return NextResponse.json({ success: true, data: updated[0] });
   } catch (error) {

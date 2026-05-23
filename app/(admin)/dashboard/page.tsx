@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
+
 async function getStats() {
   try {
     const [stats] = await db.select({
