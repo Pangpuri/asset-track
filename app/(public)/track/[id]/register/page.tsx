@@ -29,6 +29,17 @@ const registerSchema = z.object({
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
+interface Asset {
+  id: string;
+  assetCode: string | null;
+  category: string | null;
+  brand: string | null;
+  model: string | null;
+  serialNumber: string | null;
+  location: string | null;
+  status: string;
+}
+
 export default function RegisterPage() {
   const router = useRouter();
   const params = useParams();
@@ -39,7 +50,7 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
   });
 
-  const [asset, setAsset] = useState<any>(null);
+  const [asset, setAsset] = useState<Asset | null>(null);
   const [loading, setLoading] = useState(true);
   const scanningLoopRef = useRef<number | null>(null);
   const lastScanTimeRef = useRef<number>(0);

@@ -9,6 +9,11 @@ interface CameraScannerProps {
   isFlashOn: boolean;
 }
 
+/** Interface สำหรับรองรับคุณสมบัติ Torch (ไฟแฟลช) ที่ยังไม่มีในมาตรฐาน TypeScript lib.dom */
+interface TorchConstraint extends MediaTrackConstraintSet {
+  torch?: boolean;
+}
+
 /**
  * คอมโพเนนต์สำหรับสแกน QR Code และจัดการกล้อง
  * แก้ไข Type Error และรองรับการเปิดไฟแฟลช (Torch)
@@ -76,9 +81,8 @@ export function CameraScanner({ isFlashOn }: CameraScannerProps) {
       if (scannerRef.current?.isScanning) {
         try {
           await scannerRef.current.applyVideoConstraints({
-            // ใช้ 'as any' เพื่อหลีกเลี่ยง Type Error เนื่องจาก torch เป็นคุณสมบัติที่ยังไม่มีในมาตรฐาน TypeScript หลัก
-            advanced: [{ torch: isFlashOn } as any]
-          } as any);
+            advanced: [{ torch: isFlashOn } as TorchConstraint]
+          } as MediaTrackConstraints);
         } catch (err) {
           console.warn("อุปกรณ์หรือเบราว์เซอร์นี้ไม่รองรับการเปิดไฟแฟลชผ่านหน้าเว็บ");
         }

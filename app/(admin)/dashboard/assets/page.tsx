@@ -29,7 +29,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { generateAssetQRCode } from "@/lib/qr";
 import { QRPrintWrapper } from "@/components/qr-print-wrapper";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, startTransition } from "react";
 import { toast } from "sonner";
 import { BulkPrintSelected } from "@/components/bulk-print-selected";
 import { useRouter } from "next/navigation";
@@ -48,10 +48,14 @@ interface Asset {
   brand: string | null;
   model: string | null;
   location: string | null;
+  serialNumber: string | null;
   status: string;
   qrData: string;
   isIncomplete: boolean;
 }
+
+// สร้าง Type สำหรับข้อมูลที่ได้จาก API (ยังไม่มี qrData และ isIncomplete)
+type RawAsset = Omit<Asset, "qrData" | "isIncomplete">;
 
 export default function AssetsPage({ 
   searchParams 
@@ -64,7 +68,7 @@ export default function AssetsPage({
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   
   // โหลดข้อมูลผ่าน Client Side เพื่อให้รองรับการ Interact (Delete/Select)
-  const fetchAssets = async () => {
+  const fetchAssets = useCallback(async () => {
     try {
       const sp = new URLSearchParams();
       if (searchParams.filter) sp.append("filter", searchParams.filter);
@@ -72,26 +76,36 @@ export default function AssetsPage({
       if (searchParams.q) sp.append("q", searchParams.q);
       
       const res = await fetch(`/api/assets?${sp.toString()}`);
-      if (res.ok) {
-        const data = await res.json();
-        // เพิ่มข้อมูล QR และ Check Incomplete
-        const enriched = await Promise.all(data.map(async (a: any) => ({
-          ...a,
-          qrData: await generateAssetQRCode(a.id),
-          isIncomplete: a.status === 'active' && (!a.serialNumber || !a.brand || !a.location)
-        })));
-        setAllAssets(enriched);
-      }
+      if (!res.ok) throw new Error();
+      
+      const data: RawAsset[] = await res.json();
+      const enriched: Asset[] = await Promise.all(data.map(async (a) => ({
+        ...a,
+        qrData: await generateAssetQRCode(a.id),
+        isIncomplete: a.status === 'active' && (!a.serialNumber || !a.brand || !a.location)
+      })));
+      
+      setAllAssets(enriched);
     } catch (err) {
       toast.error("ไม่สามารถโหลดข้อมูลอุปกรณ์ได้");
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchParams.filter, searchParams.status, searchParams.q]);
 
   useEffect(() => {
-    fetchAssets();
-  }, [searchParams.filter, searchParams.status, searchParams.q]);
+    let isIgnore = false;
+
+    if (!isIgnore) {
+      startTransition(() => {
+        fetchAssets();
+      });
+    }
+
+    return () => {
+      isIgnore = true;
+    };
+  }, [fetchAssets]);
 
   const handleDelete = async (id: string, code: string | null) => {
     if (!confirm(`คุณต้องการลบอุปกรณ์ ${code || id.substring(0,8)} ใช่หรือไม่? ประวัติทั้งหมดจะถูกลบไปด้วย`)) return;
@@ -100,6 +114,7 @@ export default function AssetsPage({
       const res = await fetch(`/api/assets/${id}?id=${id}`, { method: "DELETE" });
       if (res.ok) {
         toast.success("ลบข้อมูลเรียบร้อยแล้ว");
+        setLoading(true); // สั่ง loading ที่นี่แทน (ปลอดภัยเพราะอยู่ใน Event Handler)
         fetchAssets();
       } else {
         throw new Error();

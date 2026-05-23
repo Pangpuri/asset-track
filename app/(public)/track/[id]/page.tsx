@@ -23,13 +23,14 @@ import {
   Activity,
   CalendarDays,
   History,
-  AlertCircle
+  AlertCircle,
+  LucideIcon
 } from "lucide-react";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 
-const InfoRow = ({ label, value, icon: Icon, colorClass = "text-gray-400" }: { label: string, value: string | null | undefined, icon: any, colorClass?: string }) => {
+const InfoRow = ({ label, value, icon: Icon, colorClass = "text-gray-400" }: { label: string, value: string | null | undefined, icon: LucideIcon, colorClass?: string }) => {
   const isEmpty = !value || value.trim() === "";
   return (
     <div className="flex items-center gap-4 py-3.5 border-b border-gray-50 last:border-0 active:bg-gray-50/50 transition-colors">
