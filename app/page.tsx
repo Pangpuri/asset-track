@@ -25,7 +25,6 @@ export default function Home() {
               <Link href="/dashboard" className="text-black active:opacity-50"><LayoutDashboard size={26} /></Link>
               <Link href="/dashboard/assets/new" className="text-black active:opacity-50"><PlusSquare size={26} /></Link>
             </div>
-            <Bookmark size={26} className="text-black active:opacity-50" />
           </div>
           
           <div className="px-4 pb-4">
