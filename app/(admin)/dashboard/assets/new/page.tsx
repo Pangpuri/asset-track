@@ -143,13 +143,17 @@ export default function AssetEntryPage() {
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) throw new Error("เกิดข้อผิดพลาดในการบันทึก");
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || "เกิดข้อผิดพลาดในการบันทึก");
+      }
 
       toast.success("บันทึกข้อมูลอุปกรณ์เรียบร้อยแล้ว");
       router.push("/dashboard/assets");
       router.refresh();
-    } catch (error) {
-      toast.error("ไม่สามารถบันทึกได้ กรุณาลองใหม่อีกครั้ง");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "ไม่สามารถบันทึกได้ กรุณาลองใหม่อีกครั้ง";
+      toast.error(message);
     }
   };
 

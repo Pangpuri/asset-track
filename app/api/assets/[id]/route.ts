@@ -30,12 +30,13 @@ export async function PATCH(
     const { id } = await params;
     const body = await req.json();
 
-    // 1. แยกค่า id, ค่าสเปก และค่าวันที่ออกมาจัดการพิเศษ
+    // 1. แยกค่าที่ต้องจัดการพิเศษออกมา
     const { 
       id: _, 
       computerName, ipAddress, monitorSize, 
       purchaseDate, warrantyExpire,
       assignedTo, // รับค่าจากหน้า Register
+      specifications: existingSpecs,
       ...rest 
     } = body;
 
@@ -43,26 +44,37 @@ export async function PATCH(
       return NextResponse.json({ error: "Missing id" }, { status: 400 });
     }
 
-    // 2. จัดกลุ่มข้อมูลลงใน specifications (JSONB) และรักษาข้อมูลเก่าไว้ถ้ามีการส่งมา
-    const specifications = {
-      ...(rest.specifications || {}),
-      ...(computerName && { computerName }),
-      ...(ipAddress && { ipAddress }),
-      ...(monitorSize && { monitorSize }),
+    // 2. จัดการข้อมูล specifications (JSONB)
+    // รวบรวมข้อมูลสเปกจาก root level ของ body มาใส่ใน object เดียวกัน
+    const updatedSpecs = {
+      ...(existingSpecs || {}),
+      ...(computerName !== undefined && { computerName }),
+      ...(ipAddress !== undefined && { ipAddress }),
+      ...(monitorSize !== undefined && { monitorSize }),
     };
+
+    // 3. เตรียมข้อมูลสำหรับการอัปเดต (กรองค่า undefined ออก)
+    const updateFields: any = {
+      ...rest,
+      specifications: updatedSpecs,
+      updatedAt: new Date(),
+    };
+
+    // แปลงวันที่เฉพาะเมื่อมีการส่งค่ามา และไม่เป็นค่าว่าง
+    if (purchaseDate !== undefined) {
+      updateFields.purchaseDate = purchaseDate && purchaseDate !== "" ? new Date(purchaseDate) : null;
+    }
+    if (warrantyExpire !== undefined) {
+      updateFields.warrantyExpire = warrantyExpire && warrantyExpire !== "" ? new Date(warrantyExpire) : null;
+    }
+    if (assignedTo !== undefined || rest.receivedBy !== undefined) {
+      updateFields.receivedBy = rest.receivedBy || assignedTo || null;
+    }
 
     // ทำการอัปเดตข้อมูลในฐานข้อมูล
     const updated = await db
       .update(assets)
-      .set({
-        ...rest,
-        receivedBy: rest.receivedBy || assignedTo || null, // Map ชื่อจากหน้า Register เข้า Column จริง
-        specifications, // บันทึกเข้า JSONB column
-        // ตรวจสอบว่าเป็นค่าว่างหรือไม่ก่อนสร้าง Date Object
-        purchaseDate: purchaseDate && purchaseDate !== "" ? new Date(purchaseDate) : null,
-        warrantyExpire: warrantyExpire && warrantyExpire !== "" ? new Date(warrantyExpire) : null,
-        updatedAt: new Date(), // อัปเดตเวลาล่าสุด
-      })
+      .set(updateFields)
       .where(eq(assets.id, id))
       .returning();
 

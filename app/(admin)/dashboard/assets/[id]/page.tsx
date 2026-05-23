@@ -56,7 +56,7 @@ export default function EditAssetPage() {
         // ตอนนี้ data เป็น {} ไม่ใช่ [] แล้ว
         setAssetData(data);
         
-        // แตกค่าจาก specifications ออกมาที่ root เพื่อให้ register() หาเจอ
+        // แตกค่าจาก specifications และดึงข้อมูลออกมาที่ root เพื่อให้ register() หาเจอ
         reset({
           ...data,
           computerName: data.specifications?.computerName || "",
@@ -107,15 +107,20 @@ export default function EditAssetPage() {
           <h1 className="text-lg font-black tracking-tight text-black">แก้ไข {assetData?.assetCode || "อุปกรณ์"}</h1>
         </div>
         <div className="flex gap-2">
+          {assetData?.status === "active" && (
+            <Button 
+              variant="ghost" 
+              className="text-orange-500 p-0 hover:bg-transparent"
+              onClick={() => setShowReplaceDialog(true)}
+            >
+              <RefreshCw className="h-5 w-5" />
+            </Button>
+          )}
           <Button 
-            variant="ghost" 
-            className="text-orange-500 p-0 hover:bg-transparent"
-            onClick={() => setShowReplaceDialog(true)}
-          >
-            <RefreshCw className="h-5 w-5" />
-          </Button>
-          <Button 
-            onClick={handleSubmit(onSubmit)}
+            onClick={handleSubmit(onSubmit, (err) => {
+              console.error("Validation Errors:", err);
+              toast.error("กรุณากรอกข้อมูลให้ครบถ้วนตามที่กำหนด");
+            })}
             disabled={isSubmitting}
             variant="ghost"
             className="text-blue-600 font-bold hover:bg-transparent p-0 ml-2"

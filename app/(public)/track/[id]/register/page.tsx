@@ -183,6 +183,7 @@ export default function RegisterPage() {
         location: data.location,
         department: data.department,
         assignedTo: data.assignedTo, // ส่งไปให้ API Map เป็น receivedBy
+        purchaseDate: data.actionDate, // ส่งวันที่ส่งมอบไปเป็นวันที่เริ่มครอบครองอุปกรณ์
         warrantyExpire: data.warrantyExpire ? new Date(data.warrantyExpire).toISOString() : null,
         status: "active",
       };
