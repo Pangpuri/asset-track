@@ -8,7 +8,7 @@ export default function Home() {
     <div className="bg-white min-h-screen">
       <main className="max-w-lg mx-auto w-full">             
         {/* Minimalist IG Feed Style */}
-        <div className="border-b border-zinc-100">          
+        <div className="border-b border-zinc-100 relative z-0">          
           <div className="p-4 flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-[2px]">
               <div className="w-full h-full rounded-full bg-white flex items-center justify-center">

@@ -43,7 +43,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-[100] w-full border-b border-zinc-200 bg-white/90 backdrop-blur-md">
+    <nav className="sticky top-0 z-[999] w-full border-b border-zinc-200 bg-white">
       <div className="container mx-auto flex h-14 items-center justify-between px-4 max-w-lg">
         {/* Left: Brand */}
         <Link href="/" className="flex items-center gap-2 active:opacity-60">
