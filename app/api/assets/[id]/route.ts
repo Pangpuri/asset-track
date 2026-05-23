@@ -58,9 +58,9 @@ export async function PATCH(
         ...rest,
         receivedBy: rest.receivedBy || assignedTo || null, // Map ชื่อจากหน้า Register เข้า Column จริง
         specifications, // บันทึกเข้า JSONB column
-        // จัดการวันที่ให้เป็น Date Object หรือ null
-        purchaseDate: purchaseDate ? new Date(purchaseDate) : null,
-        warrantyExpire: warrantyExpire ? new Date(warrantyExpire) : null,
+        // ตรวจสอบว่าเป็นค่าว่างหรือไม่ก่อนสร้าง Date Object
+        purchaseDate: purchaseDate && purchaseDate !== "" ? new Date(purchaseDate) : null,
+        warrantyExpire: warrantyExpire && warrantyExpire !== "" ? new Date(warrantyExpire) : null,
         updatedAt: new Date(), // อัปเดตเวลาล่าสุด
       })
       .where(eq(assets.id, id))

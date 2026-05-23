@@ -21,6 +21,7 @@ const assetSchema = z.object({
   model: z.string().optional(),
   serialNumber: z.string().optional(),
   location: z.string().optional(),
+  vendor: z.string().optional(),
   computerName: z.string().optional(),
   monitorSize: z.string().optional(),
   warrantyExpire: z.string().optional(),
@@ -278,6 +279,10 @@ export default function AssetEntryPage() {
               <div className="space-y-2">
                 <Label className="text-xs text-gray-500 ml-1">ผู้ส่งมอบ</Label>
                 <Input id="deliveredBy" {...register("deliveredBy")} placeholder="ชื่อ IT" className="border-none bg-gray-50 h-12 rounded-xl font-bold" />
+              </div>
+              <div className="space-y-2 col-span-2">
+                <Label className="text-xs text-gray-500 ml-1">ผู้จัดจำหน่าย (Vendor)</Label>
+                <Input id="vendor" {...register("vendor")} placeholder="เช่น Advice, JIB" className="border-none bg-gray-50 h-12 rounded-xl font-bold" />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">

@@ -24,15 +24,18 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { assetCode, category, brand, model, serialNumber, location, computerName, monitorSize } = body;
+    const { 
+      assetCode, category, brand, model, serialNumber, location, 
+      computerName, monitorSize, ipAddress, vendor,
+      receivedBy, deliveredBy, purchaseDate, warrantyExpire
+    } = body;
 
     // เตรียมข้อมูล specifications ตามประเภท
-    const specifications: {
-      computerName?: string;
-      monitorSize?: string;
-    } = {};
-    if (category === "computer") specifications.computerName = computerName;
-    if (category === "monitor") specifications.monitorSize = monitorSize;
+    const specifications = {
+      ...(computerName && { computerName }),
+      ...(monitorSize && { monitorSize }),
+      ...(ipAddress && { ipAddress }),
+    };
 
     const newAsset = await db.insert(assets).values({
       assetCode,
@@ -42,7 +45,12 @@ export async function POST(req: Request) {
       serialNumber,
       location,
       specifications,
-      status: "active",
+      vendor,
+      receivedBy,
+      deliveredBy,
+      purchaseDate: purchaseDate && purchaseDate !== "" ? new Date(purchaseDate) : null,
+      warrantyExpire: warrantyExpire && warrantyExpire !== "" ? new Date(warrantyExpire) : null,
+      status: body.status || "active",
     }).returning();
 
     return NextResponse.json(newAsset[0]);
