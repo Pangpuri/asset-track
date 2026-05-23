@@ -3,10 +3,46 @@ import { db } from "@/db";
 import { assets } from "@/db/schema/assets";
 import { eq } from "drizzle-orm";
 
-export async function DELETE(req: Request) {
+// Method สำหรับแก้ไขข้อมูล (Update)
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get("id");
+    const { id } = await params;
+    const body = await req.json();
+
+    if (!id) {
+      return NextResponse.json({ error: "Missing id" }, { status: 400 });
+    }
+
+    // ทำการอัปเดตข้อมูลในฐานข้อมูล
+    const updated = await db
+      .update(assets)
+      .set({
+        ...body,
+        updatedAt: new Date(), // อัปเดตเวลาล่าสุด
+      })
+      .where(eq(assets.id, id))
+      .returning();
+
+    if (updated.length === 0) {
+      return NextResponse.json({ error: "Asset not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, data: updated[0] });
+  } catch (error) {
+    console.error("Error updating asset:", error);
+    return NextResponse.json({ error: "Failed to update asset" }, { status: 500 });
+  }
+}
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json({ error: "Missing id" }, { status: 400 });
