@@ -71,11 +71,11 @@ export default function RegisterPage() {
   useEffect(() => {
     const fetchAsset = async () => {
       try {
-        const res = await fetch(`/api/assets?id=${assetId}`);
+        // เปลี่ยนมาใช้ endpoint ตรงที่คืนค่าเป็น Object {} ตัวเดียว
+        const res = await fetch(`/api/assets/${assetId}`, { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
           setAsset(data);
-          if (data.assetCode) setValue("assetCode", data.assetCode);
           if (data.category) setValue("category", data.category);
           if (data.brand) setValue("brand", data.brand);
           if (data.model) setValue("model", data.model);
@@ -97,12 +97,15 @@ export default function RegisterPage() {
     let stream: MediaStream | null = null;
 
     const startBarcodeDetection = async (videoElement: HTMLVideoElement) => {
-      if (!('BarcodeDetector' in window)) return;
+      if (!('BarcodeDetector' in window)) {
+        toast.error("เบราว์เซอร์นี้ไม่รองรับการสแกนบาร์โค้ด กรุณาใช้ Chrome บน Android");
+        return;
+      }
 
       const startTime = Date.now();
 
-      // Regex for common serial number patterns (alphanumeric, hyphens, min 5 chars)
-      const serialNumberRegex = /^[a-zA-Z0-9-]{5,}$/;
+      // ปรับ Regex ให้ยืดหยุ่นขึ้น (ยอมรับ . และ _ และเริ่มที่ 3 ตัวอักษร)
+      const serialNumberRegex = /^[a-zA-Z0-9-_.]{3,}$/;
 
       // BarcodeDetector API is not yet part of the standard TypeScript DOM library types.
       const barcodeDetector = new (window as any).BarcodeDetector({
@@ -177,6 +180,9 @@ export default function RegisterPage() {
         brand: data.brand,
         model: data.model,
         serialNumber: data.serialNumber,
+        location: data.location,
+        department: data.department,
+        assignedTo: data.assignedTo, // ส่งไปให้ API Map เป็น receivedBy
         warrantyExpire: data.warrantyExpire ? new Date(data.warrantyExpire).toISOString() : null,
         status: "active",
       };

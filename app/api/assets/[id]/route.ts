@@ -35,6 +35,7 @@ export async function PATCH(
       id: _, 
       computerName, ipAddress, monitorSize, 
       purchaseDate, warrantyExpire,
+      assignedTo, // รับค่าจากหน้า Register (ถ้ามี)
       ...rest 
     } = body;
 
@@ -54,10 +55,11 @@ export async function PATCH(
       .update(assets)
       .set({
         ...rest,
+        receivedBy: rest.receivedBy || assignedTo, // ถ้าส่ง assignedTo มาให้ใช้เป็น receivedBy
         specifications, // บันทึกเข้า JSONB column
         // ป้องกัน Error หากวันที่เป็นค่าว่าง
         purchaseDate: purchaseDate && purchaseDate !== "" ? new Date(purchaseDate) : null,
-        warrantyExpire: warrantyExpire ? new Date(warrantyExpire) : null,
+        warrantyExpire: warrantyExpire && warrantyExpire !== "" ? new Date(warrantyExpire) : null,
         updatedAt: new Date(), // อัปเดตเวลาล่าสุด
       })
       .where(eq(assets.id, id))

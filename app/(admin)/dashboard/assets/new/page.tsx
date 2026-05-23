@@ -44,6 +44,7 @@ export default function AssetEntryPage() {
   });
 
   const selectedCategory = watch("category");
+  const statusValue = watch("status");
 
   // State สำหรับ OCR Scanner
   const [isScannerOpen, setScannerOpen] = useState(false);
@@ -58,15 +59,15 @@ export default function AssetEntryPage() {
     const startBarcodeDetection = async (videoElement: HTMLVideoElement) => {
       // ตรวจสอบว่า Browser รองรับ BarcodeDetector หรือไม่
       if (!('BarcodeDetector' in window)) {
-        console.warn("BarcodeDetector is not supported on this browser");
+        toast.error("เบราว์เซอร์ของคุณไม่รองรับการสแกนบาร์โค้ด");
         return;
       }
 
       // ให้เวลาผู้ใช้เล็ง 1.5 วินาทีก่อนเริ่มสแกนครั้งแรก
       const startTime = Date.now();
 
-      // Regex for common serial number patterns (alphanumeric, hyphens, min 5 chars)
-      const serialNumberRegex = /^[a-zA-Z0-9-]{5,}$/;
+      // ปรับ Regex ให้รองรับ S/N ได้หลากหลายขึ้น
+      const serialNumberRegex = /^[a-zA-Z0-9-_.]{3,}$/;
 
       // BarcodeDetector API is not yet part of the standard TypeScript DOM library types.
       const barcodeDetector = new (window as any).BarcodeDetector({
@@ -183,7 +184,7 @@ export default function AssetEntryPage() {
 
             <div className="space-y-2">
               <Label htmlFor="category" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">ประเภทอุปกรณ์ *</Label>
-              <Select onValueChange={(value) => setValue("category", value as string)}>
+              <Select value={selectedCategory} onValueChange={(value) => setValue("category", value as string)}>
                 <SelectTrigger className="border-none bg-gray-50 h-14 rounded-2xl text-base font-bold">
                   <SelectValue placeholder="ระบุประเภท" />
                 </SelectTrigger>
@@ -202,7 +203,7 @@ export default function AssetEntryPage() {
           {/* Section: Status & Condition - สำคัญมากสำหรับการติดตามทรัพย์สิน */}
           <div className="space-y-2">
             <Label htmlFor="status" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">สถานะอุปกรณ์</Label>
-            <Select defaultValue="active" onValueChange={(value) => setValue("status", value ?? undefined)}>
+            <Select value={statusValue} onValueChange={(value) => setValue("status", value ?? undefined)}>
               <SelectTrigger className="border-none bg-gray-50 h-14 rounded-2xl text-base font-bold">
                 <SelectValue placeholder="เลือกสถานะ" />
               </SelectTrigger>
@@ -269,9 +270,15 @@ export default function AssetEntryPage() {
           {/* Section 4: Delivery */}
           <div className="border-t border-gray-50 pt-8 space-y-6 pb-10">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">การส่งมอบ</p>
-            <div className="space-y-2">
-              <Label className="text-xs text-gray-500 ml-1">ผู้รับมอบ/ผู้ใช้งาน</Label>
-              <Input id="receivedBy" {...register("receivedBy")} placeholder="ชื่อพนักงาน" className="border-none bg-gray-50 h-12 rounded-xl font-bold" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs text-gray-500 ml-1">ผู้รับมอบ/ผู้ใช้งาน</Label>
+                <Input id="receivedBy" {...register("receivedBy")} placeholder="ชื่อพนักงาน" className="border-none bg-gray-50 h-12 rounded-xl font-bold" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs text-gray-500 ml-1">ผู้ส่งมอบ</Label>
+                <Input id="deliveredBy" {...register("deliveredBy")} placeholder="ชื่อ IT" className="border-none bg-gray-50 h-12 rounded-xl font-bold" />
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
                <div className="space-y-2">

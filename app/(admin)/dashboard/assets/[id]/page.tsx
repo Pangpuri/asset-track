@@ -60,6 +60,9 @@ export default function EditAssetPage() {
         reset({
           ...data,
           ...data.specifications, // ดึง computerName, ipAddress ฯลฯ ออกมา
+          // ตรวจสอบชื่อฟิลด์ให้ตรงกับที่ใช้ใน register(...)
+          receivedBy: data.receivedBy || "",
+          deliveredBy: data.deliveredBy || "",
           purchaseDate: data.purchaseDate ? new Date(data.purchaseDate).toISOString().split('T')[0] : "",
           warrantyExpire: data.warrantyExpire ? new Date(data.warrantyExpire).toISOString().split('T')[0] : "",
         });
