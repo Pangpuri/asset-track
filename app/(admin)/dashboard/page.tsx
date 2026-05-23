@@ -130,9 +130,9 @@ export default async function DashboardPage() {
           {/* Status Column (Left/Top) */}
           <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
             {statusCards.map((card) => (
-              <Link key={card.title} href={card.href} className="group">
-                <div className={`h-full p-6 bg-white border border-zinc-200 rounded-[2rem] shadow-sm hover:shadow-md transition-all duration-300`}>
-                  <div className={`w-10 h-10 bg-zinc-50 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>
+              <Link key={card.title} href={card.href} className="group active:scale-95 transition-transform">
+                <div className={`h-full p-6 bg-white border border-zinc-100 rounded-[2.5rem] shadow-sm hover:border-zinc-300 transition-all duration-300`}>
+                  <div className={`w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center mb-6`}>
                     <card.icon className={`${card.color}`} size={24} />
                   </div>
                   <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{card.title}</p>
@@ -141,13 +141,13 @@ export default async function DashboardPage() {
               </Link>
             ))}
 
-            {/* Summary Statistics Card with IG Border */}
-            <div className="md:col-span-3 p-[2px] rounded-[2.5rem] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 shadow-lg shadow-pink-500/10">
-              <div className="p-8 bg-white rounded-[2.4rem] overflow-hidden relative group">
+            {/* Summary Card with IG Story Border */}
+            <div className="md:col-span-3 p-[3px] rounded-[3rem] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600">
+              <div className="p-10 bg-white rounded-[2.8rem] overflow-hidden relative group">
                 <Package className="absolute -right-8 -bottom-8 w-64 h-64 text-zinc-100 rotate-12" />
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div className="space-y-2">
-                    <h3 className="text-2xl font-black text-zinc-900">ความสมบูรณ์ของข้อมูล</h3>
+                    <h3 className="text-3xl font-black text-zinc-900">ความสมบูรณ์ของข้อมูล</h3>
                     <p className="text-zinc-500 text-sm max-w-md">ตรวจสอบข้อมูลทรัพย์สินเพื่อให้ระบบรายงานผลได้อย่างแม่นยำ</p>
                   </div>
                   <Link href="/dashboard/assets?filter=incomplete">

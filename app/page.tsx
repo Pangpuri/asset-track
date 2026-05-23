@@ -19,11 +19,11 @@ export default function Home() {
           </div>
 
           <Link href="/scan">
-            <div className="aspect-square bg-zinc-50 flex flex-col items-center justify-center gap-6 group active:opacity-95 transition-all relative overflow-hidden border-y border-zinc-200">
+            <div className="aspect-square bg-white flex flex-col items-center justify-center gap-6 group active:opacity-95 transition-all relative overflow-hidden border-y border-zinc-100">
               {/* IG Story Style Border for Scan Button */}
-              <div className="p-[3px] rounded-[2.5rem] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 shadow-xl shadow-pink-500/20 group-hover:scale-105 transition-transform">
-                <div className="w-32 h-32 rounded-[2.4rem] bg-white flex flex-col items-center justify-center gap-2">
-                  <QrCode size={48} strokeWidth={1.5} className="text-zinc-900" />
+              <div className="p-[4px] rounded-[3.5rem] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 shadow-2xl shadow-pink-500/20 group-hover:scale-105 transition-transform">
+                <div className="w-40 h-40 rounded-[3.2rem] bg-white flex flex-col items-center justify-center gap-2 border-[4px] border-white">
+                  <QrCode size={64} strokeWidth={1.2} className="text-zinc-900" />
                 </div>
               </div>
               <div className="text-center">
