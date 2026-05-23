@@ -55,20 +55,25 @@ export default function BulkPrintPage() {
                 .no-print { display: none; }
               }
               body { font-family: sans-serif; margin: 0; padding: 20px; }
-              .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+              .grid { display: grid; grid-template-columns: repeat(auto-fill, 170px); gap: 10px; }
               .sticker { 
-                width: 300px; 
-                border: 2px solid black; 
-                padding: 10px; 
+                width: 170px; 
+                height: 95px;
+                border: 1px solid black; 
+                padding: 5px; 
                 text-align: center;
                 page-break-inside: avoid;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                box-sizing: border-box;
               }
-              .sticker-header { display: flex; align-items: center; justify-content: center; gap: 15px; }
-              .qr-img { width: 120px; }
+              .sticker-header { display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; }
+              .qr-img { width: 65px; height: 65px; }
               .asset-info { text-align: left; }
-              .label { font-size: 14px; font-weight: bold; }
-              .value { font-size: 18px; font-weight: bold; color: #666; }
-              .footer { margin-top: 10px; border-top: 1px solid #ccc; padding-top: 5px; font-size: 12px; font-weight: bold; }
+              .label { font-size: 8px; font-weight: bold; color: #666; }
+              .value { font-size: 12px; font-weight: bold; color: black; line-height: 1.1; }
+              .footer { border-top: 0.5px solid #eee; padding-top: 2px; font-size: 8px; font-weight: bold; }
             </style>
           </head>
           <body>
@@ -155,23 +160,23 @@ export default function BulkPrintPage() {
                 <p>ยังไม่มีการสร้าง QR Code</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-[600px] overflow-auto p-2" id="printable-area">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[600px] overflow-auto p-2" id="printable-area">
                 {generatedQRs.map((qr, index) => (
-                  <div key={qr.id} className="sticker border-2 border-black p-3 rounded-lg bg-white shadow-sm">
-                    <div className="sticker-header flex items-center justify-center gap-4">
-                      <img src={qr.qrData} alt="QR" className="qr-img w-[100px]" />
+                  <div key={qr.id} className="sticker border border-black p-2 rounded bg-white shadow-sm w-[170px] h-[95px] flex flex-col justify-between mx-auto">
+                    <div className="sticker-header flex items-center justify-center gap-2 flex-1">
+                      <img src={qr.qrData} alt="QR" className="qr-img w-[65px] h-[65px]" />
                       <div className="asset-info text-left">
-                        <div className="label text-[12px] font-bold">AssetID</div>
-                        <div className="value text-[14px] font-mono font-bold break-all opacity-50 uppercase">
-                          NEW-QR
+                        <div className="label text-[8px] font-bold text-gray-500 uppercase">ฝ่าย MIS</div>
+                        <div className="value text-[11px] font-mono font-bold break-all uppercase leading-tight">
+                          MIS-QR
                         </div>
-                        <div className="text-[10px] text-muted-foreground mt-1">
-                          ID: {qr.id.substring(0, 8)}...
+                        <div className="text-[6px] text-muted-foreground mt-0.5">
+                          ID: {qr.id.substring(0, 8)}
                         </div>
                       </div>
                     </div>
-                    <div className="footer mt-2 border-t border-gray-200 pt-2 text-[10px] font-bold text-center">
-                      พัฒนาโดยฝ่าย MIS
+                    <div className="footer border-t border-gray-100 pt-1 text-[8px] font-bold text-center text-gray-400">
+                      ฝ่าย MIS
                     </div>
                   </div>
                 ))}

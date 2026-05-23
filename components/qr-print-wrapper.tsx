@@ -48,13 +48,11 @@ export function QRPrintWrapper({ qrData, assetCode }: QRPrintWrapperProps) {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '15px' }}>
             <img src={qrData} alt="QR" style={{ width: '120px' }} />
             <div style={{ textAlign: 'left' }}>
-              <div style={{ fontSize: '14px', fontWeight: 'bold' }}>AssetID</div>
+              <div style={{ fontSize: '14px', fontWeight: 'bold' }}>ฝ่าย MIS</div>
               <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{assetCode}</div>
             </div>
           </div>
-          <div style={{ marginTop: '10px', borderTop: '1px solid #ccc', paddingTop: '5px', fontSize: '12px', fontWeight: 'bold' }}>
-            พัฒนาโดยฝ่าย MIS
-          </div>
+          
         </div>
       </div>
     </>

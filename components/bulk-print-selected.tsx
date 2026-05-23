@@ -28,14 +28,14 @@ export function BulkPrintSelected({ selectedAssets, onClear }: BulkPrintSelected
     if (windowPrint) {
       const stickersHTML = selectedAssets.map(asset => `
         <div class="sticker">
-          <div class="sticker-header">
-            <img src="${asset.qrData}" alt="QR" class="qr-img" />
-            <div class="asset-info">
-              <div class="label">AssetID</div>
-              <div class="value">${asset.assetCode || "NEW-QR"}</div>
+            <div class="sticker-header">
+              <img src="${asset.qrData}" alt="QR" class="qr-img" />
+              <div class="asset-info">
+                <div class="label">AssetID</div>
+                <div class="value">${asset.assetCode || "NEW-QR"}</div>
+              </div>
             </div>
-          </div>
-          <div class="footer">พัฒนาโดยฝ่าย MIS</div>
+            <div class="footer">ฝ่าย MIS</div>
         </div>
       `).join('');
 
@@ -45,26 +45,26 @@ export function BulkPrintSelected({ selectedAssets, onClear }: BulkPrintSelected
             <title>Print Bulk QR Codes</title>
             <style>
               body { font-family: sans-serif; margin: 0; padding: 20px; }
-              .grid { 
-                display: grid; 
-                grid-template-columns: repeat(2, 1fr); 
-                gap: 20px; 
-              }
+              .grid { display: grid; grid-template-columns: repeat(auto-fill, 170px); gap: 10px; }
               .sticker { 
-                width: 300px; 
-                border: 2px solid black; 
-                padding: 10px; 
+                width: 170px; 
+                height: 95px;
+                border: 1px solid black; 
+                padding: 5px; 
                 text-align: center;
                 page-break-inside: avoid;
-                margin-bottom: 10px;
                 background: white;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                box-sizing: border-box;
               }
-              .sticker-header { display: flex; align-items: center; justify-content: center; gap: 15px; }
-              .qr-img { width: 120px; }
+              .sticker-header { display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; }
+              .qr-img { width: 65px; height: 65px; }
               .asset-info { text-align: left; }
-              .label { font-size: 14px; font-weight: bold; }
-              .value { font-size: 24px; font-weight: bold; color: black; }
-              .footer { margin-top: 10px; border-top: 1px solid #ccc; padding-top: 5px; font-size: 12px; font-weight: bold; }
+              .label { font-size: 8px; font-weight: bold; color: #666; }
+              .value { font-size: 14px; font-weight: bold; color: black; }
+              .footer { border-top: 0.5px solid #eee; padding-top: 2px; font-size: 8px; font-weight: bold; }
               @media print {
                 .no-print { display: none; }
               }
