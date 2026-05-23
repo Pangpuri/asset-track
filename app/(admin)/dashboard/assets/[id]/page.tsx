@@ -53,9 +53,10 @@ export default function EditAssetPage() {
         const data = await res.json();
         setAssetData(data);
         
-        // ปรับ Format วันที่ให้เข้ากับ Input type="date" (YYYY-MM-DD)
+        // แตกค่าจาก specifications ออกมาที่ root เพื่อให้ register() หาเจอ
         reset({
           ...data,
+          ...data.specifications, // ดึง computerName, ipAddress ฯลฯ ออกมา
           purchaseDate: data.purchaseDate ? new Date(data.purchaseDate).toISOString().split('T')[0] : "",
           warrantyExpire: data.warrantyExpire ? new Date(data.warrantyExpire).toISOString().split('T')[0] : "",
         });

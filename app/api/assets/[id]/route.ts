@@ -11,18 +11,36 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    // แยก id ออกจาก body เพื่อป้องกันการ update primary key ทับตัวเอง
-    const { id: _, ...updateData } = await req.json();
+    const body = await req.json();
+
+    // 1. แยกค่า id และค่าที่จะเก็บใน specifications ออกมา
+    const { 
+      id: _, 
+      computerName, ipAddress, monitorSize, 
+      purchaseDate, warrantyExpire,
+      ...rest 
+    } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Missing id" }, { status: 400 });
     }
 
+    // 2. จัดกลุ่มข้อมูลเฉพาะทางลงใน specifications (JSONB)
+    const specifications = {
+      ...(computerName && { computerName }),
+      ...(ipAddress && { ipAddress }),
+      ...(monitorSize && { monitorSize }),
+    };
+
     // ทำการอัปเดตข้อมูลในฐานข้อมูล
     const updated = await db
       .update(assets)
       .set({
-        ...updateData,
+        ...rest,
+        specifications, // บันทึกเข้า JSONB column
+        // แปลง string เป็น Date object
+        purchaseDate: purchaseDate ? new Date(purchaseDate) : null,
+        warrantyExpire: warrantyExpire ? new Date(warrantyExpire) : null,
         updatedAt: new Date(), // อัปเดตเวลาล่าสุด
       })
       .where(eq(assets.id, id))
