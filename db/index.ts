@@ -1,9 +1,6 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import * as schema from "./schema/assets";
-import * as logsSchema from "./schema/logs";
-import * as servicesSchema from "./schema/services";
-import * as relations from "./schema/relations";
+import * as schema from "./schema/index";
 
 const connectionString = process.env.DATABASE_URL || "";
 
@@ -19,12 +16,4 @@ const client = postgres(connectionString, {
   connect_timeout: 10, // timeout ถ้าเชื่อมต่อไม่ได้ใน 10 วินาที
 });
 
-// รวมทุก schema เข้าด้วยกัน
-const allSchema = {
-  ...schema,
-  ...logsSchema,
-  ...servicesSchema,
-  ...relations,
-};
-
-export const db = drizzle(client, { schema: allSchema });
+export const db = drizzle(client, { schema });

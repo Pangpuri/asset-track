@@ -1,6 +1,6 @@
 import { db } from "../db";
-import { assets } from "../db/schema/assets";
-import { sql } from "drizzle-orm";
+import { assets } from "../db/schema";
+import { eq } from "drizzle-orm";
 
 async function testWrite() {
   console.log("🚀 Testing database write to Supabase...");

@@ -1,9 +1,7 @@
-import { pgTable, text, timestamp, uuid, varchar, pgEnum, jsonb, boolean, foreignKey } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, uuid, varchar, pgEnum, jsonb, decimal } from "drizzle-orm/pg-core";
 import { assets } from "./assets";
 
-/**
- * Enum สำหรับสถานะของตั๋ว Service
- */
+// สถานะของตั๋วแจ้งซ่อม/บริการ
 export const serviceStatusEnum = pgEnum("service_status", [
   "pending",     // รอดำเนินการ
   "in_progress", // กำลังซ่อม
@@ -12,9 +10,7 @@ export const serviceStatusEnum = pgEnum("service_status", [
   "on_hold"      // หยุดไว้ชั่วคราว
 ]);
 
-/**
- * Enum ระดับความสำคัญ
- */
+// ระดับความสำคัญ
 export const priorityEnum = pgEnum("priority", [
   "low",
   "medium",
@@ -22,61 +18,35 @@ export const priorityEnum = pgEnum("priority", [
   "critical"
 ]);
 
-/**
- * ตารางการร้องเรียน/แจ้งซ่อม (Services)
- * เก็บตั๋วแจ้งปัญหาและการแก้ไขจากผู้ใช้
- */
-export const services = pgTable(
-  "services",
-  {
-    id: uuid("id").defaultRandom().primaryKey(),
-    assetId: uuid("asset_id").notNull(),
-    
-    // ข้อมูลการร้องเรียน
-    title: varchar("title", { length: 200 }).notNull(), // ชื่อปัญหา เช่น "หน้าจออเสียหาย"
-    description: text("description"), // รายละเอียดปัญหา
-    
-    // ประเภท
-    serviceType: varchar("service_type", { length: 50 }).notNull(), // complaint, maintenance, repair, replacement
-    
-    // ข้อมูลการแจ้ง
-    reportedBy: varchar("reported_by", { length: 100 }).notNull(), // ชื่อผู้แจ้ง
-    reportedAt: timestamp("reported_at").defaultNow().notNull(), // วันเวลาที่แจ้ง
-    
-    // สถานที่
-    location: text("location"), // ตำแหน่งอุปกรณ์ (แผนก, หรือจุด)
-    
-    // ข้อมูลการดำเนินการ
-    status: serviceStatusEnum("status").default("pending").notNull(),
-    priority: priorityEnum("priority").default("medium"),
-    
-    assignedTo: varchar("assigned_to", { length: 100 }), // ผู้รับผิดชอบซ่อม
-    assignedAt: timestamp("assigned_at"),
-    
-    resolvedBy: varchar("resolved_by", { length: 100 }), // ผู้ที่แก้ไข
-    resolvedAt: timestamp("resolved_at"), // วันเวลาที่แก้ไข
-    
-    // บันทึกการแก้ไข
-    resolutionNotes: text("resolution_notes"), // บันทึกอะไรเป็นอะไร/แก้ไขยังไง
-    repairCost: varchar("repair_cost", { length: 50 }), // ค่าซ่อม (ถ้ามี)
-    
-    // ภาพและเอกสารเพิ่มเติม (เก็บเป็น JSON)
-    attachments: jsonb("attachments").$type<{
-      images?: string[]; // URLs ของรูปภาพ
-      files?: string[];  // URLs ของไฟล์เอกสาร
-    }>(),
-    
-    // สถานะการแจ้งเตือน
-    notificationSent: boolean("notification_sent").default(false),
-    
-    // การติดตามเวลา
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  },
-  (table) => [
-    foreignKey({
-      columns: [table.assetId],
-      foreignColumns: [assets.id],
-    }).onDelete("cascade"),
-  ]
-);
+// 2.4 ตารางแจ้งซ่อม/บริการ (Services)
+export const services = pgTable("services", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  assetId: uuid("asset_id").references(() => assets.id, { onDelete: "cascade" }).notNull(),
+  
+  // ข้อมูลการแจ้ง (จาก User)
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  reportedBy: varchar("reported_by", { length: 100 }).notNull(),
+  contactPhone: varchar("contact_phone", { length: 20 }),
+  currentLocation: text("current_location"), // ตำแหน่งที่พบปัญหา
+  
+  // ข้อมูลการจัดการ (สำหรับ Admin)
+  status: serviceStatusEnum("status").default("pending").notNull(),
+  priority: priorityEnum("priority").default("medium"),
+  
+  serviceType: varchar("service_type", { length: 50 }), // repair, maintenance, replace
+  
+  assignedTo: varchar("assigned_to", { length: 100 }), // ช่าง/Admin ที่รับงาน
+  resolutionNotes: text("resolution_notes"),        // บันทึกการแก้ไข
+  repairCost: decimal("repair_cost", { precision: 12, scale: 2 }),
+  
+  resolvedAt: timestamp("resolved_at"),
+  
+  // ภาพถ่าย (เก็บ URLs ใน JSONB)
+  attachments: jsonb("attachments").$type<{
+    images?: string[];
+  }>(),
+  
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});

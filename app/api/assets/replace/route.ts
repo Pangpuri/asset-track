@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
+import { assets, logs } from "@/db/schema";
 import { db } from "@/db";
-import { assets } from "@/db/schema/assets";
-import { logs } from "@/db/schema/logs";
 import { eq } from "drizzle-orm";
 
 export async function POST(req: Request) {
@@ -44,7 +43,7 @@ export async function POST(req: Request) {
       // 4. บันทึก Log สำหรับเครื่องเก่า
       await tx.insert(logs).values({
         assetId: oldAssetId,
-        action: "replaced",
+        action: "damage",
         notes: `ถูกเปลี่ยนออกโดยเครื่อง ${newAsset.assetCode || newAsset.id.substring(0,8)}. เหตุผล: ${reason || "ไม่ระบุ"}`,
         location: oldAsset.location,
       });
@@ -52,7 +51,7 @@ export async function POST(req: Request) {
       // 5. บันทึก Log สำหรับเครื่องใหม่
       await tx.insert(logs).values({
         assetId: newAssetId,
-        action: "replace_unit",
+        action: "transfer",
         notes: `นำมาเปลี่ยนแทนเครื่อง ${oldAsset.assetCode || oldAsset.id.substring(0,8)}`,
         location: oldAsset.location,
       });

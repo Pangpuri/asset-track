@@ -1,6 +1,5 @@
 import { db } from "@/db";
-import { assets } from "@/db/schema/assets";
-import { logs } from "@/db/schema/logs";
+import { assets, logs, employees } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
@@ -13,18 +12,14 @@ import {
   Calendar, 
   ShieldCheck, 
   Clock, 
-  Info,
-  Wrench,
-  User,
-  Hash,
+  Info, 
+  Wrench, 
+  User, 
+  Barcode, 
+  Activity, 
+  History, 
   Monitor,
-  Laptop,
-  Barcode,
-  Activity,
-  CalendarDays,
-  History,
-  AlertCircle,
-  LucideIcon
+  LucideIcon 
 } from "lucide-react";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
@@ -53,23 +48,30 @@ export default async function TrackAssetPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  
+
   // ตรวจสอบว่า ID เป็นรูปแบบ UUID ที่ถูกต้องหรือไม่ (ป้องกันการสแกน QR มั่ว)
-  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   if (!uuidRegex.test(id)) {
     notFound();
   }
 
   let asset;
   try {
-    // ดึงข้อมูล Asset และ Log ล่าสุด
-    asset = await db
-      .select()
-      .from(assets)
-      .where(eq(assets.id, id))
-      .limit(1)
-      .then((res) => res[0]);
+    // ดึงข้อมูล Asset และ Log ล่าสุด พร้อมพนักงานที่ได้รับมอบหมาย
+    asset = await db.query.assets.findFirst({
+      where: eq(assets.id, id),
+      with: {
+        logs: {
+          orderBy: [desc(logs.createdAt)],
+          limit: 1,
+          with: {
+            employee: true
+          }
+        }
+      }
+    });
   } catch (error) {
+    console.error("Fetch error:", error);
     notFound();
   }
 
@@ -81,13 +83,8 @@ export default async function TrackAssetPage({
     redirect(`/track/${id}/register`);
   }
 
-  const latestLog = await db
-    .select()
-    .from(logs)
-    .where(eq(logs.assetId, id))
-    .orderBy(desc(logs.createdAt))
-    .limit(1)
-    .then((res) => res[0]);
+  const latestLog = asset.logs?.[0];
+  const currentEmployee = latestLog?.employee;
 
   const statusColors: Record<string, string> = {
     active: "bg-green-500",
@@ -134,14 +131,14 @@ export default async function TrackAssetPage({
             <div className="absolute top-0 right-0 p-8 opacity-10">
               <QrCodeIcon size={120} />
             </div>
-            
+
             <div className="relative z-10">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-1">ยี่ห้อและรุ่น</p>
               <h2 className="text-3xl font-black uppercase leading-none mb-1">
                 {asset.brand || "ทั่วไป"}
               </h2>
               <p className="text-lg font-medium text-white/80">{asset.model || "ไม่ระบุรุ่น"}</p>
-              
+
               <div className="mt-8 flex items-center gap-2">
                 <div className="px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-sm">
                   <p className="text-[10px] font-bold tracking-tight uppercase">รหัส: {asset.assetCode || "---"}</p>
@@ -186,7 +183,7 @@ export default async function TrackAssetPage({
 
             <section>
               <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
-                <Cpu size={14} /> สเปกเครื่อง
+                <Activity size={14} /> สเปกเครื่อง
               </h3>
               <div className="bg-gray-50/50 rounded-3xl p-2 border border-gray-100">
                 <InfoRow label="ชื่อเครื่อง (Host)" value={specs.computerName} icon={Monitor} colorClass="text-indigo-500" />
@@ -202,21 +199,22 @@ export default async function TrackAssetPage({
                 <User size={14} /> ผู้ใช้งานปัจจุบัน
               </h3>
               <div className="bg-gray-50/50 rounded-3xl p-4 border border-gray-100">
-                {latestLog ? (
+                {currentEmployee ? (
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-black font-bold">
-                        {latestLog.assignedTo?.charAt(0).toUpperCase() || "?"}
+                        {currentEmployee.name?.charAt(0).toUpperCase() || "?"}
                       </div>
+
                       <div>
-                        <p className="text-sm font-bold text-gray-900">{latestLog.assignedTo || "ไม่ได้ระบุชื่อ"}</p>
-                        <p className="text-[10px] text-gray-500 font-medium">{latestLog.department || "ไม่ระบุแผนก"}</p>
+                        <p className="text-sm font-bold text-gray-900">{currentEmployee.name || "ไม่ได้ระบุชื่อ"}</p>
+                        <p className="text-[10px] text-gray-500 font-medium">{currentEmployee.department || "ไม่ระบุแผนก"}</p>
                       </div>
                     </div>
                     <div className="pt-2 border-t border-gray-100 flex justify-between items-center">
                       <span className="text-[10px] font-bold uppercase text-gray-400">เริ่มใช้งานเมื่อ</span>
                       <span className="text-[10px] font-black uppercase">
-                        {latestLog.deliveryDate ? format(new Date(latestLog.deliveryDate), "d MMM yyyy", { locale: th }) : "---"}
+                        {latestLog?.actionDate ? format(new Date(latestLog.actionDate), "d MMM yyyy", { locale: th }) : "---"}
                       </span>
                     </div>
                   </div>
@@ -231,7 +229,7 @@ export default async function TrackAssetPage({
 
             <section>
               <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
-                <CalendarDays size={14} /> วันที่สำคัญ
+                <Calendar size={14} /> วันที่สำคัญ
               </h3>
               <div className="bg-gray-50/50 rounded-3xl p-2 border border-gray-100">
                 <InfoRow 

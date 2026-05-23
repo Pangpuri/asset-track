@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { db } from "@/db";
-import { assets } from "@/db/schema/assets";
+import { assets } from "@/db/schema";
 
 async function seedData() {
   try {

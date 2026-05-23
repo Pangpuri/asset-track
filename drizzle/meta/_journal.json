@@ -8,6 +8,20 @@
       "when": 1779069949525,
       "tag": "0000_first_archangel",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1779499736692,
+      "tag": "0001_bitter_spencer_smythe",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779500700254,
+      "tag": "0002_parallel_celestials",
+      "breakpoints": true
     }
   ]
 }
