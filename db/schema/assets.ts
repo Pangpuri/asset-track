@@ -7,7 +7,6 @@ import { pgTable, text, timestamp, uuid, varchar, pgEnum, jsonb, boolean, decima
 // สถานะของอุปกรณ์
 export const assetStatusEnum = pgEnum("asset_status", [
   "active",      // ปกติ/กำลังใช้งาน
-  "maintenance", // กำลังซ่อม
   "broken",      // ชำรุด
   "lost",        // สูญหาย
   "retired",     // จำหน่ายออก/เลิกใช้งาน
@@ -21,7 +20,6 @@ export const actionTypeEnum = pgEnum("action_type", [
   "assign",    // ส่งมอบให้พนักงาน
   "transfer",  // ย้ายสถานที่/แผนก
   "return",    // คืนอุปกรณ์
-  "repair",    // ส่งซ่อม
   "damage",    // รายงานความเสียหาย
   "lost"       // รายงานสูญหาย
 ]);

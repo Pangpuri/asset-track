@@ -1,5 +1,5 @@
 import { db } from "@/db";
-import { assets, logs, employees } from "@/db/schema";
+import { assets } from "@/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
@@ -12,13 +12,13 @@ import {
   Calendar, 
   ShieldCheck, 
   Clock, 
-  Info, 
-  Wrench, 
+  Info,
   User, 
   Barcode, 
   Activity, 
   History, 
   Monitor,
+  QrCode,
   LucideIcon 
 } from "lucide-react";
 import { format } from "date-fns";
@@ -59,16 +59,7 @@ export default async function TrackAssetPage({
   try {
     // ดึงข้อมูล Asset และ Log ล่าสุด พร้อมพนักงานที่ได้รับมอบหมาย
     asset = await db.query.assets.findFirst({
-      where: eq(assets.id, id),
-      with: {
-        logs: {
-          orderBy: [desc(logs.createdAt)],
-          limit: 1,
-          with: {
-            employee: true
-          }
-        }
-      }
+      where: eq(assets.id, id)
     });
   } catch (error) {
     console.error("Fetch error:", error);
@@ -83,12 +74,8 @@ export default async function TrackAssetPage({
     redirect(`/track/${id}/register`);
   }
 
-  const latestLog = asset.logs?.[0];
-  const currentEmployee = latestLog?.employee;
-
   const statusColors: Record<string, string> = {
     active: "bg-green-500",
-    maintenance: "bg-amber-500",
     broken: "bg-red-500",
     lost: "bg-gray-900",
     retired: "bg-gray-400",
@@ -96,7 +83,6 @@ export default async function TrackAssetPage({
 
   const statusLabels: Record<string, string> = {
     active: "ใช้งานปกติ",
-    maintenance: "กำลังซ่อม",
     broken: "ชำรุด",
     lost: "สูญหาย",
     retired: "เลิกใช้งาน",
@@ -124,12 +110,14 @@ export default async function TrackAssetPage({
             <span className="text-[10px] font-black uppercase tracking-tighter">{statusLabels[asset.status] || asset.status}</span>
           </div>
         </div>
+        </div>
+
 
         <div className="p-4 space-y-6 pb-32">
           {/* Main Card - High Impact */}
           <div className="relative overflow-hidden p-6 rounded-[2.5rem] bg-black text-white shadow-2xl shadow-black/10">
             <div className="absolute top-0 right-0 p-8 opacity-10">
-              <QrCodeIcon size={120} />
+              <QrCode size={120} />
             </div>
 
             <div className="relative z-10">
@@ -151,11 +139,7 @@ export default async function TrackAssetPage({
           </div>
 
           {/* Quick Actions */}
-          <div className="grid grid-cols-2 gap-3">
-            <Link href={`/track/${id}/services`} className="flex flex-col items-center gap-2 p-4 rounded-3xl bg-red-50 border border-red-100 active:scale-95 transition-transform">
-              <Wrench className="text-red-500" size={24} />
-              <span className="text-[10px] font-black uppercase tracking-widest text-red-600">แจ้งซ่อม / ปัญหา</span>
-            </Link>
+          <div className="grid grid-cols-1 gap-3">
             <Link href={`/track/${id}/register`} className="flex flex-col items-center gap-2 p-4 rounded-3xl bg-indigo-50 border border-indigo-100 active:scale-95 transition-transform">
               <History className="text-indigo-500" size={24} />
               <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">แก้ไขข้อมูล</span>
@@ -178,6 +162,8 @@ export default async function TrackAssetPage({
                   icon={Calendar} 
                   colorClass="text-emerald-500" 
                 />
+                <InfoRow label="ผู้รับมอบ" value={asset.receivedBy} icon={User} colorClass="text-indigo-500" />
+                <InfoRow label="ผู้ส่งมอบ" value={asset.deliveredBy} icon={User} colorClass="text-gray-400" />
               </div>
             </section>
 
@@ -191,39 +177,6 @@ export default async function TrackAssetPage({
                 <InfoRow label="ขนาดจอ" value={specs.monitorSize} icon={Monitor} colorClass="text-purple-500" />
                 <InfoRow label="หน่วยความจำ (RAM)" value={specs.ram} icon={Cpu} colorClass="text-orange-500" />
                 <InfoRow label="ความจุ (Storage)" value={specs.storage} icon={Package} colorClass="text-slate-500" />
-              </div>
-            </section>
-
-            <section>
-              <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
-                <User size={14} /> ผู้ใช้งานปัจจุบัน
-              </h3>
-              <div className="bg-gray-50/50 rounded-3xl p-4 border border-gray-100">
-                {currentEmployee ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-black font-bold">
-                        {currentEmployee.name?.charAt(0).toUpperCase() || "?"}
-                      </div>
-
-                      <div>
-                        <p className="text-sm font-bold text-gray-900">{currentEmployee.name || "ไม่ได้ระบุชื่อ"}</p>
-                        <p className="text-[10px] text-gray-500 font-medium">{currentEmployee.department || "ไม่ระบุแผนก"}</p>
-                      </div>
-                    </div>
-                    <div className="pt-2 border-t border-gray-100 flex justify-between items-center">
-                      <span className="text-[10px] font-bold uppercase text-gray-400">เริ่มใช้งานเมื่อ</span>
-                      <span className="text-[10px] font-black uppercase">
-                        {latestLog?.actionDate ? format(new Date(latestLog.actionDate), "d MMM yyyy", { locale: th }) : "---"}
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="py-2 space-y-3">
-                    <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-3 py-1 rounded-full inline-block border border-amber-100">ไม่มีข้อมูลผู้ใช้</p>
-                    <p className="text-xs text-gray-400 font-medium italic">กรุณาอัปเดตข้อมูลเพื่อระบุตัวตนผู้ใช้</p>
-                  </div>
-                )}
               </div>
             </section>
 
@@ -255,41 +208,6 @@ export default async function TrackAssetPage({
           </div>
         </div>
 
-        {/* Floating Action Button for Mobile */}
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-lg px-6 z-30">
-          <Link href={`/track/${id}/services`}>
-            <Button className="w-full h-14 bg-black text-white rounded-2xl shadow-2xl shadow-black/20 font-black text-sm uppercase tracking-widest flex items-center justify-center gap-3 active:scale-95 transition-all">
-              <Wrench size={20} />
-              แจ้งปัญหา / แจ้งซ่อม
-            </Button>
-          </Link>
-        </div>
-      </div>
     </div>
-  );
-}
-
-function QrCodeIcon({ size, className }: { size: number, className?: string }) {
-  return (
-    <svg 
-      width={size} 
-      height={size} 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="1.5" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      className={className}
-    >
-      <rect x="3" y="3" width="7" height="7" />
-      <rect x="14" y="3" width="7" height="7" />
-      <rect x="14" y="14" width="7" height="7" />
-      <rect x="3" y="14" width="7" height="7" />
-      <path d="M7 7h.01" />
-      <path d="M17 7h.01" />
-      <path d="M17 17h.01" />
-      <path d="M7 17h.01" />
-    </svg>
   );
 }

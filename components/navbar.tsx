@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, 
   Package, 
-  Wrench, 
   FileBarChart, 
   Home as HomeIcon,
   QrCode,
@@ -36,11 +35,6 @@ const navItems = [
     title: "คลังอุปกรณ์",
     href: "/dashboard/assets",
     icon: Package,
-  },
-  {
-    title: "แจ้งซ่อม",
-    href: "/dashboard/services",
-    icon: Wrench,
   },
 ];
 

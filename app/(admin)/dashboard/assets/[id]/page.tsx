@@ -153,9 +153,9 @@ export default function EditAssetPage() {
                   <SelectContent className="rounded-2xl shadow-2xl border-none">
                     <SelectItem value="active">พร้อมใช้งาน</SelectItem>
                     <SelectItem value="pending">รอลงทะเบียน</SelectItem>
-                    <SelectItem value="maintenance">กำลังซ่อม</SelectItem>
                     <SelectItem value="broken">ชำรุด</SelectItem>
                     <SelectItem value="lost">สูญหาย</SelectItem>
+                    <SelectItem value="retired">เลิกใช้งาน</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -214,11 +214,9 @@ export default function AssetEntryPage() {
               </SelectTrigger>
               <SelectContent className="rounded-2xl border-gray-100 shadow-2xl bg-white z-[60]">
                 <SelectItem value="active">🟢 ใช้งานปกติ (Active)</SelectItem>
-                <SelectItem value="spare">🟡 สำรอง (Spare)</SelectItem>
-                <SelectItem value="repair">🟠 ส่งซ่อม (Under Repair)</SelectItem>
-                <SelectItem value="damaged">🔴 ชำรุด (Damaged)</SelectItem>
+                <SelectItem value="broken">🔴 ชำรุด (Broken)</SelectItem>
                 <SelectItem value="lost">⚪ หาย (Lost)</SelectItem>
-                <SelectItem value="disposed">✖️ ตัดจำหน่าย (Disposed)</SelectItem>
+                <SelectItem value="retired">✖️ ตัดจำหน่าย (Retired)</SelectItem>
               </SelectContent>
             </Select>
           </div>
