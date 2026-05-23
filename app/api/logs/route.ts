@@ -11,9 +11,10 @@ export async function POST(req: Request) {
       action,
       location,
       department,
-      assignedToId, // ใช้ ID พนักงาน
-      handledBy,    // เปลี่ยนจาก assignedBy เป็น handledBy
-      actionDate,   // เปลี่ยนจาก deliveryDate เป็น actionDate
+      assignedTo,   // ชื่อพนักงาน (String)
+      assignedToId, // ID พนักงาน (UUID)
+      handledBy,
+      actionDate,
       condition,
       notes,
     } = body;
@@ -27,6 +28,28 @@ export async function POST(req: Request) {
 
     // ใช้ Transaction เพื่อให้มั่นใจว่าบันทึกทั้ง Log และ Update Asset สำเร็จพร้อมกัน
     const result = await db.transaction(async (tx) => {
+      let finalAssignedToId = assignedToId;
+
+      // ถ้าไม่มี ID แต่มีชื่อมาให้ (กรณีจากหน้า Register สาธารณะ)
+      if (!finalAssignedToId && typeof assignedTo === "string" && assignedTo.trim() !== "") {
+        // ลองหาพนักงานจากชื่อ
+        const existingEmployee = await tx.query.employees.findFirst({
+          where: eq(employees.name, assignedTo)
+        });
+
+        if (existingEmployee) {
+          finalAssignedToId = existingEmployee.id;
+        } else {
+          // ถ้าไม่เจอ ให้สร้างพนักงานใหม่
+          const [newEmployee] = await tx.insert(employees).values({
+            name: assignedTo,
+            employeeId: `EMP-${Date.now()}`, // สร้าง ID ชั่วคราว
+            department: department,
+          }).returning();
+          finalAssignedToId = newEmployee.id;
+        }
+      }
+
       const [newLog] = await tx
         .insert(logs)
         .values({
@@ -34,7 +57,7 @@ export async function POST(req: Request) {
           action,
           location,
           department,
-          assignedToId,
+          assignedToId: finalAssignedToId,
           handledBy,
           actionDate: actionDate ? new Date(actionDate) : new Date(),
           condition,

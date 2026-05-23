@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, ArrowLeft, MoreHorizontal, Info, ShieldCheck, Camera, X, Scan } from "lucide-react";
+import { Loader2, ArrowLeft, MoreHorizontal, Info, ShieldCheck, Camera, X, Scan, Calendar } from "lucide-react";
 import Link from "next/link";
 
 const registerSchema = z.object({
@@ -20,9 +20,11 @@ const registerSchema = z.object({
   brand: z.string().optional(),
   model: z.string().optional(),
   serialNumber: z.string().optional(),
+  warrantyExpire: z.string().optional().or(z.literal("")),
   assignedTo: z.string().min(2, "โปรดระบุชื่อผู้ใช้งานหรือผู้รับผิดชอบ"),
   department: z.string().min(1, "กรุณาระบุแผนก"),
   location: z.string().min(1, "กรุณาระบุสถานที่ใช้งาน/จุดติดตั้ง"),
+  actionDate: z.string().optional().or(z.literal("")),
   assignedBy: z.string().optional(),
   notes: z.string().optional(),
 });
@@ -38,6 +40,7 @@ interface Asset {
   serialNumber: string | null;
   location: string | null;
   status: string;
+  warrantyExpire: string | null;
 }
 
 export default function RegisterPage() {
@@ -48,6 +51,9 @@ export default function RegisterPage() {
   // ย้าย useForm ขึ้นมาประกาศก่อนการเรียกใช้ใน useEffect
   const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
+    defaultValues: {
+      actionDate: new Date().toISOString().split('T')[0], // ค่าเริ่มต้นเป็นวันที่ปัจจุบัน
+    }
   });
 
   const [asset, setAsset] = useState<Asset | null>(null);
@@ -75,6 +81,7 @@ export default function RegisterPage() {
           if (data.model) setValue("model", data.model);
           if (data.serialNumber) setValue("serialNumber", data.serialNumber);
           if (data.location) setValue("location", data.location);
+          if (data.warrantyExpire) setValue("warrantyExpire", new Date(data.warrantyExpire).toISOString().split('T')[0]);
         }
       } catch (err) {
         console.error("Fetch Error:", err);
@@ -98,9 +105,7 @@ export default function RegisterPage() {
       const serialNumberRegex = /^[a-zA-Z0-9-]{5,}$/;
 
       // @ts-expect-error: BarcodeDetector API is not yet part of the standard TypeScript DOM library types.
-      // This is necessary because BarcodeDetector is a relatively new Web API and its types might not be
-      // fully integrated into the default 'dom' lib for all TypeScript versions.
-      const barcodeDetector = new window.BarcodeDetector({
+      const barcodeDetector = new (window as any).BarcodeDetector({
         formats: ['code_128', 'code_39', 'qr_code', 'ean_13']
       });
 
@@ -164,41 +169,40 @@ export default function RegisterPage() {
 
   const onSubmit = async (data: RegisterFormValues) => {
     try {
-      if (asset?.status === "pending") {
-        if (!data.assetCode || !data.category) {
-          toast.error("กรุณาระบุรหัสทรัพย์สินและประเภทอุปกรณ์");
-          return;
-        }
+      // 1. อัปเดตข้อมูล Asset (รวมวันหมดประกัน)
+      const assetUpdateBody = {
+        id: assetId,
+        assetCode: data.assetCode,
+        category: data.category,
+        brand: data.brand,
+        model: data.model,
+        serialNumber: data.serialNumber,
+        warrantyExpire: data.warrantyExpire ? new Date(data.warrantyExpire).toISOString() : null,
+        status: "active",
+      };
 
-        const assetUpdate = await fetch("/api/assets", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            id: assetId,
-            assetCode: data.assetCode,
-            category: data.category,
-            brand: data.brand,
-            model: data.model,
-            serialNumber: data.serialNumber,
-            status: "active",
-          }),
-        });
+      const assetUpdate = await fetch("/api/assets", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(assetUpdateBody),
+      });
 
-        if (!assetUpdate.ok) throw new Error("อัปเดตข้อมูลล้มเหลว");
-      }
+      if (!assetUpdate.ok) throw new Error("อัปเดตข้อมูลล้มเหลว");
 
+      // 2. บันทึก Log การส่งมอบ (รวมวันที่ส่งมอบและชื่อผู้รับ)
       const response = await fetch("/api/logs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           assetId,
           action: "assign",
-          assignedTo: data.assignedTo,
+          // สำหรับตอนนี้เราส่งชื่อไปก่อน แล้วให้ API จัดการเรื่อง Employee ID หรือเก็บเป็น Text
+          assignedTo: data.assignedTo, 
           department: data.department,
           location: data.location,
-          assignedBy: data.assignedBy,
+          handledBy: data.assignedBy || "User",
           notes: data.notes,
-          deliveryDate: new Date().toISOString(),
+          actionDate: data.actionDate ? new Date(data.actionDate).toISOString() : new Date().toISOString(),
         }),
       });
 
@@ -207,6 +211,7 @@ export default function RegisterPage() {
       toast.success("บันทึกข้อมูลเรียบร้อยแล้ว");
       router.push(`/track/${assetId}`);
     } catch (error) {
+      console.error("Submit error:", error);
       toast.error("ไม่สามารถบันทึกได้ กรุณาลองใหม่อีกครั้ง");
     }
   };
@@ -245,7 +250,7 @@ export default function RegisterPage() {
              <p className="text-xs text-gray-400 font-bold uppercase tracking-widest mt-2">ลงทะเบียนข้อมูลที่ปลอดภัย</p>
           </div>
 
-          {/* ส่วนที่ 1: รายละเอียดอุปกรณ์ - แสดงเสมอเพื่อให้แก้ไขข้อมูลได้ */}
+          {/* ส่วนที่ 1: รายละเอียดอุปกรณ์ */}
           <div className="space-y-6">
                <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
                   <span className="text-xs font-bold uppercase tracking-widest">{isPending ? "1. รายละเอียดอุปกรณ์" : "แก้ไขรายละเอียดอุปกรณ์"}</span>
@@ -283,24 +288,30 @@ export default function RegisterPage() {
                     </div>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <Label htmlFor="serialNumber" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Serial Number (พิมพ์หรือแสกน)</Label>
-                    <div className="flex items-center gap-2">
-                      <Input id="serialNumber" {...register("serialNumber")} placeholder="ระบุหรือสแกนรหัส S/N" className="h-11 border-gray-200 flex-1" />
-                      <Button 
-                        type="button" 
-                        variant="outline" 
-                        className="h-11 px-4 border-indigo-100 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-50 flex items-center gap-2 shrink-0"
-                        onClick={() => setScannerOpen(true)}
-                      >
-                        <Scan size={18} />
-                        <span className="text-sm font-bold">สแกน</span>
-                      </Button>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <Label htmlFor="serialNumber" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">Serial Number</Label>
+                      <div className="flex items-center gap-2">
+                        <Input id="serialNumber" {...register("serialNumber")} placeholder="ระบุ S/N" className="h-11 border-gray-200 flex-1" />
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          className="h-11 w-11 p-0 border-indigo-100 text-indigo-600 bg-indigo-50/50 hover:bg-indigo-50 shrink-0"
+                          onClick={() => setScannerOpen(true)}
+                        >
+                          <Scan size={18} />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label htmlFor="warrantyExpire" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">วันหมดประกัน</Label>
+                      <Input id="warrantyExpire" type="date" {...register("warrantyExpire")} className="h-11 border-gray-200" />
                     </div>
                   </div>
                </div>
           </div>
 
+          {/* ส่วนที่ 2: ข้อมูลการส่งมอบ */}
           <div className="space-y-6">
              <div className="flex items-center gap-2 border-b border-gray-100 pb-2">
                 <span className="text-xs font-bold uppercase tracking-widest">
@@ -323,6 +334,17 @@ export default function RegisterPage() {
                   <div className="space-y-1.5">
                     <Label htmlFor="location" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">สถานที่ติดตั้ง *</Label>
                     <Input id="location" {...register("location")} placeholder="เช่น ชั้น 3 ห้อง 302" className="h-11 border-gray-200" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="actionDate" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">วันที่ส่งมอบ</Label>
+                    <Input id="actionDate" type="date" {...register("actionDate")} className="h-11 border-gray-200" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="assignedBy" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">ผู้ส่งมอบ</Label>
+                    <Input id="assignedBy" {...register("assignedBy")} placeholder="ชื่อ Admin" className="h-11 border-gray-200" />
                   </div>
                 </div>
 
