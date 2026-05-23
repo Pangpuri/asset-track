@@ -29,13 +29,13 @@ async function getServiceTickets() {
         priority: services.priority,
         serviceType: services.serviceType,
         reportedBy: services.reportedBy,
-        reportedAt: services.reportedAt,
+        createdAt: services.createdAt,
         assetCode: assets.assetCode,
         category: assets.category,
       })
       .from(services)
       .leftJoin(assets, eq(services.assetId, assets.id))
-      .orderBy(desc(services.reportedAt));
+      .orderBy(desc(services.createdAt));
   } catch (error) {
     console.error("Error in getServiceTickets:", error);
     return [];
@@ -105,7 +105,7 @@ export default async function ServicesPage() {
               {tickets.map((ticket) => (
                 <TableRow key={ticket.id}>
                   <TableCell className="text-xs">
-                    {format(new Date(ticket.reportedAt), "dd MMM yy HH:mm", { locale: th })}
+                    {format(new Date(ticket.createdAt), "dd MMM yy HH:mm", { locale: th })}
                   </TableCell>
                   <TableCell>
                     <div className="font-mono font-bold text-blue-700">{ticket.assetCode}</div>

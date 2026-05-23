@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { logs, assets } from "@/db/schema";
-import { eq, sql, desc } from "drizzle-orm";
+import { logs, assets, employees } from "@/db/schema";
+import { eq, desc } from "drizzle-orm";
 
 export async function POST(req: Request) {
   try {
@@ -11,10 +11,10 @@ export async function POST(req: Request) {
       action,
       location,
       department,
-      assignedTo,
-      assignedBy,
-      deliveryDate,
-      returnDate,
+      assignedToId, // ใช้ ID พนักงาน
+      handledBy,    // เปลี่ยนจาก assignedBy เป็น handledBy
+      actionDate,   // เปลี่ยนจาก deliveryDate เป็น actionDate
+      condition,
       notes,
     } = body;
 
@@ -34,17 +34,21 @@ export async function POST(req: Request) {
           action,
           location,
           department,
-          assignedTo,
-          assignedBy,
-          deliveryDate: deliveryDate ? new Date(deliveryDate) : null,
-          returnDate: returnDate ? new Date(returnDate) : null,
+          assignedToId,
+          handledBy,
+          actionDate: actionDate ? new Date(actionDate) : new Date(),
+          condition,
           notes,
         })
         .returning();
 
-      // อัปเดตข้อมูลสถานที่และผู้ถือครองล่าสุดในตาราง Assets
+      // อัปเดตข้อมูลสถานที่และแผนกในตาราง Assets
       await tx.update(assets)
-        .set({ location: location, updatedAt: new Date() })
+        .set({ 
+          location: location, 
+          department: department,
+          updatedAt: new Date() 
+        })
         .where(eq(assets.id, assetId));
 
       return newLog;
@@ -72,12 +76,14 @@ export async function GET(req: Request) {
       );
     }
 
-    // ดึงประวัติทั้งหมดสำหรับ asset นี้
-    const result = await db
-      .select()
-      .from(logs)
-      .where(eq(logs.assetId, assetId as string))
-      .orderBy(desc(logs.createdAt));
+    // ดึงประวัติทั้งหมดสำหรับ asset นี้ พร้อมข้อมูลพนักงาน
+    const result = await db.query.logs.findMany({
+      where: eq(logs.assetId, assetId),
+      orderBy: [desc(logs.actionDate)],
+      with: {
+        employee: true
+      }
+    });
 
     return NextResponse.json(result);
   } catch (error) {

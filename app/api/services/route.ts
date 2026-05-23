@@ -11,16 +11,17 @@ export async function POST(req: Request) {
       title,
       description,
       serviceType,
-      location,
+      currentLocation, // เปลี่ยนจาก location เป็น currentLocation ให้ตรงตาม schema
       priority,
       reportedBy,
+      contactPhone,
       status,
     } = body;
 
-    if (!assetId || !title || !serviceType || !reportedBy) {
+    if (!assetId || !title || !reportedBy) {
       return NextResponse.json(
         {
-          error: "Missing required fields: assetId, title, serviceType, reportedBy",
+          error: "Missing required fields: assetId, title, reportedBy",
         },
         { status: 400 }
       );
@@ -33,12 +34,12 @@ export async function POST(req: Request) {
         title,
         description,
         serviceType,
-        location,
+        currentLocation,
+        contactPhone,
         priority: priority || "medium",
         reportedBy,
         status: status || "pending",
-        reportedAt: new Date(),
-        notificationSent: false,
+        createdAt: new Date(),
       })
       .returning();
 
@@ -75,7 +76,7 @@ export async function GET(req: Request) {
       query = query.where(and(...conditions));
     }
 
-    const result = await query.orderBy(desc(services.reportedAt));
+    const result = await query.orderBy(desc(services.createdAt));
 
     return NextResponse.json(result);
   } catch (error) {
