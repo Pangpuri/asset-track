@@ -75,7 +75,8 @@ export default function AssetsPage({
       if (searchParams.status) sp.append("status", searchParams.status);
       if (searchParams.q) sp.append("q", searchParams.q);
       
-      const res = await fetch(`/api/assets?${sp.toString()}`);
+      // เพิ่ม cache: "no-store" เพื่อไม่ให้ browser จำข้อมูลเก่า
+      const res = await fetch(`/api/assets?${sp.toString()}`, { cache: "no-store" });
       if (!res.ok) throw new Error();
       
       const data: RawAsset[] = await res.json();

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { assets } from "@/db/schema/assets";
 import { eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 
 // Method สำหรับแก้ไขข้อมูล (Update)
 export async function PATCH(
@@ -10,7 +11,8 @@ export async function PATCH(
 ) {
   try {
     const { id } = await params;
-    const body = await req.json();
+    // แยก id ออกจาก body เพื่อป้องกันการ update primary key ทับตัวเอง
+    const { id: _, ...updateData } = await req.json();
 
     if (!id) {
       return NextResponse.json({ error: "Missing id" }, { status: 400 });
@@ -20,7 +22,7 @@ export async function PATCH(
     const updated = await db
       .update(assets)
       .set({
-        ...body,
+        ...updateData,
         updatedAt: new Date(), // อัปเดตเวลาล่าสุด
       })
       .where(eq(assets.id, id))
@@ -29,6 +31,10 @@ export async function PATCH(
     if (updated.length === 0) {
       return NextResponse.json({ error: "Asset not found" }, { status: 404 });
     }
+
+    // ล้าง Cache เพื่อให้หน้า Dashboard และหน้าติดตามแสดงข้อมูลใหม่ทันที
+    revalidatePath("/dashboard/assets");
+    revalidatePath(`/track/${id}`);
 
     return NextResponse.json({ success: true, data: updated[0] });
   } catch (error) {
