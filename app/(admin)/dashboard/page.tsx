@@ -6,7 +6,12 @@ import {
   Package, 
   AlertTriangle, 
   CheckCircle2, 
-  Clock
+  Clock,
+  Monitor,
+  Printer,
+  Network,
+  Laptop,
+  MoreHorizontal
 } from "lucide-react";
 import Link from "next/link";
 
@@ -19,6 +24,12 @@ async function getStats() {
       active: sql<number>`count(*) filter (where ${assets.status} = 'active')::int`,
       broken: sql<number>`count(*) filter (where ${assets.status} = 'broken')::int`,
       pending: sql<number>`count(*) filter (where ${assets.status} = 'pending')::int`,
+      // แยกตามประเภท
+      computer: sql<number>`count(*) filter (where ${assets.category} = 'computer')::int`,
+      printer: sql<number>`count(*) filter (where ${assets.category} = 'printer')::int`,
+      monitor: sql<number>`count(*) filter (where ${assets.category} = 'monitor')::int`,
+      network: sql<number>`count(*) filter (where ${assets.category} = 'network')::int`,
+      other: sql<number>`count(*) filter (where ${assets.category} = 'other' or ${assets.category} is null)::int`,
     }).from(assets);
 
     return {
@@ -26,39 +37,46 @@ async function getStats() {
       active: stats?.active || 0,
       broken: stats?.broken || 0,
       pending: stats?.pending || 0,
+      categories: {
+        computer: stats?.computer || 0,
+        printer: stats?.printer || 0,
+        monitor: stats?.monitor || 0,
+        network: stats?.network || 0,
+        other: stats?.other || 0,
+      }
     };
   } catch (error) {
     console.error("Database error:", error);
-    return { total: 0, active: 0, broken: 0, pending: 0 };
+    return { 
+      total: 0, 
+      active: 0, 
+      broken: 0, 
+      pending: 0, 
+      categories: { computer: 0, printer: 0, monitor: 0, network: 0, other: 0 } 
+    };
   }
 }
 
 export default async function DashboardPage() {
   const stats = await getStats();
 
-  const cards = [
+  const statusCards = [
     {
-      title: "อุปกรณ์ทั้งหมด",
-      value: stats.total,
-      icon: Package,
-      color: "text-indigo-600",
-      bg: "bg-indigo-50",
-      href: "/dashboard/assets"
-    },
-    {
-      title: "ใช้งานปกติ",
+      title: "ใช้งานปกติ (Active)",
       value: stats.active,
       icon: CheckCircle2,
       color: "text-emerald-600",
-      bg: "bg-emerald-50",
+      borderColor: "border-emerald-100",
+      gradient: "from-emerald-50/50 to-white",
       href: "/dashboard/assets?status=active"
     },
     {
-      title: "ชำรุด/เสียหาย",
+      title: "ส่งซ่อม/ชำรุด",
       value: stats.broken,
       icon: AlertTriangle,
       color: "text-rose-600",
-      bg: "bg-rose-50",
+      borderColor: "border-rose-100",
+      gradient: "from-rose-50/50 to-white",
       href: "/dashboard/assets?status=broken"
     },
     {
@@ -66,33 +84,109 @@ export default async function DashboardPage() {
       value: stats.pending,
       icon: Clock,
       color: "text-amber-600",
-      bg: "bg-amber-50",
+      borderColor: "border-amber-100",
+      gradient: "from-amber-50/50 to-white",
       href: "/dashboard/assets?status=pending"
     }
   ];
 
-  return (
-    <div className="container mx-auto p-6 space-y-8">
-      <div className="space-y-1">
-        <h1 className="text-3xl font-black tracking-tight text-black flex items-center gap-3">
-          <LayoutDashboard className="h-8 w-8" />
-          Dashboard
-        </h1>
-        <p className="text-gray-500 font-medium">ภาพรวมระบบจัดการทรัพย์สินและอุปกรณ์</p>
-      </div>
+  const categoryItems = [
+    { label: "Computer / Laptop", value: stats.categories.computer, icon: Laptop, color: "bg-blue-500" },
+    { label: "Monitor", value: stats.categories.monitor, icon: Monitor, color: "bg-purple-500" },
+    { label: "Printer", value: stats.categories.printer, icon: Printer, color: "bg-orange-500" },
+    { label: "Network", value: stats.categories.network, icon: Network, color: "bg-cyan-500" },
+    { label: "อื่นๆ", value: stats.categories.other, icon: MoreHorizontal, color: "bg-slate-400" },
+  ];
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {cards.map((card) => (
-          <Link key={card.title} href={card.href}>
-            <div className="p-6 bg-white border border-gray-100 rounded-[2rem] hover:shadow-xl hover:shadow-indigo-500/5 transition-all group">
-              <div className={`w-12 h-12 ${card.bg} ${card.color} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                <card.icon size={24} />
+  return (
+    <div className="min-h-screen bg-slate-50/50 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3">
+              <div className="p-2 bg-black rounded-xl">
+                <LayoutDashboard className="h-7 w-7 text-white" />
               </div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-1">{card.title}</p>
-              <h2 className="text-3xl font-black text-black">{card.value}</h2>
+              Dashboard
+            </h1>
+            <p className="text-slate-500 font-medium ml-1">ระบบบริหารจัดการทรัพย์สินไอที (Asset Tracking)</p>
+          </div>
+          
+          <div className="bg-white px-6 py-3 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
+            <div className="p-2 bg-indigo-50 rounded-lg">
+              <Package className="h-5 w-5 text-indigo-600" />
             </div>
-          </Link>
-        ))}
+            <div>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">ทั้งหมด</p>
+              <p className="text-xl font-black text-slate-900 leading-tight">{stats.total} <span className="text-xs font-bold text-slate-400">รายการ</span></p>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Status Column (Left/Top) */}
+          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+            {statusCards.map((card) => (
+              <Link key={card.title} href={card.href} className="group">
+                <div className={`h-full p-6 bg-gradient-to-br ${card.gradient} border ${card.borderColor} rounded-[2rem] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300`}>
+                  <div className={`w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-6 shadow-sm group-hover:scale-110 transition-transform`}>
+                    <card.icon className={`${card.color}`} size={24} />
+                  </div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{card.title}</p>
+                  <h2 className="text-4xl font-black text-slate-900">{card.value}</h2>
+                </div>
+              </Link>
+            ))}
+
+            {/* Summary Statistics Card */}
+            <div className="md:col-span-3 p-8 bg-black rounded-[2.5rem] text-white overflow-hidden relative group">
+              <Package className="absolute -right-8 -bottom-8 w-64 h-64 text-white/5 rotate-12" />
+              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="space-y-2">
+                  <h3 className="text-2xl font-black">ความสมบูรณ์ของข้อมูล</h3>
+                  <p className="text-white/60 text-sm max-w-md">ตรวจสอบและปรับปรุงข้อมูลทรัพย์สินเพื่อให้ระบบสามารถติดตามและรายงานผลได้อย่างแม่นยำ 100%</p>
+                </div>
+                <Link href="/dashboard/assets?filter=incomplete">
+                  <button className="px-8 h-14 bg-white text-black rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-indigo-50 transition-colors">
+                    ตรวจสอบข้อมูล
+                  </button>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Category Distribution (Right) */}
+          <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-sm">
+            <h3 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2">
+              แยกตามหมวดหมู่
+            </h3>
+            <div className="space-y-6">
+              {categoryItems.map((item) => (
+                <div key={item.label} className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 ${item.color} bg-opacity-10 rounded-lg`}>
+                        <item.icon className="h-4 w-4" style={{ color: item.color.replace('bg-', '') }} />
+                      </div>
+                      <span className="text-sm font-bold text-slate-700">{item.label}</span>
+                    </div>
+                    <span className="text-sm font-black text-slate-900">{item.value}</span>
+                  </div>
+                  <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                    <div 
+                      className={`h-full ${item.color} transition-all duration-1000`} 
+                      style={{ width: `${stats.total > 0 ? (item.value / stats.total) * 100 : 0}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+        </div>
       </div>
     </div>
   );
