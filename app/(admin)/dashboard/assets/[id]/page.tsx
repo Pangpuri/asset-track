@@ -48,9 +48,12 @@ export default function EditAssetPage() {
 
   useEffect(() => {
     const fetchAsset = async () => {
-      const res = await fetch(`/api/assets?id=${params.id}`);
+      // เปลี่ยนมาใช้ endpoint ตรงของมันเอง และปิด cache
+      const res = await fetch(`/api/assets/${params.id}`, { cache: "no-store" });
+      
       if (res.ok) {
         const data = await res.json();
+        // ตอนนี้ data เป็น {} ไม่ใช่ [] แล้ว
         setAssetData(data);
         
         // แตกค่าจาก specifications ออกมาที่ root เพื่อให้ register() หาเจอ

@@ -4,6 +4,23 @@ import { assets } from "@/db/schema/assets";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
+// Method สำหรับดึงข้อมูลอุปกรณ์ตัวเดียว
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const asset = await db.query.assets.findFirst({
+      where: eq(assets.id, id),
+    });
+    if (!asset) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json(asset);
+  } catch (error) {
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  }
+}
+
 // Method สำหรับแก้ไขข้อมูล (Update)
 export async function PATCH(
   req: Request,
@@ -38,8 +55,8 @@ export async function PATCH(
       .set({
         ...rest,
         specifications, // บันทึกเข้า JSONB column
-        // แปลง string เป็น Date object
-        purchaseDate: purchaseDate ? new Date(purchaseDate) : null,
+        // ป้องกัน Error หากวันที่เป็นค่าว่าง
+        purchaseDate: purchaseDate && purchaseDate !== "" ? new Date(purchaseDate) : null,
         warrantyExpire: warrantyExpire ? new Date(warrantyExpire) : null,
         updatedAt: new Date(), // อัปเดตเวลาล่าสุด
       })
