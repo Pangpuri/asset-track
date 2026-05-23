@@ -104,7 +104,7 @@ export default function RegisterPage() {
       // Regex for common serial number patterns (alphanumeric, hyphens, min 5 chars)
       const serialNumberRegex = /^[a-zA-Z0-9-]{5,}$/;
 
-      // @ts-expect-error: BarcodeDetector API is not yet part of the standard TypeScript DOM library types.
+      // BarcodeDetector API is not yet part of the standard TypeScript DOM library types.
       const barcodeDetector = new (window as any).BarcodeDetector({
         formats: ['code_128', 'code_39', 'qr_code', 'ean_13']
       });
@@ -181,8 +181,8 @@ export default function RegisterPage() {
         status: "active",
       };
 
-      const assetUpdate = await fetch("/api/assets", {
-        method: "PUT",
+      const assetUpdate = await fetch(`/api/assets/${assetId}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(assetUpdateBody),
       });

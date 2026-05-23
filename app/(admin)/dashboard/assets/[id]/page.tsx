@@ -64,10 +64,10 @@ export default function EditAssetPage() {
 
   const onSubmit = async (data: AssetFormValues) => {
     try {
-      const response = await fetch("/api/assets", {
-        method: "PUT",
+      const response = await fetch(`/api/assets/${params.id}`, {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: params.id as string, ...data }),
+        body: JSON.stringify(data),
       });
 
       if (!response.ok) throw new Error();
