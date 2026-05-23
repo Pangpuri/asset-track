@@ -7,31 +7,37 @@ export default function Home() {
   return (
     <div className="bg-white min-h-screen">
       <main className="max-w-lg mx-auto w-full">             
-        {/* IG Post Style Main Action */}
-        <div className="border-b border-gray-100">          
-          <Link href="/scan">
-            <div className="aspect-square bg-gray-50 flex flex-col items-center justify-center gap-4 group active:opacity-90 transition-opacity relative overflow-hidden border-y border-gray-100">
-              <QrCode size={80} strokeWidth={1} className="text-black/10 absolute scale-150 rotate-12" />
-              <div className="w-24 h-24 border border-black/20 flex items-center justify-center relative z-10 bg-white">
-                <QrCode size={48} className="text-black" />
+        {/* Minimalist IG Feed Style */}
+        <div className="border-b border-zinc-100">          
+          <div className="p-4 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 p-[2px]">
+              <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
+                <ShieldCheck size={14} className="text-zinc-900" />
               </div>
-              <p className="text-black font-bold text-lg tracking-tight relative z-10">เริ่มการสแกน</p>
+            </div>
+            <span className="text-sm font-bold text-zinc-900">ASSET-TRACK SYSTEM</span>
+          </div>
+
+          <Link href="/scan">
+            <div className="aspect-square bg-zinc-50 flex flex-col items-center justify-center gap-6 group active:opacity-95 transition-all relative overflow-hidden border-y border-zinc-200">
+              {/* IG Story Style Border for Scan Button */}
+              <div className="p-[3px] rounded-[2.5rem] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 shadow-xl shadow-pink-500/20 group-hover:scale-105 transition-transform">
+                <div className="w-32 h-32 rounded-[2.4rem] bg-white flex flex-col items-center justify-center gap-2">
+                  <QrCode size={48} strokeWidth={1.5} className="text-zinc-900" />
+                </div>
+              </div>
+              <div className="text-center">
+                <p className="text-zinc-900 font-black text-xl tracking-tight">TAP TO SCAN</p>
+                <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest mt-1">เริ่มการสแกนอุปกรณ์</p>
+              </div>
             </div>
           </Link>
 
-          <div className="p-4 flex justify-between items-center">
-            <div className="flex gap-4">
-              <Link href="/scan" className="text-black active:opacity-50"><QrCode size={26} /></Link>
-              <Link href="/dashboard" className="text-black active:opacity-50"><LayoutDashboard size={26} /></Link>
-              <Link href="/dashboard/assets/new" className="text-black active:opacity-50"><PlusSquare size={26} /></Link>
-            </div>
-          </div>
-          
           <div className="px-4 pb-4">
-            <p className="text-sm font-bold mb-1">การบริหารจัดการอุปกรณ์ไอทีผ่าน QR Code</p>
-            <p className="text-sm text-gray-800 leading-snug">
-              <span className="font-bold mr-2">ASSET-TRACK</span>
-              พัฒนาระบบโดยฝ่าย MIS
+            <p className="text-sm font-bold text-zinc-900 mb-1">การบริหารจัดการอุปกรณ์ไอที</p>
+            <p className="text-sm text-zinc-600 leading-snug">
+              <span className="font-bold mr-2 text-zinc-900">#MIS_AssetManagement</span>
+              สแกน ตรวจสอบ และติดตามสถานะทรัพย์สินได้ทันที
             </p>
           </div>
         </div>

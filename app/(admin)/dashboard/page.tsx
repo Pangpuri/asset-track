@@ -99,7 +99,7 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50/50 p-4 md:p-8">
+    <div className="min-h-screen bg-white p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -110,16 +110,16 @@ export default async function DashboardPage() {
               </div>
               Dashboard
             </h1>
-            <p className="text-slate-500 font-medium ml-1">ระบบบริหารจัดการทรัพย์สินไอที (Asset Tracking)</p>
+            <p className="text-zinc-400 font-bold uppercase tracking-widest text-[10px] ml-1">IT Asset Management System</p>
           </div>
           
-          <div className="bg-white px-6 py-3 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4">
-            <div className="p-2 bg-indigo-50 rounded-lg">
-              <Package className="h-5 w-5 text-indigo-600" />
+          <div className="bg-white px-6 py-3 rounded-2xl border border-zinc-200 shadow-sm flex items-center gap-4">
+            <div className="p-2 bg-zinc-100 rounded-lg">
+              <Package className="h-5 w-5 text-zinc-900" />
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 leading-none">ทั้งหมด</p>
-              <p className="text-xl font-black text-slate-900 leading-tight">{stats.total} <span className="text-xs font-bold text-slate-400">รายการ</span></p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 leading-none">ทั้งหมด</p>
+              <p className="text-xl font-black text-zinc-900 leading-tight">{stats.total} <span className="text-xs font-bold text-zinc-300">รายการ</span></p>
             </div>
           </div>
         </div>

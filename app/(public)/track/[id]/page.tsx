@@ -114,25 +114,31 @@ export default async function TrackAssetPage({
 
 
         <div className="p-4 space-y-6 pb-32">
-          {/* Main Card - High Impact */}
-          <div className="relative overflow-hidden p-6 rounded-[2.5rem] bg-black text-white shadow-2xl shadow-black/10">
-            <div className="absolute top-0 right-0 p-8 opacity-10">
-              <QrCode size={120} />
-            </div>
+          {/* Instagram Story Border Style Card */}
+          <div className="p-[3px] rounded-[3rem] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 shadow-xl shadow-pink-500/10">
+            <div className="relative overflow-hidden p-8 rounded-[2.9rem] bg-white border border-white shadow-inner">
+              <div className="absolute top-0 right-0 p-8 opacity-[0.03] text-zinc-900">
+                <QrCode size={150} />
+              </div>
 
-            <div className="relative z-10">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/50 mb-1">ยี่ห้อและรุ่น</p>
-              <h2 className="text-3xl font-black uppercase leading-none mb-1">
-                {asset.brand || "ทั่วไป"}
-              </h2>
-              <p className="text-lg font-medium text-white/80">{asset.model || "ไม่ระบุรุ่น"}</p>
-
-              <div className="mt-8 flex items-center gap-2">
-                <div className="px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-sm">
-                  <p className="text-[10px] font-bold tracking-tight uppercase">รหัส: {asset.assetCode || "---"}</p>
+              <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-4">
+                   <span className="w-2 h-2 rounded-full bg-zinc-900"></span>
+                   <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Asset Information</p>
                 </div>
-                <div className="px-3 py-1 bg-white/10 rounded-full border border-white/10 backdrop-blur-sm">
-                  <p className="text-[10px] font-bold tracking-tight uppercase">{asset.category || "ทั่วไป"}</p>
+                
+                <h2 className="text-4xl font-black text-zinc-900 uppercase leading-none mb-2">
+                  {asset.brand || "ทั่วไป"}
+                </h2>
+                <p className="text-xl font-bold text-zinc-500">{asset.model || "ไม่ระบุรุ่น"}</p>
+
+                <div className="mt-10 flex items-center gap-2">
+                  <div className="px-4 py-2 bg-zinc-100 rounded-2xl border border-zinc-200">
+                    <p className="text-xs font-black text-zinc-900 tracking-tight uppercase">#{asset.assetCode || "---"}</p>
+                  </div>
+                  <div className="px-4 py-2 bg-zinc-900 rounded-2xl">
+                    <p className="text-xs font-black text-white tracking-tight uppercase">{asset.category || "ทั่วไป"}</p>
+                  </div>
                 </div>
               </div>
             </div>

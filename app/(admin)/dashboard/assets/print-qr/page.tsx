@@ -175,9 +175,6 @@ export default function BulkPrintPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="footer border-t border-gray-100 pt-1 text-[8px] font-bold text-center text-gray-400">
-                      ฝ่าย MIS
-                    </div>
                   </div>
                 ))}
               </div>
