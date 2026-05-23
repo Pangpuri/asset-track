@@ -23,8 +23,8 @@ const assetSchema = z.object({
   location: z.string().optional(),
   computerName: z.string().optional(),
   monitorSize: z.string().optional(),
-  warrantyUntil: z.string().optional(),
-  deliveryDate: z.string().optional(),
+  warrantyExpire: z.string().optional(),
+  purchaseDate: z.string().optional(),
   receivedBy: z.string().optional(),
   deliveredBy: z.string().optional(),
   ipAddress: z.string().optional(),
@@ -68,10 +68,8 @@ export default function AssetEntryPage() {
       // Regex for common serial number patterns (alphanumeric, hyphens, min 5 chars)
       const serialNumberRegex = /^[a-zA-Z0-9-]{5,}$/;
 
-      // @ts-expect-error: BarcodeDetector API is not yet part of the standard TypeScript DOM library types.
-      // This is necessary because BarcodeDetector is a relatively new Web API and its types might not be
-      // fully integrated into the default 'dom' lib for all TypeScript versions.
-      const barcodeDetector = new window.BarcodeDetector({
+      // BarcodeDetector API is not yet part of the standard TypeScript DOM library types.
+      const barcodeDetector = new (window as any).BarcodeDetector({
         formats: ['code_128', 'code_39', 'qr_code', 'ean_13']
       });
 
@@ -278,11 +276,11 @@ export default function AssetEntryPage() {
             <div className="grid grid-cols-2 gap-4">
                <div className="space-y-2">
                 <Label className="text-xs text-gray-500 ml-1">วันที่ส่งมอบ</Label>
-                <Input id="deliveryDate" type="date" {...register("deliveryDate")} className="border-none bg-gray-50 h-12 rounded-xl font-bold uppercase text-[10px]" />
+                <Input id="purchaseDate" type="date" {...register("purchaseDate")} className="border-none bg-gray-50 h-12 rounded-xl font-bold uppercase text-[10px]" />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs text-gray-500 ml-1">วันหมดประกัน</Label>
-                <Input id="warrantyUntil" type="date" {...register("warrantyUntil")} className="border-none bg-gray-50 h-12 rounded-xl font-bold uppercase text-[10px]" />
+                <Input id="warrantyExpire" type="date" {...register("warrantyExpire")} className="border-none bg-gray-50 h-12 rounded-xl font-bold uppercase text-[10px]" />
               </div>
             </div>
           </div>

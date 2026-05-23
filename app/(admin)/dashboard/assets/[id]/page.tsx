@@ -23,8 +23,8 @@ const assetSchema = z.object({
   location: z.string().optional(),
   computerName: z.string().optional(),
   monitorSize: z.string().optional(),
-  warrantyUntil: z.string().optional(),
-  deliveryDate: z.string().optional(),
+  warrantyExpire: z.string().optional(),
+  purchaseDate: z.string().optional(),
   receivedBy: z.string().optional(),
   deliveredBy: z.string().optional(),
   ipAddress: z.string().optional(),
@@ -52,7 +52,14 @@ export default function EditAssetPage() {
       if (res.ok) {
         const data = await res.json();
         setAssetData(data);
-        reset(data); // นำข้อมูลเดิมมาใส่ในฟอร์ม
+        
+        // ปรับ Format วันที่ให้เข้ากับ Input type="date" (YYYY-MM-DD)
+        reset({
+          ...data,
+          purchaseDate: data.purchaseDate ? new Date(data.purchaseDate).toISOString().split('T')[0] : "",
+          warrantyExpire: data.warrantyExpire ? new Date(data.warrantyExpire).toISOString().split('T')[0] : "",
+        });
+        
         setLoading(false);
       } else {
         toast.error("ไม่พบข้อมูลอุปกรณ์");
@@ -199,11 +206,11 @@ export default function EditAssetPage() {
             <div className="grid grid-cols-2 gap-4">
                <div className="space-y-2">
                 <Label className="text-xs text-gray-500 ml-1">วันที่ส่งมอบ</Label>
-                <Input type="date" {...register("deliveryDate")} className="border-none bg-gray-50 h-12 rounded-xl font-bold uppercase text-[10px]" />
+                <Input type="date" {...register("purchaseDate")} className="border-none bg-gray-50 h-12 rounded-xl font-bold uppercase text-[10px]" />
               </div>
               <div className="space-y-2">
                 <Label className="text-xs text-gray-500 ml-1">วันหมดประกัน</Label>
-                <Input type="date" {...register("warrantyUntil")} className="border-none bg-gray-50 h-12 rounded-xl font-bold uppercase text-[10px]" />
+                <Input type="date" {...register("warrantyExpire")} className="border-none bg-gray-50 h-12 rounded-xl font-bold uppercase text-[10px]" />
               </div>
             </div>
           </div>
