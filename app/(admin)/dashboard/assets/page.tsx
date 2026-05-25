@@ -23,7 +23,8 @@ import {
   Trash2, 
   CheckCircle2, 
   Loader2,
-  Search 
+  Search,
+  X 
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
