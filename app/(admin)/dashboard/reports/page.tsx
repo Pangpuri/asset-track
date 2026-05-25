@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { FileText, Download, Loader2, ArrowLeft, Settings2, Table as TableIcon, Printer } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 // ใช้แนวทาง HTML -> Print/PDF มาตรฐานเพื่อให้ภาษาไทยแสดงผลได้สมบูรณ์ 100% 
 // และจัดตารางได้สวยงามไม่ซ้อนทับกันครับ
