@@ -112,7 +112,7 @@ export default function BulkPrintPage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>หมวดหมู่ที่ต้องการสร้าง</Label>
-              <Select value={category} onValueChange={setCategory}>
+              <Select value={category} onValueChange={(val) => setCategory(val || "other")}>
                 <SelectTrigger>
                   <SelectValue placeholder="เลือกหมวดหมู่" />
                 </SelectTrigger>
