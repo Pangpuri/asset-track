@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Printer, Plus, Loader2, ArrowLeft, QrCode } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -12,8 +13,9 @@ import { generateAssetQRCode } from "@/lib/qr";
 
 export default function BulkPrintPage() {
   const [count, setCount] = useState(10);
+  const [category, setCategory] = useState("computer");
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedQRs, setGeneratedQRs] = useState<{ id: string, qrData: string }[]>([]);
+  const [generatedQRs, setGeneratedQRs] = useState<{ id: string, assetCode: string, qrData: string }[]>([]);
 
   const handleGenerate = async () => {
     setIsGenerating(true);
@@ -21,7 +23,7 @@ export default function BulkPrintPage() {
       const response = await fetch("/api/assets/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ count }),
+        body: JSON.stringify({ count, category }),
       });
 
       if (!response.ok) throw new Error("Failed to generate assets");
@@ -30,11 +32,12 @@ export default function BulkPrintPage() {
       
       const qrs = await Promise.all(assets.map(async (asset: any) => ({
         id: asset.id,
+        assetCode: asset.assetCode,
         qrData: await generateAssetQRCode(asset.id)
       })));
 
       setGeneratedQRs(qrs);
-      toast.success(`สร้าง QR เปล่าจำนวน ${count} ใบ เรียบร้อยแล้ว`);
+      toast.success(`สร้าง QR จำนวน ${count} ใบ สำหรับหมวดหมู่ ${category} เรียบร้อยแล้ว`);
     } catch (error) {
       toast.error("เกิดข้อผิดพลาดในการสร้าง QR Code");
     } finally {
@@ -67,12 +70,13 @@ export default function BulkPrintPage() {
                 flex-direction: column;
                 justify-content: space-between;
                 box-sizing: border-box;
+                background: white;
               }
               .sticker-header { display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; }
               .qr-img { width: 65px; height: 65px; }
               .asset-info { text-align: left; }
               .label { font-size: 8px; font-weight: bold; color: #666; }
-              .value { font-size: 12px; font-weight: bold; color: black; line-height: 1.1; }
+              .value { font-size: 11px; font-mono font-bold black; line-height: 1.1; }
               .footer { border-top: 0.5px solid #eee; padding-top: 2px; font-size: 8px; font-weight: bold; }
             </style>
           </head>
@@ -93,9 +97,9 @@ export default function BulkPrintPage() {
       <div className="flex items-center gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            สร้าง QR ที่ยังไม่ลงทะเบียน 
+            สร้าง QR ตามประเภทอุปกรณ์ 
           </h1>
-          <p className="text-muted-foreground">สร้าง QR Code เปล่าที่ใช้ทะเบียนภายหลัง</p>
+          <p className="text-muted-foreground">สร้างรหัสทรัพย์สินและ QR Code แบบรันหมายเลขตามหมวดหมู่</p>
         </div>
       </div>
 
@@ -103,11 +107,27 @@ export default function BulkPrintPage() {
         <Card className="md:col-span-1">
           <CardHeader>
             <CardTitle>ตั้งค่าการสร้าง</CardTitle>
-            <CardDescription>ระบุจำนวน QR Code ที่ต้องการสร้าง</CardDescription>
+            <CardDescription>เลือกหมวดหมู่และระบุจำนวน</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="count">จำนวน (1-100)</Label>
+              <Label>หมวดหมู่ที่ต้องการสร้าง</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger>
+                  <SelectValue placeholder="เลือกหมวดหมู่" />
+                </SelectTrigger>
+                <SelectContent className="bg-white">
+                  <SelectItem value="computer">Computer / Laptop (PC)</SelectItem>
+                  <SelectItem value="printer">Printer (P)</SelectItem>
+                  <SelectItem value="monitor">Monitor (M)</SelectItem>
+                  <SelectItem value="network">Network (W)</SelectItem>
+                  <SelectItem value="other">อื่นๆ (E)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="count">จำนวนที่สร้าง (1-100)</Label>
               <Input 
                 id="count" 
                 type="number" 
@@ -117,8 +137,9 @@ export default function BulkPrintPage() {
                 onChange={(e) => setCount(parseInt(e.target.value))} 
               />
             </div>
+            
             <Button 
-              className="w-full gap-2 bg-blue-600" 
+              className="w-full gap-2 bg-blue-600 hover:bg-blue-700" 
               onClick={handleGenerate} 
               disabled={isGenerating}
             >
@@ -130,7 +151,7 @@ export default function BulkPrintPage() {
               ) : (
                 <>
                   <Plus className="h-4 w-4" />
-                  สร้าง QR Code ใหม่
+                  สร้างรหัสและ QR ใหม่
                 </>
               )}
             </Button>
@@ -142,7 +163,7 @@ export default function BulkPrintPage() {
                 onClick={handlePrint}
               >
                 <Printer className="h-4 w-4" />
-                พิมพ์ทั่งหมด ({generatedQRs.length} ใบ)
+                พิมพ์ทั้งหมด ({generatedQRs.length} ใบ)
               </Button>
             )}
           </CardContent>
@@ -150,25 +171,25 @@ export default function BulkPrintPage() {
 
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>ตัวอย่างสติกเกอร์</CardTitle>
-            <CardDescription>สติกเกอร์ที่สร้างขึ้นจะแสดงที่นี่</CardDescription>
+            <CardTitle>ตัวอย่างสติกเกอร์ที่สร้าง</CardTitle>
+            <CardDescription>รหัสทรัพย์สินจะถูกรันหมายเลขให้อัตโนมัติ</CardDescription>
           </CardHeader>
           <CardContent>
             {generatedQRs.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-muted-foreground border-2 border-dashed rounded-xl">
                 <QrCode className="h-12 w-12 mb-4 opacity-20" />
-                <p>ยังไม่มีการสร้าง QR Code</p>
+                <p>ยังไม่มีการสร้างรหัสทรัพย์สิน</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[600px] overflow-auto p-2" id="printable-area">
-                {generatedQRs.map((qr, index) => (
+                {generatedQRs.map((qr) => (
                   <div key={qr.id} className="sticker border border-black p-2 rounded bg-white shadow-sm w-[170px] h-[95px] flex flex-col justify-between mx-auto">
                     <div className="sticker-header flex items-center justify-center gap-2 flex-1">
                       <img src={qr.qrData} alt="QR" className="qr-img w-[65px] h-[65px]" />
                       <div className="asset-info text-left">
                         <div className="label text-[8px] font-bold text-gray-500 uppercase">ฝ่าย MIS</div>
-                        <div className="value text-[11px] font-mono font-bold break-all uppercase leading-tight">
-                          MIS-QR
+                        <div className="value text-[12px] font-mono font-bold break-all uppercase leading-tight">
+                          {qr.assetCode}
                         </div>
                         <div className="text-[6px] text-muted-foreground mt-0.5">
                           ID: {qr.id.substring(0, 8)}

@@ -72,15 +72,22 @@ export default function AssetsPage({
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
+  // Sync searchQuery with URL when it changes elsewhere
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
-        setIsSearchFocused(false);
+    setSearchQuery(searchParams.q || "");
+  }, [searchParams.q]);
+
+  // Real-time Search effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery !== (searchParams.q || "")) {
+        const params = new URLSearchParams(window.location.search);
+        if (searchQuery) params.set("q", searchQuery); else params.delete("q");
+        router.push(`/dashboard/assets?${params.toString()}`);
       }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    }, 400); // Debounce 400ms
+    return () => clearTimeout(timer);
+  }, [searchQuery, router, searchParams.q]);
   
   // โหลดข้อมูลผ่าน Client Side เพื่อให้รองรับการ Interact (Delete/Select)
   const fetchAssets = useCallback(async () => {
@@ -219,7 +226,7 @@ export default function AssetsPage({
           {isSearchFocused && (
             <Button 
               variant="ghost" 
-              className="md:hidden text-indigo-600 font-bold"
+              className="md:hidden text-indigo-600 font-bold h-12"
               onClick={() => {
                 setIsSearchFocused(false);
                 setSearchQuery(searchParams.q || "");
@@ -243,10 +250,10 @@ export default function AssetsPage({
               router.push(`/dashboard/assets?${params.toString()}`);
             }}
           >
-            <SelectTrigger className="w-full md:w-[220px] h-12 bg-white/60 border-none rounded-2xl font-black text-indigo-900 shadow-sm focus:ring-indigo-600">
+            <SelectTrigger className="w-full md:w-[220px] h-12 bg-white border border-zinc-200 rounded-2xl font-black text-indigo-900 shadow-sm focus:ring-indigo-600">
               <SelectValue placeholder="เลือกการกรอง" />
             </SelectTrigger>
-            <SelectContent className="rounded-2xl border-none shadow-2xl p-2">
+            <SelectContent className="rounded-2xl border border-zinc-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-2 bg-white">
               <SelectItem value="all" className="font-bold rounded-xl focus:bg-indigo-50">อุปกรณ์ทั้งหมด</SelectItem>
               <SelectItem value="active" className="font-bold text-emerald-600 rounded-xl focus:bg-emerald-50">ใช้งานปกติ</SelectItem>
               <SelectItem value="broken" className="font-bold text-rose-600 rounded-xl focus:bg-rose-50">ชำรุด/เสียหาย</SelectItem>
