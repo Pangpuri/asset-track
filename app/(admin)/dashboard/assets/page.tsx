@@ -30,11 +30,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { generateAssetQRCode } from "@/lib/qr";
 import { QRPrintWrapper } from "@/components/qr-print-wrapper";
-import { useEffect, useState, useCallback, startTransition, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, Suspense } from "react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { BulkPrintSelected } from "@/components/bulk-print-selected";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { 
   Select, 
   SelectContent, 
@@ -59,43 +59,47 @@ interface Asset {
 // สร้าง Type สำหรับข้อมูลที่ได้จาก API (ยังไม่มี qrData และ isIncomplete)
 type RawAsset = Omit<Asset, "qrData" | "isIncomplete">;
 
-export default function AssetsPage({ 
-  searchParams 
-}: { 
-  searchParams: { filter?: string, status?: string, q?: string } 
-}) {
+function AssetsList() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  
+  // Extract params from hook for true reactivity
+  const filterParam = searchParams.get("filter") || "";
+  const statusParam = searchParams.get("status") || "";
+  const queryParam = searchParams.get("q") || "";
+
   const [allAssets, setAllAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState(searchParams.q || "");
+  const [searchQuery, setSearchQuery] = useState(queryParam);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
-  // Sync searchQuery with URL when it changes elsewhere
+  // Sync internal search input state when URL change (e.g. back button or clear)
   useEffect(() => {
-    setSearchQuery(searchParams.q || "");
-  }, [searchParams.q]);
+    setSearchQuery(queryParam);
+  }, [queryParam]);
 
-  // Real-time Search effect
+  // Real-time Search effect (Sync UI to URL)
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchQuery !== (searchParams.q || "")) {
+      if (searchQuery !== queryParam) {
         const params = new URLSearchParams(window.location.search);
         if (searchQuery) params.set("q", searchQuery); else params.delete("q");
         router.push(`/dashboard/assets?${params.toString()}`);
       }
     }, 400); // Debounce 400ms
     return () => clearTimeout(timer);
-  }, [searchQuery, router, searchParams.q]);
+  }, [searchQuery, router, queryParam]);
   
   // โหลดข้อมูลผ่าน Client Side เพื่อให้รองรับการ Interact (Delete/Select)
   const fetchAssets = useCallback(async () => {
+    setLoading(true);
     try {
       const sp = new URLSearchParams();
-      if (searchParams.filter) sp.append("filter", searchParams.filter);
-      if (searchParams.status) sp.append("status", searchParams.status);
-      if (searchParams.q) sp.append("q", searchParams.q);
+      if (filterParam) sp.append("filter", filterParam);
+      if (statusParam) sp.append("status", statusParam);
+      if (queryParam) sp.append("q", queryParam);
       
       // เพิ่ม cache: "no-store" เพื่อไม่ให้ browser จำข้อมูลเก่า
       const res = await fetch(`/api/assets?${sp.toString()}`, { cache: "no-store" });
@@ -114,20 +118,10 @@ export default function AssetsPage({
     } finally {
       setLoading(false);
     }
-  }, [searchParams.filter, searchParams.status, searchParams.q]);
+  }, [filterParam, statusParam, queryParam]);
 
   useEffect(() => {
-    let isIgnore = false;
-
-    if (!isIgnore) {
-      startTransition(() => {
-        fetchAssets();
-      });
-    }
-
-    return () => {
-      isIgnore = true;
-    };
+    fetchAssets();
   }, [fetchAssets]);
 
   const handleDelete = async (id: string, code: string | null) => {
@@ -159,7 +153,7 @@ export default function AssetsPage({
 
   return (
     <div className="container mx-auto p-6 space-y-8 relative">
-      {!loading && allAssets.length === 0 && !searchParams.filter && !searchParams.status && !searchParams.q && (
+      {!loading && allAssets.length === 0 && !filterParam && !statusParam && !queryParam && (
         <div className="bg-amber-50 text-amber-700 p-4 rounded-xl flex items-center gap-3 mb-4 text-sm font-bold">
           <AlertTriangle className="h-5 w-5" />
           ไม่พบข้อมูลอุปกรณ์ในระบบ
@@ -195,7 +189,7 @@ export default function AssetsPage({
             <input
               type="text"
               placeholder="ค้นหาอุปกรณ์..."
-              className="w-full pl-12 pr-12 h-12 bg-white/60 border border-transparent rounded-2xl focus:border-indigo-100 focus:bg-white focus:ring-4 focus:ring-indigo-600/5 outline-none font-bold text-indigo-950 placeholder:text-indigo-300 transition-all shadow-sm"
+              className="w-full pl-12 pr-12 h-12 bg-white border border-zinc-200 rounded-2xl focus:border-indigo-100 focus:bg-white focus:ring-4 focus:ring-indigo-600/5 outline-none font-bold text-indigo-950 placeholder:text-indigo-300 transition-all shadow-sm"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
@@ -229,7 +223,7 @@ export default function AssetsPage({
               className="md:hidden text-indigo-600 font-bold h-12"
               onClick={() => {
                 setIsSearchFocused(false);
-                setSearchQuery(searchParams.q || "");
+                setSearchQuery(queryParam);
               }}
             >
               ยกเลิก
@@ -238,7 +232,7 @@ export default function AssetsPage({
         </div>
         <div className="w-full md:w-auto">
           <Select 
-            defaultValue={searchParams.filter || searchParams.status || "all"}
+            defaultValue={filterParam || statusParam || "all"}
             onValueChange={(val) => {
               const params = new URLSearchParams(window.location.search);
               params.delete("filter");
@@ -443,5 +437,18 @@ export default function AssetsPage({
         </p>
       </div>
     </div>
+  );
+}
+
+export default function AssetsPage() {
+  return (
+    <Suspense fallback={
+      <div className="py-20 text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto text-indigo-600" />
+        <p className="mt-4 text-indigo-400 font-bold uppercase tracking-widest text-[10px]">Loading Inventory...</p>
+      </div>
+    }>
+      <AssetsList />
+    </Suspense>
   );
 }

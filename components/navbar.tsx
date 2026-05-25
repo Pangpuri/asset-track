@@ -30,6 +30,11 @@ const navItems = [
     href: "/dashboard/assets",
     icon: Package,
   },
+  {
+    title: "พิมพ์ QR (Bulk Print)",
+    href: "/dashboard/assets/print-qr",
+    icon: QrCode,
+  },
 ];
 
 export function Navbar() {
@@ -41,11 +46,20 @@ export function Navbar() {
       {/* Main Navbar - Sticky */}
       <nav className="sticky top-0 z-[100] w-full border-b border-zinc-200 bg-white/95 backdrop-blur-md">
         <div className="container mx-auto flex h-14 items-center justify-between px-4 max-w-lg">
-          {/* Left: Brand */}
-          <Link href="/" className="flex items-center gap-2 active:opacity-60">
-            <span className="text-xl font-black tracking-tighter text-zinc-900">
-              AssetTrack
-            </span>
+          {/* Left: Brand - Modern IT Style */}
+          <Link href="/" className="flex items-center gap-3 active:opacity-60 group">
+            <div className="relative flex items-center justify-center w-9 h-9 bg-zinc-900 rounded-xl overflow-hidden group-active:scale-90 transition-transform shadow-lg">
+              <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 opacity-80" />
+              <Package size={20} className="text-white relative z-10" strokeWidth={2.5} />
+            </div>
+            <div className="flex flex-col -space-y-1">
+              <span className="text-xl font-[1000] tracking-tighter text-zinc-900 leading-none">
+                ASSET<span className="text-indigo-600">TRACK</span>
+              </span>
+              <span className="text-[8px] font-black text-zinc-400 tracking-[0.3em] uppercase">
+                MIS Division
+              </span>
+            </div>
           </Link>
 
           {/* Right: Icons */}
