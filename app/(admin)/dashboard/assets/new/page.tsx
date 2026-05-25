@@ -31,6 +31,7 @@ const assetSchema = z.object({
   deliveredBy: z.string().optional(),
   ipAddress: z.string().optional(),
   status: z.string().optional(),
+  factory: z.string().optional(),
 });
 
 type AssetFormValues = z.infer<typeof assetSchema>;
@@ -42,11 +43,13 @@ export default function AssetEntryPage() {
     defaultValues: {
       status: "active",
       category: "",
+      factory: "",
     }
   });
 
   const selectedCategory = watch("category");
   const statusValue = watch("status");
+  const factoryValue = watch("factory");
 
   // State สำหรับ OCR Scanner
   const [isScannerOpen, setScannerOpen] = useState(false);
@@ -182,6 +185,19 @@ export default function AssetEntryPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
           {/* Section 1: Core Info */}
           <div className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="factory" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">โรงงาน / สาขาที่สังกัด *</Label>
+              <Select value={factoryValue} onValueChange={(value) => setValue("factory", value as string)}>
+                <SelectTrigger className="border-none bg-indigo-50/50 h-14 rounded-2xl text-base font-bold text-indigo-900 ring-2 ring-indigo-500/10">
+                  <SelectValue placeholder="ระบุโรงงานก่อนเริ่มกรอกข้อมูล" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-gray-100 shadow-2xl bg-white z-[60]">
+                  <SelectItem value="Factory 1" className="font-bold">โรงงาน 1 (Factory 1)</SelectItem>
+                  <SelectItem value="Factory 2" className="font-bold">โรงงาน 2 (Factory 2)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="assetCode" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">รหัสอุปกรณ์ (Asset Code) *</Label>
               <Input id="assetCode" {...register("assetCode")} placeholder="ระบุรหัสทรัพย์สิน" className="border-none bg-gray-50 h-14 rounded-2xl text-lg font-bold" />

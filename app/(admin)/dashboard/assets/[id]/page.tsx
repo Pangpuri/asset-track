@@ -31,6 +31,7 @@ const assetSchema = z.object({
   deliveredBy: z.string().optional(),
   ipAddress: z.string().optional(),
   status: z.string().optional(),
+  factory: z.string().optional(),
 });
 
 type AssetFormValues = z.infer<typeof assetSchema>;
@@ -133,6 +134,7 @@ export default function EditAssetPage() {
           deliveredBy: data.deliveredBy || "",
           purchaseDate: data.purchaseDate ? new Date(data.purchaseDate).toISOString().split('T')[0] : "",
           warrantyExpire: data.warrantyExpire ? new Date(data.warrantyExpire).toISOString().split('T')[0] : "",
+          factory: data.factory || "",
         });
         setLoading(false);
       } else {
@@ -199,6 +201,19 @@ export default function EditAssetPage() {
       <div className="max-w-lg mx-auto p-4 pt-8 space-y-10">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
           <div className="space-y-6">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">โรงงาน/สาขาที่สังกัด</Label>
+              <Select onValueChange={(v) => setValue("factory", v as string)} value={watch("factory")}>
+                <SelectTrigger className="border-none bg-indigo-50/50 h-14 rounded-2xl font-bold text-indigo-900 ring-2 ring-indigo-500/10">
+                  <SelectValue placeholder="เลือกโรงงาน" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl shadow-2xl border-none bg-white z-[60]">
+                  <SelectItem value="Factory 1" className="font-bold">โรงงาน 1 (Factory 1)</SelectItem>
+                  <SelectItem value="Factory 2" className="font-bold">โรงงาน 2 (Factory 2)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Asset Code</Label>
