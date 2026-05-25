@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -46,6 +46,18 @@ const navItems = [
 export function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+
+  // Lock body scroll when menu is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
 
   return (
     <>
@@ -95,17 +107,29 @@ export function Navbar() {
       </nav>
 
       {/* Side Drawer Menu - Moved outside of <nav> for better fixed positioning */}
-      {isOpen && (
-        <div className="fixed inset-0 z-[2000] flex justify-end">
-          {/* Backdrop - Darker for focus */}
-          <div 
-            className="absolute inset-0 bg-black/60 backdrop-blur-[2px] animate-in fade-in duration-300"
-            onClick={() => setIsOpen(false)}
-          />
-          
-          {/* Drawer Content - Solid Background */}
-          <div className="relative w-[80%] max-w-sm h-full bg-white shadow-2xl animate-in slide-in-from-right duration-300 flex flex-col overflow-hidden">
-            {/* Menu Header */}
+      <div 
+        className={cn(
+          "fixed inset-0 z-[2000] flex justify-end transition-all duration-300",
+          isOpen ? "visible" : "invisible"
+        )}
+      >
+        {/* Backdrop - Darker for focus */}
+        <div 
+          className={cn(
+            "absolute inset-0 bg-black/60 backdrop-blur-[2px] transition-opacity duration-300 ease-in-out",
+            isOpen ? "opacity-100" : "opacity-0"
+          )}
+          onClick={() => setIsOpen(false)}
+        />
+        
+        {/* Drawer Content - Solid Background */}
+        <div 
+          className={cn(
+            "relative w-[80%] max-w-sm h-full bg-white shadow-2xl transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col overflow-hidden",
+            isOpen ? "translate-x-0" : "translate-x-full"
+          )}
+        >
+          {/* Menu Header */}
             <div className="flex items-center justify-between px-6 h-16 border-b border-zinc-100 bg-white pt-safe shrink-0">
               <span className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">MIS Navigation</span>
               <button 
@@ -154,7 +178,6 @@ export function Navbar() {
             </div>
           </div>
         </div>
-      )}
     </>
   );
 }
