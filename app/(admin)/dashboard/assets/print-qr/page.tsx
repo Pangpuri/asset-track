@@ -46,7 +46,7 @@ export default function BulkPrintPage() {
   };
 
   const handlePrint = () => {
-    const windowPrint = window.open('', '', 'width=800,height=1000');
+    const windowPrint = window.open('', '', 'width=900,height=1000');
     if (windowPrint) {
       const content = document.getElementById('printable-area')?.innerHTML;
       windowPrint.document.write(`
@@ -56,28 +56,39 @@ export default function BulkPrintPage() {
             <style>
               @media print {
                 .no-print { display: none; }
+                @page { 
+                  size: A4 portrait; 
+                  margin: 5mm; 
+                }
+                body { margin: 0; padding: 0; background: white; }
               }
-              body { font-family: sans-serif; margin: 0; padding: 20px; }
-              .grid { display: grid; grid-template-columns: repeat(auto-fill, 170px); gap: 10px; }
+              body { font-family: sans-serif; }
+              .grid { 
+                display: grid; 
+                grid-template-columns: repeat(4, 48mm); 
+                gap: 2mm; 
+                justify-content: center;
+                padding: 5mm 0;
+              }
               .sticker { 
-                width: 170px; 
-                height: 95px;
-                border: 1px solid black; 
-                padding: 5px; 
+                width: 48mm; 
+                height: 28mm;
+                border: 0.5px solid #000; 
+                padding: 2mm; 
                 text-align: center;
                 page-break-inside: avoid;
                 display: flex;
                 flex-direction: column;
-                justify-content: space-between;
+                justify-content: center;
                 box-sizing: border-box;
                 background: white;
               }
-              .sticker-header { display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; }
-              .qr-img { width: 65px; height: 65px; }
-              .asset-info { text-align: left; }
-              .label { font-size: 8px; font-weight: bold; color: #666; }
-              .value { font-size: 11px; font-mono font-bold black; line-height: 1.1; }
-              .footer { border-top: 0.5px solid #eee; padding-top: 2px; font-size: 8px; font-weight: bold; }
+              .sticker-header { display: flex; align-items: center; justify-content: center; gap: 2mm; flex: 1; }
+              .qr-img { width: 18mm; height: 18mm; }
+              .asset-info { text-align: left; overflow: hidden; }
+              .label { font-size: 6pt; font-weight: bold; color: #666; text-transform: uppercase; line-height: 1; }
+              .value { font-size: 10pt; font-family: monospace; font-weight: bold; color: black; line-height: 1.1; margin-top: 1pt; word-break: break-all; }
+              .id-text { font-size: 5pt; color: #999; margin-top: 1pt; }
             </style>
           </head>
           <body>
@@ -93,41 +104,41 @@ export default function BulkPrintPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
+    <div className="container mx-auto p-6 space-y-8 pb-20">
       <div className="flex items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-            สร้าง QR ตามประเภทอุปกรณ์ 
+          <h1 className="text-2xl font-[1000] tracking-tight flex items-center gap-2 uppercase">
+            สร้าง QR แบบชุด
           </h1>
-          <p className="text-muted-foreground">สร้างรหัสทรัพย์สินและ QR Code แบบรันหมายเลขตามหมวดหมู่</p>
+          <p className="text-muted-foreground font-bold text-xs uppercase tracking-[0.2em]">Bulk QR Generator (4 Units per Row)</p>
         </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-1">
-          <CardHeader>
-            <CardTitle>ตั้งค่าการสร้าง</CardTitle>
-            <CardDescription>เลือกหมวดหมู่และระบุจำนวน</CardDescription>
+        <Card className="md:col-span-1 border-none shadow-xl bg-white rounded-[2rem] overflow-hidden">
+          <CardHeader className="bg-zinc-900 text-white">
+            <CardTitle className="text-sm font-black uppercase tracking-wider">ตั้งค่าการสร้าง</CardTitle>
+            <CardDescription className="text-zinc-400 text-xs">เลือกหมวดหมู่และระบุจำนวน</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6 pt-6">
             <div className="space-y-2">
-              <Label>หมวดหมู่ที่ต้องการสร้าง</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">หมวดหมู่</Label>
               <Select value={category} onValueChange={(val) => setCategory(val || "other")}>
-                <SelectTrigger>
+                <SelectTrigger className="h-12 rounded-2xl border-zinc-100 bg-zinc-50 font-bold">
                   <SelectValue placeholder="เลือกหมวดหมู่" />
                 </SelectTrigger>
-                <SelectContent className="bg-white">
-                  <SelectItem value="computer">Computer / Laptop (PC)</SelectItem>
-                  <SelectItem value="printer">Printer (P)</SelectItem>
-                  <SelectItem value="monitor">Monitor (M)</SelectItem>
-                  <SelectItem value="network">Network (W)</SelectItem>
-                  <SelectItem value="other">อื่นๆ (E)</SelectItem>
+                <SelectContent className="bg-white rounded-2xl border-none shadow-2xl">
+                  <SelectItem value="computer" className="font-bold">Computer / Laptop (PC)</SelectItem>
+                  <SelectItem value="printer" className="font-bold">Printer (P)</SelectItem>
+                  <SelectItem value="monitor" className="font-bold">Monitor (M)</SelectItem>
+                  <SelectItem value="network" className="font-bold">Network (W)</SelectItem>
+                  <SelectItem value="other" className="font-bold">อื่นๆ (E)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="count">จำนวนที่สร้าง (1-100)</Label>
+              <Label htmlFor="count" className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">จำนวน (Max 100)</Label>
               <Input 
                 id="count" 
                 type="number" 
@@ -135,63 +146,66 @@ export default function BulkPrintPage() {
                 max={100} 
                 value={count} 
                 onChange={(e) => setCount(parseInt(e.target.value))} 
+                className="h-12 rounded-2xl border-zinc-100 bg-zinc-50 font-black text-lg text-center"
               />
             </div>
             
-            <Button 
-              className="w-full gap-2 bg-blue-600 hover:bg-blue-700" 
-              onClick={handleGenerate} 
-              disabled={isGenerating}
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  กำลังสร้าง...
-                </>
-              ) : (
-                <>
-                  <Plus className="h-4 w-4" />
-                  สร้างรหัสและ QR ใหม่
-                </>
-              )}
-            </Button>
-            
-            {generatedQRs.length > 0 && (
-              <Button 
-                variant="outline" 
-                className="w-full gap-2 border-green-600 text-green-600 hover:bg-green-50" 
-                onClick={handlePrint}
-              >
-                <Printer className="h-4 w-4" />
-                พิมพ์ทั้งหมด ({generatedQRs.length} ใบ)
-              </Button>
-            )}
+            <div className="space-y-3 pt-2">
+                <Button 
+                className="w-full h-14 gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-[1000] text-sm uppercase tracking-widest shadow-xl shadow-indigo-600/20 active:scale-95 transition-all" 
+                onClick={handleGenerate} 
+                disabled={isGenerating}
+                >
+                {isGenerating ? (
+                    <>
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                    กำลังสร้าง...
+                    </>
+                ) : (
+                    <>
+                    <Plus className="h-5 w-5" />
+                    สร้างรหัสใหม่
+                    </>
+                )}
+                </Button>
+                
+                {generatedQRs.length > 0 && (
+                <Button 
+                    variant="outline" 
+                    className="w-full h-14 gap-2 border-zinc-200 text-zinc-900 rounded-2xl font-[1000] text-sm uppercase tracking-widest hover:bg-zinc-50 active:scale-95 transition-all" 
+                    onClick={handlePrint}
+                >
+                    <Printer className="h-5 w-5" />
+                    พิมพ์ทั้งหมด ({generatedQRs.length})
+                </Button>
+                )}
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-2">
+        <Card className="md:col-span-2 border-none shadow-xl bg-zinc-50/50 rounded-[2.5rem] overflow-hidden">
           <CardHeader>
-            <CardTitle>ตัวอย่างสติกเกอร์ที่สร้าง</CardTitle>
-            <CardDescription>รหัสทรัพย์สินจะถูกรันหมายเลขให้อัตโนมัติ</CardDescription>
+            <CardTitle className="text-sm font-black uppercase tracking-wider text-zinc-900">ตัวอย่าง (A4 Preview)</CardTitle>
+            <CardDescription className="text-xs font-bold text-zinc-400 uppercase tracking-widest">Layout: 4 Stickers per Row</CardDescription>
           </CardHeader>
           <CardContent>
             {generatedQRs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 text-muted-foreground border-2 border-dashed rounded-xl">
-                <QrCode className="h-12 w-12 mb-4 opacity-20" />
-                <p>ยังไม่มีการสร้างรหัสทรัพย์สิน</p>
+              <div className="flex flex-col items-center justify-center py-20 text-zinc-300 border-2 border-dashed border-zinc-200 rounded-[2rem] bg-white">
+                <QrCode className="h-16 w-16 mb-4 opacity-20" />
+                <p className="font-bold text-xs uppercase tracking-widest">ยังไม่มีการสร้างรหัส</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[600px] overflow-auto p-2" id="printable-area">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 max-h-[600px] overflow-auto p-4 bg-white/80 rounded-[2rem] shadow-inner" id="printable-area">
                 {generatedQRs.map((qr) => (
-                  <div key={qr.id} className="sticker border border-black p-2 rounded bg-white shadow-sm w-[170px] h-[95px] flex flex-col justify-between mx-auto">
-                    <div className="sticker-header flex items-center justify-center gap-2 flex-1">
-                      <img src={qr.qrData} alt="QR" className="qr-img w-[65px] h-[65px]" />
+                  <div key={qr.id} className="sticker border border-zinc-200 p-2 rounded-xl bg-white shadow-sm flex flex-col justify-center aspect-[1.7/1] hover:border-indigo-400 transition-colors cursor-default">
+                    <div className="sticker-header flex items-center justify-center gap-2">
+                      <img src={qr.qrData} alt="QR" className="qr-img w-[50px] h-[50px]" />
                       <div className="asset-info text-left">
-                        <div className="label text-[8px] font-bold text-gray-500 uppercase">ฝ่าย MIS</div>
-                        <div className="value text-[12px] font-mono font-bold break-all uppercase leading-tight">
+                        <div className="label text-[7px] font-black text-zinc-400 uppercase">MIS Dept</div>
+                        <div className="value text-[10px] font-mono font-black break-all uppercase leading-tight text-zinc-900">
                           {qr.assetCode}
                         </div>
-                        <div className="text-[6px] text-muted-foreground mt-0.5">
+                        <div className="id-text text-[5px] text-zinc-300 font-bold mt-0.5">
                           ID: {qr.id.substring(0, 8)}
                         </div>
                       </div>
