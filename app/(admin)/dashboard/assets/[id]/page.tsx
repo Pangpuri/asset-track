@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { generateAssetQRCode } from "@/lib/qr";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,8 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, RefreshCw } from "lucide-react";
+import { Loader2, ArrowLeft, RefreshCw, Scan, X, Zap, ZapOff } from "lucide-react";
 import { AssetReplaceDialog } from "@/components/asset-replace-dialog";
+import { cn } from "@/lib/utils";
 
 const assetSchema = z.object({
   assetCode: z.string().min(2, "รหัสอุปกรณ์ต้องมีอย่างน้อย 2 ตัวอักษร"),
@@ -39,6 +41,11 @@ export default function EditAssetPage() {
   const [loading, setLoading] = useState(true);
   const [assetData, setAssetData] = useState<any>(null);
   const [showReplaceDialog, setShowReplaceDialog] = useState(false);
+  
+  // Camera Scanner State
+  const [isScanning, setIsScanning] = useState(false);
+  const [isFlashOn, setIsFlashOn] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const { register, handleSubmit, setValue, watch, reset, formState: { isSubmitting, errors } } = useForm<AssetFormValues>({
     resolver: zodResolver(assetSchema),
@@ -46,17 +53,77 @@ export default function EditAssetPage() {
 
   const selectedCategory = watch("category");
 
+  const startScanning = async () => {
+    setIsScanning(true);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: "environment" } 
+      });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        
+        // Start Detection Loop
+        if ("BarcodeDetector" in window) {
+          const detector = new (window as any).BarcodeDetector({
+            formats: ["code_128", "code_39", "ean_13", "qr_code"]
+          });
+
+          const detectLoop = async () => {
+            if (!videoRef.current || videoRef.current.paused) return;
+            try {
+              const barcodes = await detector.detect(videoRef.current);
+              if (barcodes.length > 0) {
+                const sn = barcodes[0].rawValue;
+                setValue("serialNumber", sn);
+                toast.success(`พบ S/N: ${sn}`);
+                stopScanning();
+              } else {
+                requestAnimationFrame(detectLoop);
+              }
+            } catch (e) {
+              requestAnimationFrame(detectLoop);
+            }
+          };
+          detectLoop();
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("ไม่สามารถเข้าถึงกล้องได้");
+      setIsScanning(false);
+    }
+  };
+
+  const stopScanning = () => {
+    if (videoRef.current?.srcObject) {
+      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+      tracks.forEach(track => track.stop());
+    }
+    setIsScanning(false);
+  };
+
+  const toggleFlash = async () => {
+    const stream = videoRef.current?.srcObject as MediaStream;
+    const track = stream?.getVideoTracks()[0];
+    if (track && "applyConstraints" in track) {
+      try {
+        const newFlash = !isFlashOn;
+        await (track as any).applyConstraints({
+          advanced: [{ torch: newFlash }]
+        });
+        setIsFlashOn(newFlash);
+      } catch (e) {
+        toast.error("อุปกรณ์ไม่รองรับการเปิดไฟแฟลช");
+      }
+    }
+  };
+
   useEffect(() => {
     const fetchAsset = async () => {
-      // เปลี่ยนมาใช้ endpoint ตรงของมันเอง และปิด cache
       const res = await fetch(`/api/assets/${params.id}`, { cache: "no-store" });
-      
       if (res.ok) {
         const data = await res.json();
-        // ตอนนี้ data เป็น {} ไม่ใช่ [] แล้ว
         setAssetData(data);
-        
-        // แตกค่าจาก specifications และดึงข้อมูลออกมาที่ root เพื่อให้ register() หาเจอ
         reset({
           ...data,
           computerName: data.specifications?.computerName || "",
@@ -67,7 +134,6 @@ export default function EditAssetPage() {
           purchaseDate: data.purchaseDate ? new Date(data.purchaseDate).toISOString().split('T')[0] : "",
           warrantyExpire: data.warrantyExpire ? new Date(data.warrantyExpire).toISOString().split('T')[0] : "",
         });
-        
         setLoading(false);
       } else {
         toast.error("ไม่พบข้อมูลอุปกรณ์");
@@ -98,7 +164,6 @@ export default function EditAssetPage() {
 
   return (
     <div className="min-h-screen bg-white pb-20">
-      {/* Sticky Header IG Style */}
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <button onClick={() => router.back()} className="active:opacity-50">
@@ -108,19 +173,12 @@ export default function EditAssetPage() {
         </div>
         <div className="flex gap-2">
           {assetData?.status === "active" && (
-            <Button 
-              variant="ghost" 
-              className="text-orange-500 p-0 hover:bg-transparent"
-              onClick={() => setShowReplaceDialog(true)}
-            >
+            <Button variant="ghost" className="text-orange-500 p-0 hover:bg-transparent" onClick={() => setShowReplaceDialog(true)}>
               <RefreshCw className="h-5 w-5" />
             </Button>
           )}
           <Button 
-            onClick={handleSubmit(onSubmit, (err) => {
-              console.error("Validation Errors:", err);
-              toast.error("กรุณากรอกข้อมูลให้ครบถ้วนตามที่กำหนด");
-            })}
+            onClick={handleSubmit(onSubmit)}
             disabled={isSubmitting}
             variant="ghost"
             className="text-blue-600 font-bold hover:bg-transparent p-0 ml-2"
@@ -161,7 +219,6 @@ export default function EditAssetPage() {
               </div>
             </div>
 
-            {/* 🚩 ส่วนที่แก้ไขเพิ่ม: Category Select เพื่อระบุประเภทอุปกรณ์ */}
             <div className="space-y-2">
               <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">ประเภทอุปกรณ์</Label>
               <Select onValueChange={(v) => setValue("category", v as string)} value={watch("category")}>
@@ -191,7 +248,20 @@ export default function EditAssetPage() {
           <div className="grid grid-cols-1 gap-6">
             <div className="space-y-2">
               <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Serial Number</Label>
-              <Input {...register("serialNumber")} className="border-none bg-gray-50 h-12 rounded-xl font-mono" />
+              <div className="relative group">
+                <Input 
+                  {...register("serialNumber")} 
+                  className="border-none bg-gray-50 h-14 pr-14 rounded-2xl font-mono text-lg font-bold focus:ring-4 focus:ring-blue-500/5 transition-all" 
+                  placeholder="สแกนหรือพิมพ์ S/N"
+                />
+                <button
+                  type="button"
+                  onClick={startScanning}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 bg-zinc-900 text-white rounded-xl flex items-center justify-center hover:bg-black active:scale-90 transition-all shadow-lg shadow-zinc-900/20"
+                >
+                  <Scan size={18} />
+                </button>
+              </div>
             </div>
             <div className="space-y-2">
               <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">สถานที่ติดตั้ง</Label>
@@ -199,7 +269,6 @@ export default function EditAssetPage() {
             </div>
           </div>
 
-          {/* Dynamic Category Specifics */}
           {(selectedCategory === "computer" || selectedCategory === "monitor" || selectedCategory === "network") && (
             <div className="bg-blue-50/50 p-6 rounded-[2rem] space-y-4">
               <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">ข้อมูลเฉพาะของ {selectedCategory}</p>
@@ -209,7 +278,6 @@ export default function EditAssetPage() {
             </div>
           )}
 
-          {/* Delivery Info */}
           <div className="border-t border-gray-50 pt-8 space-y-6 pb-10">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">การส่งมอบ</p>
             <div className="space-y-2">
@@ -229,6 +297,38 @@ export default function EditAssetPage() {
           </div>
         </form>
       </div>
+
+      {isScanning && (
+        <div className="fixed inset-0 z-[2000] bg-black flex flex-col items-center justify-center animate-in fade-in duration-300">
+          <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-10 pt-safe">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center">
+                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+              </div>
+              <span className="text-white text-xs font-black uppercase tracking-widest">Scanning S/N</span>
+            </div>
+            <button onClick={stopScanning} className="text-white p-2 bg-white/10 backdrop-blur-md rounded-full active:scale-90 transition-all"><X size={24} /></button>
+          </div>
+
+          <div className="relative w-full aspect-[3/4] max-w-md overflow-hidden flex items-center justify-center">
+            <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-32 border-2 border-white/20 rounded-3xl" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-32 border-t-2 border-b-2 border-indigo-50 rounded-3xl animate-pulse" />
+              <div className="absolute top-[45%] left-1/2 -translate-x-1/2 w-72 h-[2px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent animate-bounce shadow-[0_0_15px_rgba(99,102,241,1)]" />
+            </div>
+          </div>
+
+          <div className="p-10 flex flex-col items-center gap-6 w-full max-w-md">
+            <div className="flex gap-4">
+              <button type="button" onClick={toggleFlash} className={cn("w-14 h-14 rounded-2xl flex items-center justify-center transition-all active:scale-90", isFlashOn ? "bg-yellow-400 text-black shadow-lg shadow-yellow-400/20" : "bg-white/10 text-white")}>
+                {isFlashOn ? <Zap size={24} /> : <ZapOff size={24} />}
+              </button>
+            </div>
+            <p className="text-white/40 text-[10px] font-bold uppercase tracking-[0.3em] text-center leading-relaxed">วางบาร์โค้ดให้อยู่ในกรอบสแกน<br />ระบบจะตรวจจับอัตโนมัติ</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
