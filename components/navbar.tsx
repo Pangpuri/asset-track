@@ -124,21 +124,3 @@ export function Navbar() {
     </nav>
   );
 }
-                >
-                  <item.icon size={22} strokeWidth={pathname === item.href ? 2.5 : 2} />
-                  {item.title}
-                </Link>
-              ))}
-            </div>
-            
-            <div className="p-8 text-center border-t border-gray-50 bg-gray-50">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-                Developed by MIS Department
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-    </nav>
-  );
-}
