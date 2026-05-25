@@ -18,9 +18,9 @@ export async function POST(req: Request) {
     // กำหนด Prefix ตามหมวดหมู่
     const prefixMap: Record<string, string> = {
       computer: "PC",
-      printer: "P",
-      monitor: "M",
-      network: "W",
+      printer: "PT",
+      monitor: "MO",
+      network: "NW",
       other: "E",
     };
 

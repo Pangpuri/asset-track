@@ -247,7 +247,7 @@ function AssetsList() {
             </SelectTrigger>
             <SelectContent className="rounded-2xl border border-zinc-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-2 bg-white">
               <SelectItem value="all" className="font-bold rounded-xl focus:bg-indigo-50">ทุกประเภท</SelectItem>
-              <SelectItem value="computer" className="font-bold rounded-xl focus:bg-indigo-50">Computer / Laptop</SelectItem>
+              <SelectItem value="computer" className="font-bold rounded-xl focus:bg-indigo-50">Computer/Laptop</SelectItem>
               <SelectItem value="printer" className="font-bold rounded-xl focus:bg-indigo-50">Printer</SelectItem>
               <SelectItem value="monitor" className="font-bold rounded-xl focus:bg-indigo-50">Monitor</SelectItem>
               <SelectItem value="network" className="font-bold rounded-xl focus:bg-indigo-50">Network</SelectItem>
@@ -265,6 +265,7 @@ function AssetsList() {
               else if (val === "pending") params.set("status", "pending");
               else if (val === "active") params.set("status", "active");
               else if (val === "broken") params.set("status", "broken");
+              else if (val === "lost") params.set("status", "lost");
               router.push(`/dashboard/assets?${params.toString()}`);
             }}
           >
@@ -277,6 +278,7 @@ function AssetsList() {
               <SelectItem value="broken" className="font-bold text-rose-600 rounded-xl focus:bg-rose-50">ชำรุด/เสียหาย</SelectItem>
               <SelectItem value="incomplete" className="font-bold text-amber-600 rounded-xl focus:bg-amber-50">ข้อมูลไม่สมบูรณ์</SelectItem>
               <SelectItem value="pending" className="font-bold text-indigo-400 rounded-xl focus:bg-indigo-50">รอลงทะเบียน</SelectItem>
+              <SelectItem value="lost" className="font-bold text-zinc-500 rounded-xl focus:bg-zinc-50">สูญหาย</SelectItem>
             </SelectContent>
           </Select>
         </div>

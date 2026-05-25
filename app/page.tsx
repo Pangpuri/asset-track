@@ -62,7 +62,7 @@ export default function Home() {
               <p className="text-xs font-black text-zinc-900 uppercase tracking-widest">System Integrated</p>
             </div>
             <p className="text-sm text-zinc-600 leading-relaxed font-medium">
-              ระบบบริหารจัดการและติดตามสถานะทรัพย์สินไอที 
+              ระบบบริหารจัดการและติดตามสถานะอุปกรณ์ไอที 
               <span className="text-indigo-600 font-bold ml-1">#SmartMIS</span>
             </p>
           </div>
@@ -72,7 +72,7 @@ export default function Home() {
         <div className="p-6">
           <Link href="/dashboard">
             <Button className="w-full h-14 bg-zinc-900 text-white rounded-2xl font-[1000] text-sm uppercase tracking-widest flex justify-center items-center gap-3 hover:bg-black shadow-xl active:scale-[0.98] transition-all">
-              <span>Go to Admin Dashboard</span>
+              <span>Go to Asset Dashboard</span>
               <ArrowRight size={20} />
             </Button>
           </Link>
