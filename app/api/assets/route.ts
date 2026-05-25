@@ -10,6 +10,7 @@ export async function GET(req: Request) {
     const id = searchParams.get("id");
     const status = searchParams.get("status");
     const category = searchParams.get("category");
+    const factory = searchParams.get("factory");
     const q = searchParams.get("q");
     const filter = searchParams.get("filter");
 
@@ -31,6 +32,11 @@ export async function GET(req: Request) {
       conditions.push(eq(assets.category, category));
     }
 
+    // กรองตามโรงงาน (Factory 1, Factory 2)
+    if (factory && factory !== "all") {
+      conditions.push(eq(assets.factory, factory));
+    }
+
     // ค้นหาด้วยคำสำคัญ (Search)
     if (q) {
       conditions.push(
@@ -41,7 +47,8 @@ export async function GET(req: Request) {
           ilike(assets.brand, `%${q}%`),
           ilike(assets.model, `%${q}%`),
           ilike(assets.location, `%${q}%`),
-          ilike(assets.department, `%${q}%`)
+          ilike(assets.department, `%${q}%`),
+          ilike(assets.factory, `%${q}%`)
         )
       );
     }
@@ -85,7 +92,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { 
-      assetCode, category, brand, model, serialNumber, location, 
+      assetCode, category, brand, model, serialNumber, location, factory,
       computerName, monitorSize, ipAddress, vendor,
       receivedBy, deliveredBy, purchaseDate, warrantyExpire
     } = body;
@@ -104,6 +111,7 @@ export async function POST(req: Request) {
       model,
       serialNumber,
       location,
+      factory,
       specifications,
       vendor,
       receivedBy,

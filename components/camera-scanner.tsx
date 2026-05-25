@@ -2,11 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 interface CameraScannerProps {
   isFlashOn: boolean;
+  onScanSuccess: (decodedText: string) => void;
 }
 
 /** Interface สำหรับรองรับคุณสมบัติ Torch (ไฟแฟลช) ที่ยังไม่มีในมาตรฐาน TypeScript lib.dom */
@@ -18,8 +18,7 @@ interface TorchConstraint extends MediaTrackConstraintSet {
  * คอมโพเนนต์สำหรับสแกน QR Code และจัดการกล้อง
  * แก้ไข Type Error และรองรับการเปิดไฟแฟลช (Torch)
  */
-export function CameraScanner({ isFlashOn }: CameraScannerProps) {
-  const router = useRouter();
+export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [hasCamera, setHasCamera] = useState(false);
 
@@ -47,10 +46,10 @@ export function CameraScanner({ isFlashOn }: CameraScannerProps) {
             },
             (decodedText) => {
               // เมื่อสแกนสำเร็จ: ดึง ID จาก URL หรือข้อความ
-              const id = decodedText.split("/").pop();
-              if (id) {
-                router.push(`/track/${id}`);
-                scanner.stop();
+              if (decodedText) {
+                // เรียกใช้ callback ที่ส่งมาจากหน้าหลัก
+                onScanSuccess(decodedText);
+                if (scanner.isScanning) scanner.stop();
               }
             },
             () => {
@@ -73,7 +72,7 @@ export function CameraScanner({ isFlashOn }: CameraScannerProps) {
         scannerRef.current.stop().catch(console.error);
       }
     };
-  }, [router]);
+  }, [onScanSuccess]);
 
   // ลอจิกสำหรับเปิด/ปิดไฟแฟลช
   useEffect(() => {

@@ -24,7 +24,8 @@ import {
   CheckCircle2, 
   Loader2,
   Search,
-  X 
+  X,
+  Factory
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -51,6 +52,7 @@ interface Asset {
   model: string | null;
   location: string | null;
   serialNumber: string | null;
+  factory: string | null;
   status: string;
   qrData: string;
   isIncomplete: boolean;
@@ -67,6 +69,7 @@ function AssetsList() {
   const filterParam = searchParams.get("filter") || "";
   const statusParam = searchParams.get("status") || "";
   const categoryParam = searchParams.get("category") || "";
+  const factoryParam = searchParams.get("factory") || "";
   const queryParam = searchParams.get("q") || "";
 
   const [allAssets, setAllAssets] = useState<Asset[]>([]);
@@ -101,6 +104,7 @@ function AssetsList() {
       if (filterParam) sp.append("filter", filterParam);
       if (statusParam) sp.append("status", statusParam);
       if (categoryParam) sp.append("category", categoryParam);
+      if (factoryParam) sp.append("factory", factoryParam);
       if (queryParam) sp.append("q", queryParam);
       
       // เพิ่ม cache: "no-store" เพื่อไม่ให้ browser จำข้อมูลเก่า
@@ -120,7 +124,7 @@ function AssetsList() {
     } finally {
       setLoading(false);
     }
-  }, [filterParam, statusParam, categoryParam, queryParam]);
+  }, [filterParam, statusParam, categoryParam, factoryParam, queryParam]);
 
   useEffect(() => {
     fetchAssets();
@@ -234,6 +238,25 @@ function AssetsList() {
         </div>
         <div className="w-full md:w-auto flex flex-col md:flex-row gap-2">
           <Select 
+            defaultValue={factoryParam || "all"}
+            onValueChange={(val) => {
+              const params = new URLSearchParams(window.location.search);
+              if (val === "all") params.delete("factory");
+              else params.set("factory", val || "");
+              router.push(`/dashboard/assets?${params.toString()}`);
+            }}
+          >
+            <SelectTrigger className="w-full md:w-[150px] h-12 bg-white border border-zinc-200 rounded-2xl font-black text-indigo-900 shadow-sm focus:ring-indigo-600">
+              <SelectValue placeholder="โรงงาน" />
+            </SelectTrigger>
+            <SelectContent className="rounded-2xl border border-zinc-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-2 bg-white">
+              <SelectItem value="all" className="font-bold rounded-xl focus:bg-indigo-50">ทุกโรงงาน</SelectItem>
+              <SelectItem value="Factory 1" className="font-bold rounded-xl focus:bg-indigo-50">โรงงาน 1</SelectItem>
+              <SelectItem value="Factory 2" className="font-bold rounded-xl focus:bg-indigo-50">โรงงาน 2</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select 
             defaultValue={categoryParam || "all"}
             onValueChange={(val) => {
               const params = new URLSearchParams(window.location.search);
@@ -303,6 +326,7 @@ function AssetsList() {
                     <TableHead className="w-[50px]"></TableHead>
                     <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">Asset Code</TableHead>
                     <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">ประเภท/ยี่ห้อ</TableHead>
+                    <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">โรงงาน</TableHead>
                     <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">สถานที่ติดตั้ง</TableHead>
                     <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">สถานะ</TableHead>
                     <TableHead className="text-right font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">การจัดการ</TableHead>
@@ -342,6 +366,12 @@ function AssetsList() {
                               )}
                             </div>
                             <span className="text-xs font-bold text-indigo-400 uppercase tracking-tight">{asset.brand} {asset.model}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1.5 font-bold text-zinc-600">
+                            <Factory className="h-3.5 w-3.5" />
+                            {asset.factory || "-"}
                           </div>
                         </TableCell>
                         <TableCell className="text-sm font-bold text-indigo-900/70">{asset.location || "-"}</TableCell>
@@ -410,6 +440,12 @@ function AssetsList() {
                               <div className="bg-rose-500 w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse" />
                             )}
                           </div>
+                          {asset.factory && (
+                            <div className="flex items-center gap-1 text-[10px] font-bold text-zinc-400">
+                              <Factory className="h-3 w-3" />
+                              {asset.factory}
+                            </div>
+                          )}
                         </div>
                         <Badge className={`border-none font-black text-[8px] px-2 py-0.5 rounded-full ${
                           asset.status === 'active' ? 'bg-emerald-500 text-white' : 

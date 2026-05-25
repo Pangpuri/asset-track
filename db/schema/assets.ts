@@ -46,6 +46,7 @@ export const assets = pgTable("assets", {
   status: assetStatusEnum("status").default("pending").notNull(),
   location: text("location"),   // สถานที่ติดตั้งปัจจุบัน
   department: text("department"), // แผนกที่ดูแล/ใช้งาน
+  factory: text("factory"), // โรงงานที่ใช้งาน (สำหรับอุปกรณ์ที่มีการย้ายหลายแผนก)
   
   // ข้อมูลเฉพาะตามประเภท (เก็บเป็น JSONB)
   specifications: jsonb("specifications").$type<{

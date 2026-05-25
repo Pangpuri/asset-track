@@ -12,33 +12,46 @@ import { toast } from "sonner";
 export default function ScanPage() {
   const router = useRouter();
   const [isFlashOn, setIsFlashOn] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ฟังก์ชันกลางสำหรับจัดการผลลัพธ์การสแกน
+  const handleScanSuccess = (decodedText: string) => {
+    let assetId = decodedText;
+    
+    // ตรวจสอบว่าเป็น URL หรือไม่ (เช่น https://domain.com/track/UUID)
+    if (decodedText.startsWith('http')) {
+      try {
+        const url = new URL(decodedText);
+        // แยก Path และกรองเอาเฉพาะส่วนที่มีข้อมูล (ป้องกันเรื่อง trailing slash)
+        const parts = url.pathname.split('/').filter(Boolean);
+        assetId = parts[parts.length - 1] || decodedText;
+      } catch (e) {
+        assetId = decodedText;
+      }
+    }
+    
+    toast.success("ดึงข้อมูลอุปกรณ์เรียบร้อย");
+    router.push(`/dashboard/assets/${assetId}`);
+  };
 
   const handleFileScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setIsProcessing(true);
     // สร้าง instance ชั่วคราวสำหรับการประมวลผลไฟล์ (ต้องมี element ใน DOM)
     const html5QrCode = new Html5Qrcode("qr-file-processor");
     
     try {
       const decodedText = await html5QrCode.scanFile(file, true);
-      if (decodedText) {
-        toast.success("พบข้อมูล QR Code");
-        
-        let assetId = decodedText;
-        // ถ้าเป็น URL ของระบบ (เช่น https://.../track/UUID) ให้ดึงเอา UUID ตัวสุดท้ายออกมา
-        if (decodedText.startsWith('http')) {
-          const parts = new URL(decodedText).pathname.split('/');
-          assetId = parts.pop() || parts.pop() || decodedText;
-        }
-        
-        // นำไปยังหน้าแก้ไข/จัดการข้อมูลใน Dashboard
-        router.push(`/dashboard/assets/${assetId}`);
-      }
+      if (decodedText) handleScanSuccess(decodedText);
     } catch (err) {
       toast.error("ไม่พบ QR Code ในรูปภาพ หรือภาพไม่ชัดเจนพอ");
       console.error("Scanning error:", err);
+    } finally {
+      setIsProcessing(false);
+      if (fileInputRef.current) fileInputRef.current.value = ""; // Clear input
     }
   };
 
@@ -74,7 +87,8 @@ export default function ScanPage() {
 
         {/* Camera Scanner Container */}
         <div className="w-full">
-          <CameraScanner isFlashOn={isFlashOn} />
+          {/* ส่ง callback ให้ CameraScanner เพื่อให้ใช้ logic เดียวกัน */}
+          <CameraScanner isFlashOn={isFlashOn} onScanSuccess={handleScanSuccess} />
         </div>
 
         {/* Gallery Action - Styled with Theme */}
@@ -82,10 +96,17 @@ export default function ScanPage() {
           <Button
             onClick={() => fileInputRef.current?.click()}
             variant="outline"
-            className="w-full h-14 rounded-2xl border-2 border-indigo-50 bg-white text-indigo-600 font-black hover:bg-indigo-50 hover:border-indigo-100 transition-all gap-3 shadow-sm"
+            disabled={isProcessing}
+            className="w-full h-14 rounded-2xl border-2 border-indigo-50 bg-white text-indigo-600 font-black hover:bg-indigo-50 hover:border-indigo-100 transition-all gap-3 shadow-sm disabled:opacity-50"
           >
-            <ImageIcon className="h-5 w-5" />
-            เลือกรูปภาพจากอัลบั้ม
+            {isProcessing ? (
+              <span className="flex items-center gap-2">กำลังประมวลผล...</span>
+            ) : (
+              <>
+                <ImageIcon className="h-5 w-5" />
+                เลือกรูปภาพจากอัลบั้ม
+              </>
+            )}
           </Button>
         </div>
 

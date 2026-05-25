@@ -23,6 +23,7 @@ interface Asset {
   category: string | null;
   brand: string | null;
   model: string | null;
+  factory: string | null;
   status: string;
 }
 
@@ -156,7 +157,7 @@ export function AssetReplaceDialog({
                     <SelectItem key={asset.id} value={asset.id}>
                       <div className="flex flex-col text-left">
                         <span className="font-bold">{asset.assetCode || "UNREGISTERED"}</span>
-                        <span className="text-xs opacity-70">{asset.brand} {asset.model} ({asset.category})</span>
+                        <span className="text-xs opacity-70">{asset.brand} {asset.model} | {asset.factory || 'ไม่ระบุโรงงาน'}</span>
                       </div>
                     </SelectItem>
                   ))
