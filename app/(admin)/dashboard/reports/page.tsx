@@ -1,19 +1,16 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { FileText, Download, Loader2, ArrowLeft, Settings2, Table as TableIcon } from "lucide-react";
+import { FileText, Download, Loader2, ArrowLeft, Settings2, Table as TableIcon, Printer } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 
-// เพิ่ม Font ภาษาไทย (NotoSansThai-Regular) แบบ Base64 เพื่อให้ PDF รองรับภาษาไทย
-// หมายเหตุ: ในการใช้งานจริงควรใช้ไฟล์ .ttf ที่ครอบคลุม แต่เพื่อความรวดเร็วจะใช้วิธีเรียกผ่าน Canvas หรือหา Font ที่รองรับ
-// ในที่นี้จะเน้นโครงสร้างการเลือกคอลัมน์และการจัดตาราง
+// ใช้แนวทาง HTML -> Print/PDF มาตรฐานเพื่อให้ภาษาไทยแสดงผลได้สมบูรณ์ 100% 
+// และจัดตารางได้สวยงามไม่ซ้อนทับกันครับ
 
 const columns = [
   { id: "assetCode", label: "Asset Code", default: true },
@@ -24,7 +21,7 @@ const columns = [
   { id: "location", label: "จุดติดตั้ง", default: true },
   { id: "status", label: "สถานะ", default: true },
   { id: "receivedBy", label: "ผู้รับมอบ", default: false },
-  { id: "purchaseDate", label: "วันที่ซื้อ/ส่งมอบ", default: false },
+  { id: "purchaseDate", label: "วันที่ซื้อ", default: false },
   { id: "warrantyExpire", label: "ประกันหมด", default: false },
 ];
 
@@ -33,6 +30,7 @@ export default function ExportPDFPage() {
     columns.filter(c => c.default).map(c => c.id)
   );
   const [isExporting, setIsGenerating] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
 
   const toggleColumn = (id: string) => {
     setSelectedColumns(prev => 
@@ -40,79 +38,141 @@ export default function ExportPDFPage() {
     );
   };
 
-  const handleExport = async () => {
+  const handlePrint = async () => {
     setIsGenerating(true);
     try {
       const res = await fetch("/api/assets");
       if (!res.ok) throw new Error();
       const assets = await res.json();
 
-      const doc = new jsPDF({
-        orientation: "landscape",
-        unit: "mm",
-        format: "a4",
-      });
+      const printWindow = window.open("", "_blank");
+      if (!printWindow) return;
 
-      // ตั้งค่าหัวกระดาษ
-      doc.setFontSize(18);
-      doc.text("Asset Management Report", 14, 15);
-      doc.setFontSize(10);
-      doc.setTextColor(100);
-      doc.text(`Generated on: ${new Date().toLocaleString("th-TH")}`, 14, 22);
-      doc.text(`Total Items: ${assets.length}`, 14, 27);
-
-      // เตรียมข้อมูลตาราง
       const tableHeaders = columns
         .filter(c => selectedColumns.includes(c.id))
-        .map(c => c.label);
+        .map(c => `<th>${c.label}</th>`)
+        .join("");
 
-      const tableRows = assets.map((a: any) => 
-        columns
+      const tableRows = assets.map((a: any) => {
+        const cells = columns
           .filter(c => selectedColumns.includes(c.id))
           .map(c => {
-            const val = a[c.id];
+            let val = a[c.id];
             if (c.id.toLowerCase().includes("date") || c.id.toLowerCase().includes("expire")) {
-              return val ? new Date(val).toLocaleDateString("th-TH") : "-";
+              val = val ? new Date(val).toLocaleDateString("th-TH") : "-";
             }
-            return val || "-";
+            if (c.id === "status") {
+                const statusMap: Record<string, string> = {
+                    active: "ใช้งานปกติ",
+                    broken: "ชำรุด",
+                    pending: "รอลงทะเบียน",
+                    retired: "เลิกใช้",
+                    lost: "สูญหาย"
+                };
+                val = statusMap[val] || val;
+            }
+            return `<td>${val || "-"}</td>`;
           })
-      );
+          .join("");
+        return `<tr>${cells}</tr>`;
+      }).join("");
 
-      // สร้างตาราง
-      autoTable(doc, {
-        startY: 35,
-        head: [tableHeaders],
-        body: tableRows,
-        theme: "grid",
-        headStyles: { 
-          fillColor: [30, 41, 59], 
-          textColor: [255, 255, 255],
-          fontSize: 10,
-          fontStyle: "bold",
-          halign: "center"
-        },
-        styles: { 
-          fontSize: 9, 
-          cellPadding: 3,
-          valign: "middle"
-        },
-        columnStyles: {
-          0: { cellWidth: 30 }, // Asset Code
-        },
-        didDrawPage: (data) => {
-          // ท้ายกระดาษ
-          const str = "Page " + doc.getNumberOfPages();
-          doc.setFontSize(10);
-          const pageSize = doc.internal.pageSize;
-          const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
-          doc.text(str, data.settings.margin.left, pageHeight - 10);
-        }
-      });
+      const isLandscape = selectedColumns.length > 6;
 
-      doc.save(`asset-report-${new Date().toISOString().split('T')[0]}.pdf`);
-      toast.success("ส่งออกรายงาน PDF เรียบร้อยแล้ว");
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Asset Report - ${new Date().toLocaleDateString("th-TH")}</title>
+            <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;700&display=swap" rel="stylesheet">
+            <style>
+              @page { 
+                size: A4 ${isLandscape ? "landscape" : "portrait"}; 
+                margin: 15mm; 
+              }
+              body { 
+                font-family: 'Noto Sans Thai', sans-serif; 
+                margin: 0; 
+                padding: 0; 
+                color: #1f2937;
+              }
+              .header { 
+                text-align: left; 
+                margin-bottom: 30px; 
+                border-bottom: 2px solid #4f46e5;
+                padding-bottom: 15px;
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-end;
+              }
+              h1 { margin: 0; font-size: 24px; font-weight: 900; color: #111827; }
+              .meta { font-size: 12px; color: #6b7280; font-weight: bold; }
+              table { 
+                width: 100%; 
+                border-collapse: collapse; 
+                font-size: 11px;
+                table-layout: fixed;
+              }
+              th { 
+                background-color: #f9fafb; 
+                border: 1px solid #e5e7eb; 
+                padding: 10px 8px; 
+                text-align: left; 
+                font-weight: 700;
+                color: #374151;
+                word-wrap: break-word;
+              }
+              td { 
+                border: 1px solid #e5e7eb; 
+                padding: 8px; 
+                vertical-align: top;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+              }
+              tr:nth-child(even) { background-color: #fdfdfd; }
+              .footer {
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+                text-align: center;
+                font-size: 10px;
+                color: #9ca3af;
+                padding: 10px 0;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <div>
+                <h1>ASSET INVENTORY REPORT</h1>
+                <div class="meta">ฝ่าย MIS • สรุปรายการทรัพย์สินไอที</div>
+              </div>
+              <div style="text-align: right">
+                <div class="meta">วันที่ออกรายงาน: ${new Date().toLocaleDateString("th-TH")}</div>
+                <div class="meta">จำนวนทั้งหมด: ${assets.length} รายการ</div>
+              </div>
+            </div>
+            <table>
+              <thead>
+                <tr>${tableHeaders}</tr>
+              </thead>
+              <tbody>
+                ${tableRows}
+              </tbody>
+            </table>
+            <div class="footer">Internal Use Only • MIS Department Asset Tracking System</div>
+            <script>
+              window.onload = () => {
+                window.print();
+                // window.close(); // นำออกหากต้องการดูผลก่อนปิด
+              };
+            </script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      toast.success("กำลังจัดเตรียมไฟล์ PDF...");
     } catch (err) {
-      toast.error("ไม่สามารถสร้างไฟล์ PDF ได้");
+      toast.error("เกิดข้อผิดพลาดในการดึงข้อมูล");
     } finally {
       setIsGenerating(false);
     }
@@ -122,112 +182,90 @@ export default function ExportPDFPage() {
     <div className="container mx-auto p-6 space-y-8 max-w-4xl">
       <div className="flex items-center gap-4">
         <Link href="/dashboard/assets">
-          <Button variant="ghost" size="icon" className="rounded-full">
+          <Button variant="ghost" size="icon" className="rounded-full hover:bg-zinc-100">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-black tracking-tight flex items-center gap-3 text-zinc-900">
-            <FileText className="h-8 w-8" />
-            ส่งออกรายงาน PDF
+          <h1 className="text-2xl font-[1000] tracking-tight flex items-center gap-3 text-zinc-900 leading-none">
+            <FileText className="h-8 w-8 text-indigo-600" />
+            EXPORT REPORT
           </h1>
-          <p className="text-muted-foreground font-bold text-xs uppercase tracking-widest ml-0.5">Custom Report Builder (A4 Landscape)</p>
+          <p className="text-zinc-400 font-black text-[9px] uppercase tracking-[0.3em] mt-1 ml-0.5">Professional A4 Document Builder</p>
         </div>
       </div>
 
       <div className="grid gap-8 md:grid-cols-3">
-        {/* คอลัมน์ซ้าย: การตั้งค่า */}
-        <Card className="md:col-span-1 border-none shadow-xl bg-zinc-50/50">
-          <CardHeader>
+        <Card className="md:col-span-1 border-none shadow-2xl bg-white rounded-[2rem] overflow-hidden">
+          <CardHeader className="bg-zinc-900 text-white p-6">
             <div className="flex items-center gap-2 mb-1">
-              <Settings2 className="h-4 w-4 text-indigo-600" />
-              <CardTitle className="text-sm font-black uppercase tracking-wider">เลือกข้อมูล</CardTitle>
+              <Settings2 className="h-4 w-4 text-indigo-400" />
+              <CardTitle className="text-xs font-black uppercase tracking-[0.2em]">Config Fields</CardTitle>
             </div>
-            <CardDescription className="text-xs font-bold">เลือกคอลัมน์ที่ต้องการแสดงใน PDF</CardDescription>
+            <CardDescription className="text-[10px] font-bold text-zinc-400">เลือกข้อมูลที่ต้องการแสดง</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="p-6 space-y-2">
             {columns.map((col) => (
-              <div key={col.id} className="flex items-center space-x-3 p-2 hover:bg-white rounded-xl transition-colors cursor-pointer" onClick={() => toggleColumn(col.id)}>
+              <div 
+                key={col.id} 
+                className={cn(
+                    "flex items-center space-x-3 p-3 rounded-2xl transition-all cursor-pointer border-2",
+                    selectedColumns.includes(col.id) ? "border-indigo-100 bg-indigo-50/30 text-indigo-900" : "border-transparent bg-zinc-50/50 text-zinc-400 hover:bg-zinc-50"
+                )}
+                onClick={() => toggleColumn(col.id)}
+              >
                 <Checkbox 
-                  id={col.id} 
-                  checked={selectedColumns.includes(col.id)} 
-                  onCheckedChange={() => toggleColumn(col.id)}
-                  className="rounded-md border-zinc-300 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600"
+                    id={col.id} 
+                    checked={selectedColumns.includes(col.id)} 
+                    onCheckedChange={() => toggleColumn(col.id)} 
+                    className="data-[state=checked]:bg-indigo-600 border-zinc-300"
                 />
-                <Label htmlFor={col.id} className="text-sm font-bold text-zinc-700 cursor-pointer">{col.label}</Label>
+                <Label htmlFor={col.id} className="text-sm font-black cursor-pointer leading-none">{col.label}</Label>
               </div>
             ))}
             
-            <div className="pt-6">
-              <Button 
-                className="w-full h-12 gap-2 bg-indigo-600 hover:bg-indigo-700 rounded-2xl font-black text-sm shadow-lg shadow-indigo-600/20" 
-                onClick={handleExport}
-                disabled={isExporting || selectedColumns.length === 0}
-              >
-                {isExporting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Download className="h-5 w-5" />}
-                สร้างรายงาน PDF
-              </Button>
-            </div>
+            <Button 
+                className="w-full h-14 mt-8 bg-zinc-900 hover:bg-black text-white rounded-2xl font-[1000] text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all gap-3" 
+                onClick={handlePrint}
+                disabled={isExporting}
+            >
+                {isExporting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Printer className="h-5 w-5" />}
+                Export to PDF
+            </Button>
           </CardContent>
         </Card>
 
-        {/* คอลัมน์ขวา: ตัวอย่าง/คำแนะนำ */}
-        <Card className="md:col-span-2 border-none shadow-xl bg-white overflow-hidden relative group">
-          <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-purple-50/50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-          <CardHeader>
-            <div className="flex items-center gap-2 mb-1">
-              <TableIcon className="h-4 w-4 text-zinc-900" />
-              <CardTitle className="text-sm font-black uppercase tracking-wider">รูปแบบรายงาน</CardTitle>
-            </div>
-            <CardDescription className="text-xs font-bold">ตัวอย่างตารางที่จะถูกสร้างลงในหน้า A4</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="border border-zinc-100 rounded-2xl overflow-hidden shadow-sm bg-zinc-50/20">
-              <div className="bg-zinc-900 p-3 flex gap-2">
-                {columns.filter(c => selectedColumns.includes(c.id)).slice(0, 4).map(c => (
-                  <div key={c.id} className="h-2 w-16 bg-white/20 rounded-full" />
-                ))}
-              </div>
-              <div className="p-4 space-y-4">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="flex gap-2">
-                    {columns.filter(c => selectedColumns.includes(c.id)).slice(0, 4).map(c => (
-                      <div key={c.id} className="h-2 w-20 bg-zinc-200 rounded-full" />
-                    ))}
-                  </div>
-                ))}
-              </div>
+        <Card className="md:col-span-2 border-none shadow-xl bg-zinc-50/30 rounded-[2.5rem] p-10 flex flex-col items-center justify-center text-center overflow-hidden relative">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500" />
+            
+            <div className="w-24 h-24 bg-white rounded-[2rem] shadow-2xl flex items-center justify-center mb-8 rotate-3">
+                <FileText className="h-12 w-12 text-indigo-600" />
             </div>
             
-            <div className="mt-8 space-y-4">
-              <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em]">ข้อมูลทางเทคนิค</h4>
-              <ul className="grid grid-cols-2 gap-4">
-                <li className="bg-zinc-50 p-4 rounded-2xl space-y-1">
-                  <p className="text-[10px] font-black text-zinc-900 uppercase">Format</p>
-                  <p className="text-xs font-bold text-zinc-500 tracking-tight text-nowrap">A4 Landscape (แนวนอน)</p>
-                </li>
-                <li className="bg-zinc-50 p-4 rounded-2xl space-y-1">
-                  <p className="text-[10px] font-black text-zinc-900 uppercase">Encoding</p>
-                  <p className="text-xs font-bold text-zinc-500 tracking-tight">UTF-8 / Thai Support</p>
-                </li>
-                <li className="bg-zinc-50 p-4 rounded-2xl space-y-1">
-                  <p className="text-[10px] font-black text-zinc-900 uppercase">Auto Styling</p>
-                  <p className="text-xs font-bold text-zinc-500 tracking-tight text-nowrap">จัดลำดับเลขหน้าอัตโนมัติ</p>
-                </li>
-                <li className="bg-zinc-50 p-4 rounded-2xl space-y-1">
-                  <p className="text-[10px] font-black text-zinc-900 uppercase">Density</p>
-                  <p className="text-xs font-bold text-zinc-500 tracking-tight">Compact Table Design</p>
-                </li>
-              </ul>
+            <h3 className="font-[1000] text-2xl text-zinc-900 tracking-tight mb-2 uppercase">A4 Layout Ready</h3>
+            <p className="text-zinc-500 text-sm font-bold max-w-sm leading-relaxed mb-10">
+                ระบบจะสร้างเอกสารภาษาไทยที่สมบูรณ์แบบ รองรับการจัดคอลัมน์อัตโนมัติ 
+                <span className="text-indigo-600 block mt-2 font-black uppercase text-[10px] tracking-widest">
+                    {selectedColumns.length > 6 ? "⚡ Auto Landscape Mode (Data Dense)" : "📄 Portrait Mode (Standard)"}
+                </span>
+            </p>
+            
+            <div className="w-full grid grid-cols-2 gap-4 max-w-xs">
+                <div className="bg-white p-5 rounded-3xl shadow-sm text-left">
+                    <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest block mb-1">Items</span>
+                    <span className="text-xl font-[1000] text-zinc-900 leading-none">Auto</span>
+                </div>
+                <div className="bg-white p-5 rounded-3xl shadow-sm text-left">
+                    <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest block mb-1">Encoding</span>
+                    <span className="text-xl font-[1000] text-zinc-900 leading-none">TH/UTF8</span>
+                </div>
             </div>
-          </CardContent>
-        </Card>
-      </div>
 
-      <div className="text-center pt-8 pb-4">
-        <p className="text-[10px] text-indigo-300 uppercase tracking-[0.3em] font-black">
-          รายงานสารสนเทศ • ฝ่าย MIS
-        </p>
+            <div className="mt-12 flex items-center gap-2 text-zinc-400">
+                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-widest leading-none">System Integrated Engine v2</span>
+            </div>
+        </Card>
       </div>
     </div>
   );
