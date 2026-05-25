@@ -66,7 +66,7 @@ export default function BulkPrintPage() {
               .grid { 
                 display: grid; 
                 grid-template-columns: repeat(4, 48mm); 
-                gap: 2mm; 
+                gap: 0; 
                 justify-content: center;
                 padding: 5mm 0;
               }
@@ -195,9 +195,9 @@ export default function BulkPrintPage() {
                 <p className="font-bold text-xs uppercase tracking-widest">ยังไม่มีการสร้างรหัส</p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 max-h-[600px] overflow-auto p-4 bg-white/80 rounded-[2rem] shadow-inner" id="printable-area">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-0 max-h-[600px] overflow-auto p-4 bg-white/80 rounded-[2rem] shadow-inner" id="printable-area">
                 {generatedQRs.map((qr) => (
-                  <div key={qr.id} className="sticker border border-zinc-200 p-2 rounded-xl bg-white shadow-sm flex flex-col justify-center aspect-[1.7/1] hover:border-indigo-400 transition-colors cursor-default">
+                  <div key={qr.id} className="sticker border border-zinc-200 p-2 bg-white flex flex-col justify-center aspect-[1.7/1] hover:bg-zinc-50 transition-colors cursor-default">
                     <div className="sticker-header flex items-center justify-center gap-2">
                       <img src={qr.qrData} alt="QR" className="qr-img w-[50px] h-[50px]" />
                       <div className="asset-info text-left">

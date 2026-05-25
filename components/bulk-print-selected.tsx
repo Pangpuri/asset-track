@@ -45,7 +45,7 @@ export function BulkPrintSelected({ selectedAssets, onClear }: BulkPrintSelected
             <title>Print Bulk QR Codes</title>
             <style>
               body { font-family: sans-serif; margin: 0; padding: 20px; }
-              .grid { display: grid; grid-template-columns: repeat(auto-fill, 170px); gap: 10px; }
+              .grid { display: grid; grid-template-columns: repeat(auto-fill, 170px); gap: 0; }
               .sticker { 
                 width: 170px; 
                 height: 95px;
