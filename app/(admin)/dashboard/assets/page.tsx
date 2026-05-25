@@ -29,8 +29,9 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { generateAssetQRCode } from "@/lib/qr";
 import { QRPrintWrapper } from "@/components/qr-print-wrapper";
-import { useEffect, useState, useCallback, startTransition } from "react";
+import { useEffect, useState, useCallback, startTransition, useRef } from "react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { BulkPrintSelected } from "@/components/bulk-print-selected";
 import { useRouter } from "next/navigation";
 import { 
@@ -66,6 +67,19 @@ export default function AssetsPage({
   const [allAssets, setAllAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState(searchParams.q || "");
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setIsSearchFocused(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   
   // โหลดข้อมูลผ่าน Client Side เพื่อให้รองรับการ Interact (Delete/Select)
   const fetchAssets = useCallback(async () => {
@@ -164,22 +178,55 @@ export default function AssetsPage({
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-center border-b border-indigo-50 pb-6">
-        <div className="relative flex-1 w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-indigo-400" />
-          <input
-            type="text"
-            placeholder="ค้นหาอุปกรณ์..."
-            className="w-full pl-12 pr-4 h-12 bg-white/60 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 outline-none font-bold text-indigo-950 placeholder:text-indigo-300 transition-all shadow-sm"
-            defaultValue={searchParams.q || ""}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                const val = (e.currentTarget as HTMLInputElement).value;
-                const params = new URLSearchParams(window.location.search);
-                if (val) params.set("q", val); else params.delete("q");
-                router.push(`/dashboard/assets?${params.toString()}`);
-              }
-            }}
-          />
+        <div ref={searchContainerRef} className="relative flex-1 w-full flex items-center gap-2">
+          <div className="relative flex-1">
+            <Search className={cn(
+              "absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 transition-colors",
+              isSearchFocused ? "text-indigo-600" : "text-indigo-400"
+            )} />
+            <input
+              type="text"
+              placeholder="ค้นหาอุปกรณ์..."
+              className="w-full pl-12 pr-12 h-12 bg-white/60 border border-transparent rounded-2xl focus:border-indigo-100 focus:bg-white focus:ring-4 focus:ring-indigo-600/5 outline-none font-bold text-indigo-950 placeholder:text-indigo-300 transition-all shadow-sm"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setIsSearchFocused(true)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const params = new URLSearchParams(window.location.search);
+                  if (searchQuery) params.set("q", searchQuery); else params.delete("q");
+                  router.push(`/dashboard/assets?${params.toString()}`);
+                  setIsSearchFocused(false);
+                  (e.currentTarget as HTMLInputElement).blur();
+                }
+              }}
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => {
+                  setSearchQuery("");
+                  const params = new URLSearchParams(window.location.search);
+                  params.delete("q");
+                  router.push(`/dashboard/assets?${params.toString()}`);
+                }}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-zinc-100 rounded-full text-zinc-400"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+          {isSearchFocused && (
+            <Button 
+              variant="ghost" 
+              className="md:hidden text-indigo-600 font-bold"
+              onClick={() => {
+                setIsSearchFocused(false);
+                setSearchQuery(searchParams.q || "");
+              }}
+            >
+              ยกเลิก
+            </Button>
+          )}
         </div>
         <div className="w-full md:w-auto">
           <Select 
@@ -190,6 +237,8 @@ export default function AssetsPage({
               params.delete("status");
               if (val === "incomplete") params.set("filter", "incomplete");
               else if (val === "pending") params.set("status", "pending");
+              else if (val === "active") params.set("status", "active");
+              else if (val === "broken") params.set("status", "broken");
               router.push(`/dashboard/assets?${params.toString()}`);
             }}
           >
@@ -198,8 +247,10 @@ export default function AssetsPage({
             </SelectTrigger>
             <SelectContent className="rounded-2xl border-none shadow-2xl p-2">
               <SelectItem value="all" className="font-bold rounded-xl focus:bg-indigo-50">อุปกรณ์ทั้งหมด</SelectItem>
-              <SelectItem value="incomplete" className="font-bold text-rose-600 rounded-xl focus:bg-rose-50">ข้อมูลไม่สมบูรณ์</SelectItem>
-              <SelectItem value="pending" className="font-bold text-amber-600 rounded-xl focus:bg-amber-50">รอลงทะเบียน</SelectItem>
+              <SelectItem value="active" className="font-bold text-emerald-600 rounded-xl focus:bg-emerald-50">ใช้งานปกติ</SelectItem>
+              <SelectItem value="broken" className="font-bold text-rose-600 rounded-xl focus:bg-rose-50">ชำรุด/เสียหาย</SelectItem>
+              <SelectItem value="incomplete" className="font-bold text-amber-600 rounded-xl focus:bg-amber-50">ข้อมูลไม่สมบูรณ์</SelectItem>
+              <SelectItem value="pending" className="font-bold text-indigo-400 rounded-xl focus:bg-indigo-50">รอลงทะเบียน</SelectItem>
             </SelectContent>
           </Select>
         </div>

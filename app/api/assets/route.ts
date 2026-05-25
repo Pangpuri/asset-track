@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { assets } from "@/db/schema";
-import { eq } from "drizzle-orm";
+import { eq, and, or, ilike, isNull, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
+    const status = searchParams.get("status");
+    const q = searchParams.get("q");
+    const filter = searchParams.get("filter");
 
     if (id) {
       const result = await db.select().from(assets).where(eq(assets.id, id as string)).limit(1);
@@ -15,9 +18,59 @@ export async function GET(req: Request) {
       return NextResponse.json(result[0]);
     }
 
-    const allAssets = await db.select().from(assets);
+    let conditions = [];
+
+    // กรองตามสถานะ (เช่น active, broken, pending)
+    if (status && status !== "all") {
+      conditions.push(eq(assets.status, status as any));
+    }
+
+    // ค้นหาด้วยคำสำคัญ (Search)
+    if (q) {
+      conditions.push(
+        or(
+          ilike(assets.assetCode, `%${q}%`),
+          ilike(assets.assetName, `%${q}%`),
+          ilike(assets.serialNumber, `%${q}%`),
+          ilike(assets.brand, `%${q}%`),
+          ilike(assets.model, `%${q}%`),
+          ilike(assets.location, `%${q}%`),
+          ilike(assets.department, `%${q}%`)
+        )
+      );
+    }
+
+    // กรองข้อมูลที่ยังไม่สมบูรณ์ (Incomplete)
+    // Logic: สถานะเป็น active แต่ขาดข้อมูลสำคัญ (S/N, Brand, หรือ Location)
+    if (filter === "incomplete") {
+      conditions.push(
+        and(
+          eq(assets.status, "active"),
+          or(
+            isNull(assets.serialNumber),
+            eq(assets.serialNumber, ""),
+            isNull(assets.brand),
+            eq(assets.brand, ""),
+            isNull(assets.location),
+            eq(assets.location, "")
+          )
+        )
+      );
+    }
+
+    const query = db.select().from(assets);
+    
+    if (conditions.length > 0) {
+      query.where(and(...conditions));
+    }
+
+    // เรียงลำดับตามวันที่สร้างล่าสุด
+    query.orderBy(desc(assets.createdAt));
+
+    const allAssets = await query;
     return NextResponse.json(allAssets);
   } catch (error) {
+    console.error("Failed to fetch assets:", error);
     return NextResponse.json({ error: "Failed to fetch assets" }, { status: 500 });
   }
 }

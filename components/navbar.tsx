@@ -43,7 +43,7 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <nav className="sticky top-0 z-[999] w-full border-b border-zinc-200 bg-white/95 backdrop-blur-md">
+    <nav className="sticky top-0 z-40 w-full border-b border-zinc-200 bg-white/95 backdrop-blur-md">
       <div className="container mx-auto flex h-14 items-center justify-between px-4 max-w-lg">
         {/* Left: Brand */}
         <Link href="/" className="flex items-center gap-2 active:opacity-60">
@@ -82,16 +82,16 @@ export function Navbar() {
         <>
           {/* Backdrop Blur */}
           <div 
-            className="fixed inset-0 z-[1000] bg-zinc-900/10 backdrop-blur-sm animate-in fade-in duration-300"
+            className="fixed inset-0 z-50 bg-zinc-900/20 backdrop-blur-sm animate-in fade-in duration-300"
             onClick={() => setIsOpen(false)}
           />
           
-          <div className="fixed top-0 right-0 bottom-0 z-[1001] w-[65%] bg-white shadow-2xl animate-in slide-in-from-right duration-300 border-l border-zinc-100">
+          <div className="fixed top-0 right-0 bottom-0 z-[51] w-[65%] bg-white shadow-2xl animate-in slide-in-from-right duration-300 border-l border-zinc-100 pb-safe">
             <div className="flex flex-col h-full">
               {/* Menu Header */}
-              <div className="flex items-center justify-between px-6 h-14 border-b border-zinc-50">
+              <div className="flex items-center justify-between px-6 h-14 border-b border-zinc-50 pt-safe">
                 <span className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">Menu</span>
-                <button onClick={() => setIsOpen(false)} className="text-zinc-900"><X size={24} /></button>
+                <button onClick={() => setIsOpen(false)} className="text-zinc-900 p-2"><X size={24} /></button>
               </div>
 
               {/* Menu Items */}
