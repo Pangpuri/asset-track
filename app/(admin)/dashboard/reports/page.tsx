@@ -15,10 +15,10 @@ const columns = [
   { id: "category", label: "ประเภท", default: true },
   { id: "brand", label: "ยี่ห้อ", default: true },
   { id: "model", label: "รุ่น", default: true },
-  { id: "serialNumber", label: "Serial Number", default: true },
   { id: "location", label: "จุดติดตั้ง", default: true },
+  { id: "receivedBy", label: "ผู้รับมอบ", default: false },   
   { id: "status", label: "สถานะ", default: true },
-  { id: "receivedBy", label: "ผู้รับมอบ", default: false },
+  { id: "serialNumber", label: "Serial Number", default: true },
   { id: "purchaseDate", label: "วันที่ซื้อ", default: false },
   { id: "warrantyExpire", label: "ประกันหมด", default: false },
 ];
