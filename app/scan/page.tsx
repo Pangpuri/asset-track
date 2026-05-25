@@ -1,16 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { CameraScanner } from "@/components/camera-scanner";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Zap, ZapOff } from "lucide-react";
+import { ArrowLeft, Zap, ZapOff, Image as ImageIcon } from "lucide-react";
 import Link from "next/link";
+import { Html5Qrcode } from "html5-qrcode";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function ScanPage() {
+  const router = useRouter();
   const [isFlashOn, setIsFlashOn] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // สร้าง instance ชั่วคราวสำหรับการประมวลผลไฟล์ (ต้องมี element ใน DOM)
+    const html5QrCode = new Html5Qrcode("qr-file-processor");
+    
+    try {
+      const decodedText = await html5QrCode.scanFile(file, true);
+      if (decodedText) {
+        toast.success("พบข้อมูล QR Code");
+        
+        let assetId = decodedText;
+        // ถ้าเป็น URL ของระบบ (เช่น https://.../track/UUID) ให้ดึงเอา UUID ตัวสุดท้ายออกมา
+        if (decodedText.startsWith('http')) {
+          const parts = new URL(decodedText).pathname.split('/');
+          assetId = parts.pop() || parts.pop() || decodedText;
+        }
+        
+        // นำไปยังหน้าแก้ไข/จัดการข้อมูลใน Dashboard
+        router.push(`/dashboard/assets/${assetId}`);
+      }
+    } catch (err) {
+      toast.error("ไม่พบ QR Code ในรูปภาพ หรือภาพไม่ชัดเจนพอ");
+      console.error("Scanning error:", err);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center">
+      {/* Hidden element required for Html5Qrcode processing */}
+      <div id="qr-file-processor" className="hidden" />
+      
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileScan}
+      />
+
       <div className="w-full max-w-lg">
         {/* Header - IG Style */}
         <div className="flex items-center justify-between px-4 h-14 border-b border-gray-100">
@@ -33,8 +77,20 @@ export default function ScanPage() {
           <CameraScanner isFlashOn={isFlashOn} />
         </div>
 
+        {/* Gallery Action - Styled with Theme */}
+        <div className="px-6 mt-6">
+          <Button
+            onClick={() => fileInputRef.current?.click()}
+            variant="outline"
+            className="w-full h-14 rounded-2xl border-2 border-indigo-50 bg-white text-indigo-600 font-black hover:bg-indigo-50 hover:border-indigo-100 transition-all gap-3 shadow-sm"
+          >
+            <ImageIcon className="h-5 w-5" />
+            เลือกรูปภาพจากอัลบั้ม
+          </Button>
+        </div>
+
         {/* Instructions - Simplified/Flat */}
-        <div className="p-6 space-y-4 border-t border-gray-100 mt-6">
+        <div className="p-6 space-y-4 border-t border-gray-100 mt-8">
           <h3 className="text-black font-black text-sm uppercase tracking-wider">
             วิธีใช้งาน
           </h3>
@@ -49,7 +105,7 @@ export default function ScanPage() {
             </li>
             <li className="flex gap-3 items-center">
               <span className="w-1.5 h-1.5 bg-black" />
-              <span>ระบบจะตรวจจับและนำคุณไปยังหน้าข้อมูลโดยอัตโนมัติ</span>
+              <span>ระบบจะนำคุณไปยังหน้าจัดการและแก้ไขข้อมูลอุปกรณ์โดยอัตโนมัติ</span>
             </li>
           </ul>
         </div>
