@@ -89,7 +89,7 @@ export function BulkPrintSelected({ selectedAssets, onClear }: BulkPrintSelected
       <div className="bg-indigo-600 text-white px-6 py-4 rounded-3xl shadow-2xl flex items-center gap-6 border border-white/20 backdrop-blur-lg">
         <div className="flex flex-col">
           <span className="text-xs font-bold uppercase tracking-widest opacity-80">เลือกไว้</span>
-          <span className="text-xl font-black">${selectedAssets.length} <span className="text-sm font-medium">รายการ</span></span>
+          <span className="text-xl font-black">{selectedAssets.length} <span className="text-sm font-medium">รายการ</span></span>
         </div>
         
         <div className="h-10 w-px bg-white/20" />
