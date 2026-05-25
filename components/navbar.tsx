@@ -50,7 +50,7 @@ export function Navbar() {
   return (
     <>
       {/* Main Navbar - Sticky */}
-      <nav className="sticky top-0 z-[100] w-full border-b border-zinc-200 bg-white/95 backdrop-blur-md">
+      <nav className="sticky top-0 z-[100] w-full border-b border-zinc-200 bg-white/95 backdrop-blur-md print:hidden">
         <div className="container mx-auto flex h-14 items-center justify-between px-4 max-w-lg">
           {/* Left: Brand - Modern IT Style */}
           <Link href="/" className="flex items-center gap-3 active:opacity-60 group">

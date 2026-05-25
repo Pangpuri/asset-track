@@ -41,20 +41,38 @@ export default function ExportPDFPage() {
   };
 
   const handlePrint = () => {
-    setIsGenerating(true);
-    toast.success("กำลังจัดเตรียมหน้าพรีวิวสำหรับพิมพ์...");
+    // ปิด Toast ทั้งหมดก่อนพิมพ์เพื่อไม่ให้บัง
+    toast.dismiss();
     
-    // ใช้เวลาเล็กน้อยเพื่อให้ Toast แสดงผล
+    setIsGenerating(true);
+    // ไม่ใช้ toast.success ที่นี่เพื่อป้องกันการบังหน้าจอตอนพิมพ์
+    
     setTimeout(() => {
         window.print();
         setIsGenerating(false);
-    }, 500);
+    }, 300);
   };
 
   const isLandscape = selectedColumns.length > 6;
 
   return (
-    <div className="container mx-auto p-6 space-y-8 max-w-4xl pb-20 print:p-0">
+    <div className="container mx-auto p-6 space-y-8 max-w-4xl pb-20 print:p-0 print:m-0 print:max-w-none">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @media print {
+          /* ซ่อนทุกอย่างยกเว้นพื้นที่พิมพ์ */
+          body * { visibility: hidden; }
+          #printable-report, #printable-area, .print-content, .print-content * { visibility: visible; }
+          #printable-report { 
+            position: absolute; 
+            left: 0; 
+            top: 0; 
+            width: 100%;
+          }
+          /* ซ่อน UI ของ Library ต่างๆ */
+          [data-sonner-toaster], .sonner-toast, .print\\:hidden { display: none !important; }
+        }
+      `}} />
+
       {/* ส่วนหัว (ซ่อนตอนพิมพ์) */}
       <div className="flex items-center gap-4 print:hidden">
         <Link href="/dashboard/assets">
