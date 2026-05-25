@@ -66,6 +66,7 @@ function AssetsList() {
   // Extract params from hook for true reactivity
   const filterParam = searchParams.get("filter") || "";
   const statusParam = searchParams.get("status") || "";
+  const categoryParam = searchParams.get("category") || "";
   const queryParam = searchParams.get("q") || "";
 
   const [allAssets, setAllAssets] = useState<Asset[]>([]);
@@ -99,6 +100,7 @@ function AssetsList() {
       const sp = new URLSearchParams();
       if (filterParam) sp.append("filter", filterParam);
       if (statusParam) sp.append("status", statusParam);
+      if (categoryParam) sp.append("category", categoryParam);
       if (queryParam) sp.append("q", queryParam);
       
       // เพิ่ม cache: "no-store" เพื่อไม่ให้ browser จำข้อมูลเก่า
@@ -118,7 +120,7 @@ function AssetsList() {
     } finally {
       setLoading(false);
     }
-  }, [filterParam, statusParam, queryParam]);
+  }, [filterParam, statusParam, categoryParam, queryParam]);
 
   useEffect(() => {
     fetchAssets();
@@ -153,7 +155,7 @@ function AssetsList() {
 
   return (
     <div className="container mx-auto p-6 space-y-8 relative">
-      {!loading && allAssets.length === 0 && !filterParam && !statusParam && !queryParam && (
+      {!loading && allAssets.length === 0 && !filterParam && !statusParam && !queryParam && !categoryParam && (
         <div className="bg-amber-50 text-amber-700 p-4 rounded-xl flex items-center gap-3 mb-4 text-sm font-bold">
           <AlertTriangle className="h-5 w-5" />
           ไม่พบข้อมูลอุปกรณ์ในระบบ
@@ -230,7 +232,29 @@ function AssetsList() {
             </Button>
           )}
         </div>
-        <div className="w-full md:w-auto">
+        <div className="w-full md:w-auto flex flex-col md:flex-row gap-2">
+          <Select 
+            defaultValue={categoryParam || "all"}
+            onValueChange={(val) => {
+              const params = new URLSearchParams(window.location.search);
+              if (val === "all") params.delete("category");
+              else params.set("category", val || "");
+              router.push(`/dashboard/assets?${params.toString()}`);
+            }}
+          >
+            <SelectTrigger className="w-full md:w-[180px] h-12 bg-white border border-zinc-200 rounded-2xl font-black text-indigo-900 shadow-sm focus:ring-indigo-600">
+              <SelectValue placeholder="หมวดหมู่" />
+            </SelectTrigger>
+            <SelectContent className="rounded-2xl border border-zinc-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-2 bg-white">
+              <SelectItem value="all" className="font-bold rounded-xl focus:bg-indigo-50">ทุกประเภท</SelectItem>
+              <SelectItem value="computer" className="font-bold rounded-xl focus:bg-indigo-50">Computer / Laptop</SelectItem>
+              <SelectItem value="printer" className="font-bold rounded-xl focus:bg-indigo-50">Printer</SelectItem>
+              <SelectItem value="monitor" className="font-bold rounded-xl focus:bg-indigo-50">Monitor</SelectItem>
+              <SelectItem value="network" className="font-bold rounded-xl focus:bg-indigo-50">Network</SelectItem>
+              <SelectItem value="other" className="font-bold rounded-xl focus:bg-indigo-50">อื่นๆ</SelectItem>
+            </SelectContent>
+          </Select>
+
           <Select 
             defaultValue={filterParam || statusParam || "all"}
             onValueChange={(val) => {
@@ -244,11 +268,11 @@ function AssetsList() {
               router.push(`/dashboard/assets?${params.toString()}`);
             }}
           >
-            <SelectTrigger className="w-full md:w-[220px] h-12 bg-white border border-zinc-200 rounded-2xl font-black text-indigo-900 shadow-sm focus:ring-indigo-600">
-              <SelectValue placeholder="เลือกการกรอง" />
+            <SelectTrigger className="w-full md:w-[180px] h-12 bg-white border border-zinc-200 rounded-2xl font-black text-indigo-900 shadow-sm focus:ring-indigo-600">
+              <SelectValue placeholder="สถานะ" />
             </SelectTrigger>
             <SelectContent className="rounded-2xl border border-zinc-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-2 bg-white">
-              <SelectItem value="all" className="font-bold rounded-xl focus:bg-indigo-50">อุปกรณ์ทั้งหมด</SelectItem>
+              <SelectItem value="all" className="font-bold rounded-xl focus:bg-indigo-50">ทุกสถานะ</SelectItem>
               <SelectItem value="active" className="font-bold text-emerald-600 rounded-xl focus:bg-emerald-50">ใช้งานปกติ</SelectItem>
               <SelectItem value="broken" className="font-bold text-rose-600 rounded-xl focus:bg-rose-50">ชำรุด/เสียหาย</SelectItem>
               <SelectItem value="incomplete" className="font-bold text-amber-600 rounded-xl focus:bg-amber-50">ข้อมูลไม่สมบูรณ์</SelectItem>
@@ -388,7 +412,8 @@ function AssetsList() {
                         <Badge className={`border-none font-black text-[8px] px-2 py-0.5 rounded-full ${
                           asset.status === 'active' ? 'bg-emerald-500 text-white' : 
                           asset.status === 'broken' ? 'bg-rose-500 text-white' : 
-                          asset.status === 'pending' ? 'bg-amber-500 text-white' : 'bg-indigo-200 text-indigo-700'
+                          asset.status === 'pending' ? 'bg-amber-500 text-white' : 
+                          asset.status === 'retired' ? 'bg-zinc-500 text-white' : 'bg-indigo-200 text-indigo-700'
                         }`}>
                           {asset.status.toUpperCase()}
                         </Badge>

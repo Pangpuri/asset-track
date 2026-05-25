@@ -11,9 +11,11 @@ import {
   Printer,
   Network,
   Laptop,
-  MoreHorizontal
+  MoreHorizontal,
+  ArrowRight
 } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -62,124 +64,138 @@ export default async function DashboardPage() {
 
   const statusCards = [
     {
-      title: "ใช้งานปกติ (Active)",
+      title: "ใช้งานปกติ",
       value: stats.active,
       icon: CheckCircle2,
-      color: "text-emerald-600",
-      borderColor: "border-zinc-200",
-      gradient: "from-white to-white",
+      color: "text-emerald-500",
+      bgColor: "bg-emerald-50",
       href: "/dashboard/assets?status=active"
     },
     {
-      title: "ชำรุด/เสียหาย",
+      title: "ชำรุด",
       value: stats.broken,
       icon: AlertTriangle,
-      color: "text-rose-600",
-      borderColor: "border-zinc-200",
-      gradient: "from-white to-white",
+      color: "text-rose-500",
+      bgColor: "bg-rose-50",
       href: "/dashboard/assets?status=broken"
     },
     {
       title: "รอลงทะเบียน",
       value: stats.pending,
       icon: Clock,
-      color: "text-amber-600",
-      borderColor: "border-zinc-200",
-      gradient: "from-white to-white",
+      color: "text-amber-500",
+      bgColor: "bg-amber-50",
       href: "/dashboard/assets?status=pending"
     }
   ];
 
   const categoryItems = [
-    { label: "Computer / Laptop", value: stats.categories.computer, icon: Laptop, color: "bg-blue-500" },
-    { label: "Monitor", value: stats.categories.monitor, icon: Monitor, color: "bg-purple-500" },
-    { label: "Printer", value: stats.categories.printer, icon: Printer, color: "bg-orange-500" },
-    { label: "Network", value: stats.categories.network, icon: Network, color: "bg-cyan-500" },
-    { label: "อื่นๆ", value: stats.categories.other, icon: MoreHorizontal, color: "bg-slate-400" },
+    { label: "Computer", value: stats.categories.computer, icon: Laptop, color: "bg-blue-500", textColor: "text-blue-600" },
+    { label: "Monitor", value: stats.categories.monitor, icon: Monitor, color: "bg-purple-500", textColor: "text-purple-600" },
+    { label: "Printer", value: stats.categories.printer, icon: Printer, color: "bg-orange-500", textColor: "text-orange-600" },
+    { label: "Network", value: stats.categories.network, icon: Network, color: "bg-cyan-500", textColor: "text-cyan-600" },
+    { label: "อื่นๆ", value: stats.categories.other, icon: MoreHorizontal, color: "bg-slate-400", textColor: "text-slate-600" },
   ];
 
   return (
-    <div className="min-h-screen bg-white p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="text-4xl font-black tracking-tight text-slate-900 flex items-center gap-3">
-              <div className="p-2 bg-black rounded-xl">
-                <LayoutDashboard className="h-7 w-7 text-white" />
-              </div>
-              Dashboard
-            </h1>
-            <p className="text-zinc-400 font-bold uppercase tracking-widest text-[10px] ml-1">IT Asset Management System</p>
-          </div>
-          
-          <div className="bg-white px-6 py-3 rounded-2xl border border-zinc-200 shadow-sm flex items-center gap-4">
-            <div className="p-2 bg-zinc-100 rounded-lg">
-              <Package className="h-5 w-5 text-zinc-900" />
+    <div className="min-h-screen bg-slate-50/50 pb-10">
+      <div className="max-w-lg mx-auto">
+        
+        {/* Header - Compact */}
+        <div className="bg-white px-6 py-8 border-b border-zinc-100 rounded-b-[2.5rem] shadow-sm">
+          <div className="flex justify-between items-start mb-6">
+            <div className="space-y-1">
+              <h1 className="text-3xl font-[1000] tracking-tighter text-zinc-900 leading-none uppercase">
+                DASH<span className="text-indigo-600">BOARD</span>
+              </h1>
+              <p className="text-zinc-400 font-black uppercase tracking-[0.3em] text-[8px]">MIS Asset Overview</p>
             </div>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-400 leading-none">ทั้งหมด</p>
-              <p className="text-xl font-black text-zinc-900 leading-tight">{stats.total} <span className="text-xs font-bold text-zinc-300">รายการ</span></p>
+            <div className="flex flex-col items-end">
+               <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest leading-none mb-1">Total Assets</span>
+               <span className="text-3xl font-[1000] text-zinc-900 leading-none tracking-tighter">{stats.total}</span>
             </div>
           </div>
-        </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
-          {/* Status Column (Left/Top) */}
-          <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
-            {statusCards.map((card) => (
-              <Link key={card.title} href={card.href} className="group active:scale-95 transition-transform">
-                <div className={`h-full p-6 bg-white border border-zinc-100 rounded-[2.5rem] shadow-sm hover:border-zinc-300 transition-all duration-300`}>
-                  <div className={`w-10 h-10 bg-zinc-100 rounded-xl flex items-center justify-center mb-6`}>
-                    <card.icon className={`${card.color}`} size={24} />
-                  </div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{card.title}</p>
-                  <h2 className="text-4xl font-black text-slate-900">{card.value}</h2>
+          {/* Quick Actions / Categories Horizontal Scroll */}
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-hide">
+            {categoryItems.map((item) => (
+              <Link 
+                key={item.label}
+                href={`/dashboard/assets?category=${item.label.toLowerCase().includes('computer') ? 'computer' : item.label.toLowerCase()}`}
+                className="flex-shrink-0 flex items-center gap-2 bg-zinc-50 border border-zinc-100 px-4 py-2.5 rounded-2xl active:scale-95 transition-all shadow-sm"
+              >
+                <div className={cn("p-1.5 rounded-lg bg-white shadow-sm", item.textColor)}>
+                  <item.icon size={14} />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-black text-zinc-900 leading-none">{item.value}</span>
+                  <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-tighter">{item.label}</span>
                 </div>
               </Link>
             ))}
+          </div>
+        </div>
 
-            {/* Summary Card with IG Story Border */}
-            <div className="md:col-span-3 p-[3px] rounded-[3rem] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600">
-              <div className="p-10 bg-white rounded-[2.8rem] overflow-hidden relative group">
-                <Package className="absolute -right-8 -bottom-8 w-64 h-64 text-zinc-100 rotate-12" />
-                <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div className="space-y-2">
-                    <h3 className="text-3xl font-black text-zinc-900">ความสมบูรณ์ของข้อมูล</h3>
-                    <p className="text-zinc-500 text-sm max-w-md">ตรวจสอบข้อมูลทรัพย์สินเพื่อให้ระบบรายงานผลได้อย่างแม่นยำ</p>
+        <div className="px-5 py-6 space-y-6">
+          
+          {/* Status Grid - 3 Columns (Fits on one row) */}
+          <div className="grid grid-cols-3 gap-3">
+            {statusCards.map((card) => (
+              <Link key={card.title} href={card.href} className="group active:scale-95 transition-transform">
+                <div className="bg-white p-4 rounded-[1.8rem] shadow-sm border border-white flex flex-col items-center text-center gap-2 h-full">
+                  <div className={cn("w-10 h-10 rounded-2xl flex items-center justify-center shadow-inner", card.bgColor)}>
+                    <card.icon className={card.color} size={20} />
                   </div>
-                  <Link href="/dashboard/assets?filter=incomplete">
-                    <button className="px-8 h-12 bg-zinc-900 text-white rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-black transition-colors">
-                      ตรวจสอบข้อมูล
-                    </button>
-                  </Link>
+                  <div className="space-y-0.5">
+                    <p className="text-2xl font-[1000] text-zinc-900 leading-none tracking-tighter">{card.value}</p>
+                    <p className="text-[8px] font-black uppercase tracking-tighter text-zinc-400 leading-tight">{card.title}</p>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </Link>
+            ))}
           </div>
 
-          {/* Category Distribution (Right) */}
-          <div className="bg-white border border-slate-100 rounded-[2.5rem] p-8 shadow-sm">
-            <h3 className="text-lg font-black text-slate-900 mb-6 flex items-center gap-2">
-              แยกตามหมวดหมู่
+          {/* Featured Action Card - Compact */}
+          <Link href="/dashboard/assets?filter=incomplete">
+            <div className="relative group active:scale-[0.98] transition-all overflow-hidden rounded-[2.2rem] bg-zinc-900 shadow-xl p-[2px]">
+               <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 opacity-80" />
+               <div className="relative bg-white/95 rounded-[2.1rem] p-6 flex items-center justify-between overflow-hidden">
+                 <Package className="absolute -right-6 -bottom-6 w-32 h-32 text-zinc-100/50 -rotate-12" />
+                 <div className="relative z-10 flex-1 pr-4">
+                    <div className="flex items-center gap-2 mb-1">
+                       <div className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse" />
+                       <h3 className="text-lg font-[1000] text-zinc-900 tracking-tight">DATA INTEGRITY</h3>
+                    </div>
+                    <p className="text-[10px] font-bold text-zinc-500 leading-relaxed uppercase tracking-tighter">ตรวจสอบและเติมข้อมูลเครื่องที่ยังไม่สมบูรณ์</p>
+                 </div>
+                 <div className="relative z-10 bg-zinc-900 text-white p-3 rounded-2xl shadow-lg">
+                    <ArrowRight size={18} strokeWidth={3} />
+                 </div>
+               </div>
+            </div>
+          </Link>
+
+          {/* Category Progress - Density Refinement */}
+          <div className="bg-white rounded-[2.2rem] p-7 shadow-sm border border-zinc-100">
+            <h3 className="text-xs font-black text-zinc-900 mb-6 uppercase tracking-[0.2em] flex items-center gap-2">
+              <div className="w-1.5 h-4 bg-indigo-600 rounded-full" />
+              Category Insights
             </h3>
-            <div className="space-y-6">
+            <div className="space-y-5">
               {categoryItems.map((item) => (
                 <div key={item.label} className="space-y-2">
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-end">
                     <div className="flex items-center gap-3">
-                      <div className={`p-2 ${item.color} bg-opacity-10 rounded-lg`}>
-                        <item.icon className="h-4 w-4" style={{ color: item.color.replace('bg-', '') }} />
+                      <div className={cn("p-2 rounded-xl bg-opacity-10 shadow-sm bg-white border border-zinc-50", item.textColor)}>
+                        <item.icon className="h-3.5 w-3.5" />
                       </div>
-                      <span className="text-sm font-bold text-slate-700">{item.label}</span>
+                      <span className="text-[11px] font-black text-zinc-700 uppercase tracking-tight">{item.label}</span>
                     </div>
-                    <span className="text-sm font-black text-slate-900">{item.value}</span>
+                    <span className="text-xs font-[1000] text-zinc-900">{item.value}</span>
                   </div>
-                  <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-1.5 w-full bg-zinc-50 rounded-full overflow-hidden border border-zinc-100/50">
                     <div 
-                      className={`h-full ${item.color} transition-all duration-1000`} 
+                      className={cn("h-full transition-all duration-1000", item.color)} 
                       style={{ width: `${stats.total > 0 ? (item.value / stats.total) * 100 : 0}%` }}
                     />
                   </div>
@@ -188,6 +204,11 @@ export default async function DashboardPage() {
             </div>
           </div>
 
+        </div>
+
+        {/* Footer info */}
+        <div className="text-center px-10 pb-4">
+           <p className="text-[8px] font-black text-zinc-300 uppercase tracking-[0.4em]">MIS Management Portal v1.0</p>
         </div>
       </div>
     </div>

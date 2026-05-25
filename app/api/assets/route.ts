@@ -9,6 +9,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
     const status = searchParams.get("status");
+    const category = searchParams.get("category");
     const q = searchParams.get("q");
     const filter = searchParams.get("filter");
 
@@ -23,6 +24,11 @@ export async function GET(req: Request) {
     // กรองตามสถานะ (เช่น active, broken, pending)
     if (status && status !== "all") {
       conditions.push(eq(assets.status, status as any));
+    }
+
+    // กรองตามหมวดหมู่
+    if (category && category !== "all") {
+      conditions.push(eq(assets.category, category));
     }
 
     // ค้นหาด้วยคำสำคัญ (Search)
