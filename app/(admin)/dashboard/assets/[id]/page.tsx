@@ -208,8 +208,8 @@ export default function EditAssetPage() {
     <div className="min-h-screen bg-white pb-20">
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 h-14 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button onClick={() => router.back()} className="active:opacity-50">
-            <ArrowLeft className="h-6 w-6 text-black" />
+          <button onClick={() => router.back()} className="active:opacity-50 text-black">
+            <ArrowLeft className="h-6 w-6" />
           </button>
           <h1 className="text-lg font-black tracking-tight text-black">แก้ไข {assetData?.assetCode || "อุปกรณ์"}</h1>
         </div>
@@ -219,14 +219,6 @@ export default function EditAssetPage() {
               <RefreshCw className="h-5 w-5" />
             </Button>
           )}
-          <Button 
-            onClick={handleSubmit(onSubmit)}
-            disabled={isSubmitting}
-            variant="ghost"
-            className="text-blue-600 font-bold hover:bg-transparent p-0 ml-2"
-          >
-            {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "บันทึก"}
-          </Button>
         </div>
       </div>
 
@@ -239,17 +231,18 @@ export default function EditAssetPage() {
       )}
 
       <div className="max-w-lg mx-auto p-4 pt-8 space-y-10">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-10 pb-20">
           <div className="space-y-6">
             <div className="space-y-2">
               <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">โรงงาน/สาขาที่สังกัด</Label>
-              <Select onValueChange={(v) => setValue("factory", v as string)} value={watch("factory")}>
-                <SelectTrigger className="border-none bg-indigo-50/50 h-14 rounded-2xl font-bold text-indigo-900 ring-2 ring-indigo-500/10">
-                  <SelectValue placeholder="เลือกโรงงาน" />
+              <Select onValueChange={(v) => setValue("factory", v as string)} value={watch("factory") || ""}>
+                <SelectTrigger className="border-none bg-gray-50 h-14 rounded-2xl font-bold text-zinc-900">
+                  <SelectValue placeholder="เลือกโรงงาน (ถ้ามี)" />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl shadow-2xl border-none bg-white z-[60]">
                   <SelectItem value="Factory 1" className="font-bold">โรงงาน 1 (Factory 1)</SelectItem>
                   <SelectItem value="Factory 2" className="font-bold">โรงงาน 2 (Factory 2)</SelectItem>
+                  <SelectItem value="both" className="font-bold">ใช้งานทั้ง 2 โรงงาน</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -263,7 +256,7 @@ export default function EditAssetPage() {
                 <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">สถานะ</Label>
                 <Select onValueChange={(v) => setValue("status", v as string)} value={watch("status") ?? "active"}>
                   <SelectTrigger className="border-none bg-gray-50 h-14 rounded-2xl font-bold"><SelectValue /></SelectTrigger>
-                  <SelectContent className="rounded-2xl shadow-2xl border-none">
+                  <SelectContent className="rounded-2xl shadow-2xl border-none bg-white z-[60]">
                     <SelectItem value="active">พร้อมใช้งาน</SelectItem>
                     <SelectItem value="pending">รอลงทะเบียน</SelectItem>
                     <SelectItem value="broken">ชำรุด</SelectItem>
@@ -276,9 +269,9 @@ export default function EditAssetPage() {
 
             <div className="space-y-2">
               <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">ประเภทอุปกรณ์</Label>
-              <Select onValueChange={(v) => setValue("category", v as string)} value={watch("category")}>
+              <Select onValueChange={(v) => setValue("category", v as string)} value={watch("category") || ""}>
                 <SelectTrigger className="border-none bg-gray-50 h-14 rounded-2xl font-bold"><SelectValue placeholder="เลือกประเภท" /></SelectTrigger>
-                <SelectContent className="rounded-2xl shadow-2xl border-none">
+                <SelectContent className="rounded-2xl shadow-2xl border-none bg-white z-[60]">
                   <SelectItem value="computer">Computer / Laptop</SelectItem>
                   <SelectItem value="printer">Printer</SelectItem>
                   <SelectItem value="network">Network Device</SelectItem>
@@ -349,6 +342,27 @@ export default function EditAssetPage() {
                 <Input type="date" {...register("warrantyExpire")} className="border-none bg-gray-50 h-12 rounded-xl font-bold uppercase text-[10px]" />
               </div>
             </div>
+          </div>
+
+          {/* Floating Save Button at the bottom */}
+          <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-gray-100 z-40 flex justify-center">
+            <Button 
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full max-w-lg h-14 bg-zinc-900 hover:bg-black text-white rounded-2xl font-[1000] text-lg uppercase tracking-[0.2em] shadow-2xl active:scale-95 transition-all gap-3"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                  <span>กำลังบันทึก...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="h-6 w-6" />
+                  <span>บันทึกการแก้ไข</span>
+                </>
+              )}
+            </Button>
           </div>
         </form>
       </div>
