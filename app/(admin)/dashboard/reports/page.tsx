@@ -1,14 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { FileText, Printer, Loader2, ArrowLeft, Settings2, ShieldCheck } from "lucide-react";
+import { FileText, Printer, Loader2, ArrowLeft, Settings2, ShieldCheck, Filter, Factory, Tag, Activity } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 
 const columns = [
   { id: "assetCode", label: "รหัสทรัพย์สิน", default: true },
@@ -31,10 +38,35 @@ export default function ExportPDFPage() {
   const [isExporting, setIsGenerating] = useState(false);
   const [isCsvExporting, setIsCsvExporting] = useState(false);
   const [assets, setAssets] = useState<unknown[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Filter States
+  const [factoryFilter, setFactoryFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+
+  const fetchFilteredAssets = useCallback(async () => {
+    setLoading(true);
+    try {
+      const sp = new URLSearchParams();
+      if (factoryFilter !== "all") sp.append("factory", factoryFilter);
+      if (categoryFilter !== "all") sp.append("category", categoryFilter);
+      if (statusFilter !== "all") sp.append("status", statusFilter);
+      
+      const res = await fetch(`/api/assets?${sp.toString()}`);
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      setAssets(data);
+    } catch (err) {
+      toast.error("ไม่สามารถโหลดข้อมูลอุปกรณ์ได้");
+    } finally {
+      setLoading(false);
+    }
+  }, [factoryFilter, categoryFilter, statusFilter]);
 
   useEffect(() => {
-    fetch("/api/assets").then(res => res.json()).then(setAssets);
-  }, []);
+    fetchFilteredAssets();
+  }, [fetchFilteredAssets]);
 
   const toggleColumn = (id: string) => {
     setSelectedColumns(prev => 
@@ -172,24 +204,190 @@ export default function ExportPDFPage() {
           </CardContent>
         </Card>
 
-        {/* Right: Info Area */}
-        <Card className="md:col-span-2 border-none shadow-xl bg-zinc-50/30 rounded-[2.5rem] p-10 flex flex-col items-center justify-center text-center relative overflow-hidden">
+        {/* Right: Info Area & Advanced Filters */}
+        <Card className="md:col-span-2 border-none shadow-xl bg-zinc-50/30 rounded-[2.5rem] p-8 flex flex-col relative overflow-hidden">
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500" />
-            <div className="w-20 h-20 bg-white rounded-[1.5rem] shadow-2xl flex items-center justify-center mb-6">
-                <ShieldCheck className="h-10 w-10 text-emerald-500" />
+            
+            <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-white rounded-xl shadow-sm flex items-center justify-center">
+                    <Filter className="h-5 w-5 text-indigo-600" />
+                </div>
+                <h3 className="font-black text-lg text-zinc-900 uppercase tracking-tight">Advanced Filters</h3>
             </div>
-            <h3 className="font-[1000] text-xl text-zinc-900 tracking-tight mb-2 uppercase">Ready for Export</h3>
-            <p className="text-zinc-500 text-sm font-bold max-w-sm leading-relaxed mb-10">
-                ระบบรองรับการส่งออกไฟล์ <span className="text-indigo-600">PDF</span> สำหรับพิมพ์ 
-                และไฟล์ <span className="text-emerald-600">CSV</span> สำหรับวิเคราะห์ข้อมูลใน Excel
-            </p>
-            <div className="bg-white px-8 py-5 rounded-[1.8rem] shadow-sm border border-zinc-100 inline-flex items-center gap-3">
-                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">
-                    {isLandscape ? "A4 Landscape Mode" : "A4 Portrait Mode"}
-                </span>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                {/* Factory Filter */}
+                <div className="space-y-2">
+                    <Label className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] ml-1 flex items-center gap-1.5">
+                        <Factory className="h-3 w-3" /> Factory
+                    </Label>
+                    <Select value={factoryFilter} onValueChange={setFactoryFilter}>
+                        <SelectTrigger className="border-none bg-white h-12 rounded-2xl font-bold shadow-sm">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl border-none shadow-2xl bg-white z-[60]">
+                            <SelectItem value="all" className="font-bold">ทุกโรงงาน</SelectItem>
+                            <SelectItem value="โรงงาน 1" className="font-bold">โรงงาน 1</SelectItem>
+                            <SelectItem value="โรงงาน 2" className="font-bold">โรงงาน 2</SelectItem>
+                            <SelectItem value="ทั้ง 2 โรงงาน" className="font-bold">ทั้ง 2 โรงงาน</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Category Filter */}
+                <div className="space-y-2">
+                    <Label className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] ml-1 flex items-center gap-1.5">
+                        <Tag className="h-3 w-3" /> Category
+                    </Label>
+                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                        <SelectTrigger className="border-none bg-white h-12 rounded-2xl font-bold shadow-sm">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl border-none shadow-2xl bg-white z-[60]">
+                            <SelectItem value="all" className="font-bold">ทุกประเภท</SelectItem>
+                            <SelectItem value="computer" className="font-bold">Computer/Laptop</SelectItem>
+                            <SelectItem value="printer" className="font-bold">Printer</SelectItem>
+                            <SelectItem value="monitor" className="font-bold">Monitor</SelectItem>
+                            <SelectItem value="network" className="font-bold">Network</SelectItem>
+                            <SelectItem value="other" className="font-bold">อื่นๆ</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
+                {/* Status Filter */}
+                <div className="space-y-2">
+                    <Label className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] ml-1 flex items-center gap-1.5">
+                        <Activity className="h-3 w-3" /> Status
+                    </Label>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <SelectTrigger className="border-none bg-white h-12 rounded-2xl font-bold shadow-sm">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-2xl border-none shadow-2xl bg-white z-[60]">
+                            <SelectItem value="all" className="font-bold">ทุกสถานะ</SelectItem>
+                            <SelectItem value="active" className="font-bold text-emerald-600">ใช้งานปกติ</SelectItem>
+                            <SelectItem value="broken" className="font-bold text-rose-600">ชำรุด/เสียหาย</SelectItem>
+                            <SelectItem value="lost" className="font-bold text-zinc-500">สูญหาย</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
+
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-zinc-200 rounded-[2rem] bg-white/50 min-h-[200px]">
+                {loading ? (
+                    <div className="space-y-4">
+                        <Loader2 className="h-10 w-10 animate-spin text-indigo-600 mx-auto" />
+                        <p className="text-sm font-bold text-zinc-500 uppercase tracking-widest">Filtering Data...</p>
+                    </div>
+                ) : (
+                    <div className="space-y-6 w-full">
+                        <div className="w-16 h-16 bg-white rounded-2xl shadow-xl flex items-center justify-center mx-auto">
+                            <ShieldCheck className="h-8 w-8 text-emerald-500" />
+                        </div>
+                        <div>
+                            <h4 className="font-black text-xl text-zinc-900 mb-1 uppercase tracking-tight">Report Ready</h4>
+                            <p className="text-zinc-500 text-sm font-bold max-w-xs mx-auto leading-relaxed">
+                                พบข้อมูลทั้งหมด <span className="text-indigo-600">{assets.length}</span> รายการ 
+                                ตรงตามเงื่อนไขที่คุณเลือก
+                            </p>
+                        </div>
+                        <div className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-zinc-100 inline-flex items-center gap-2">
+                            <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">
+                                {isLandscape ? "A4 Landscape Mode" : "A4 Portrait Mode"}
+                            </span>
+                        </div>
+                    </div>
+                )}
             </div>
         </Card>
+      </div>
+
+      {/* 1.1 Data Preview (On-screen) */}
+      <div className="space-y-6 print:hidden">
+        <div className="flex items-center justify-between px-2">
+          <h3 className="font-black text-sm text-zinc-400 uppercase tracking-[0.3em]">Preview Data ({assets.length})</h3>
+        </div>
+
+        {loading ? (
+          <div className="bg-zinc-50 rounded-[2rem] py-20 text-center border-2 border-dashed border-zinc-100">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto text-indigo-200" />
+          </div>
+        ) : assets.length === 0 ? (
+          <div className="bg-zinc-50 rounded-[2rem] py-20 text-center border-2 border-dashed border-zinc-100 italic text-zinc-400 font-bold">
+            ไม่พบข้อมูลตามเงื่อนไขที่เลือก
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Desktop Table Preview */}
+            <div className="hidden md:block bg-white rounded-[2rem] shadow-xl border border-zinc-100 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-zinc-900 text-white">
+                      {columns.filter(c => selectedColumns.includes(c.id)).map(col => (
+                        <th key={col.id} className="p-4 text-[10px] font-black uppercase tracking-widest border-b border-zinc-800">{col.label}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {assets.slice(0, 10).map((asset, idx) => (
+                      <tr key={idx} className="hover:bg-zinc-50 transition-colors border-b border-zinc-50">
+                        {columns.filter(c => selectedColumns.includes(c.id)).map(col => {
+                          let val = (asset as Record<string, any>)[col.id];
+                          if (col.id.toLowerCase().includes("date") || col.id.toLowerCase().includes("expire")) {
+                            val = val ? new Date(val).toLocaleDateString("th-TH") : "-";
+                          }
+                          if (col.id === "status") {
+                            const statusMap: Record<string, string> = {
+                                active: "ใช้งานปกติ", broken: "ชำรุด", pending: "รอลงทะเบียน", retired: "เลิกใช้", lost: "สูญหาย"
+                            };
+                            val = statusMap[val as string] || val;
+                          }
+                          return <td key={col.id} className="p-4 text-xs font-bold text-zinc-600 truncate max-w-[150px]">{val || "-"}</td>;
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {assets.length > 10 && (
+                <div className="p-4 bg-zinc-50 text-center text-[10px] font-black text-zinc-400 uppercase tracking-widest">
+                  Showing first 10 items in preview • {assets.length - 10} more items will be in the actual report
+                </div>
+              )}
+            </div>
+
+            {/* Mobile Card Preview */}
+            <div className="md:hidden space-y-3">
+              {assets.slice(0, 5).map((asset, idx) => (
+                <Card key={idx} className="border-none shadow-md rounded-2xl p-5 bg-white space-y-3">
+                  <div className="flex justify-between items-start">
+                    <span className="font-mono font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded text-[10px]">
+                      {(asset as any).assetCode || "N/A"}
+                    </span>
+                    <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest opacity-60">
+                      {(asset as any).status}
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-y-2">
+                    {columns.filter(c => selectedColumns.includes(c.id) && c.id !== "assetCode" && c.id !== "status").slice(0, 4).map(col => (
+                      <div key={col.id}>
+                        <p className="text-[8px] font-black text-zinc-300 uppercase tracking-tighter">{col.label}</p>
+                        <p className="text-[10px] font-bold text-zinc-600 truncate">{(asset as any)[col.id] || "-"}</p>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              ))}
+              {assets.length > 5 && (
+                <p className="text-center text-[10px] font-black text-zinc-300 uppercase tracking-widest pt-2">
+                  + {assets.length - 5} more items
+                </p>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 2. ส่วนของรายงานสำหรับพิมพ์ (ซ่อนในหน้าปกติ / แสดงตอนกดพิมพ์) */}
