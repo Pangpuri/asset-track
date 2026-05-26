@@ -282,10 +282,10 @@ function AssetsList() {
             </SelectTrigger>
             <SelectContent className="rounded-2xl border border-zinc-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-2 bg-white">
               <SelectItem value="all" className="font-bold rounded-xl focus:bg-indigo-50">ทุกประเภท</SelectItem>
-              <SelectItem value="computer" className="font-bold rounded-xl focus:bg-indigo-50">Computer/Laptop</SelectItem>
-              <SelectItem value="printer" className="font-bold rounded-xl focus:bg-indigo-50">Printer</SelectItem>
-              <SelectItem value="monitor" className="font-bold rounded-xl focus:bg-indigo-50">Monitor</SelectItem>
-              <SelectItem value="network" className="font-bold rounded-xl focus:bg-indigo-50">Network</SelectItem>
+              <SelectItem value="computer" className="font-bold rounded-xl focus:bg-indigo-50">คอมพิวเตอร์/โน้ตบุ๊ค</SelectItem>
+              <SelectItem value="printer" className="font-bold rounded-xl focus:bg-indigo-50">เครื่องพิมพ์</SelectItem>
+              <SelectItem value="monitor" className="font-bold rounded-xl focus:bg-indigo-50">จอภาพ</SelectItem>
+              <SelectItem value="network" className="font-bold rounded-xl focus:bg-indigo-50">อุปกรณ์เครือข่าย</SelectItem>
               <SelectItem value="other" className="font-bold rounded-xl focus:bg-indigo-50">อื่นๆ</SelectItem>
             </SelectContent>
           </Select>
@@ -391,9 +391,14 @@ function AssetsList() {
                           <Badge className={`border-none font-black text-[10px] px-3 py-1 rounded-full shadow-sm ${
                             asset.status === 'active' ? 'bg-emerald-500 text-white' : 
                             asset.status === 'broken' ? 'bg-rose-500 text-white' : 
-                            asset.status === 'pending' ? 'bg-amber-500 text-white' : 'bg-indigo-200 text-indigo-700'
+                            asset.status === 'pending' ? 'bg-amber-500 text-white' : 
+                            asset.status === 'retired' ? 'bg-zinc-500 text-white' : 'bg-indigo-200 text-indigo-700'
                           }`}>
-                            {asset.status.toUpperCase()}
+                            {asset.status === 'active' ? "ใช้งานปกติ" :
+                             asset.status === 'broken' ? "ชำรุด/เสียหาย" :
+                             asset.status === 'pending' ? "รอลงทะเบียน" :
+                             asset.status === 'retired' ? "เลิกใช้งาน" :
+                             asset.status === 'lost' ? "สูญหาย" : asset.status}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -465,7 +470,11 @@ function AssetsList() {
                           asset.status === 'pending' ? 'bg-amber-500 text-white' : 
                           asset.status === 'retired' ? 'bg-zinc-500 text-white' : 'bg-indigo-200 text-indigo-700'
                         }`}>
-                          {asset.status.toUpperCase()}
+                          {asset.status === 'active' ? "ใช้งานปกติ" :
+                           asset.status === 'broken' ? "ชำรุด/เสียหาย" :
+                           asset.status === 'pending' ? "รอลงทะเบียน" :
+                           asset.status === 'retired' ? "เลิกใช้งาน" :
+                           asset.status === 'lost' ? "สูญหาย" : asset.status}
                         </Badge>
                       </div>
 

@@ -257,30 +257,29 @@ export default function EditAssetPage() {
                 <Select onValueChange={(v) => setValue("status", v as string)} value={watch("status") ?? "active"}>
                   <SelectTrigger className="border-none bg-gray-50 h-14 rounded-2xl font-bold"><SelectValue /></SelectTrigger>
                   <SelectContent className="rounded-2xl shadow-2xl border-none bg-white z-[60]">
-                    <SelectItem value="active">พร้อมใช้งาน</SelectItem>
+                    <SelectItem value="active">ใช้งานปกติ</SelectItem>
                     <SelectItem value="pending">รอลงทะเบียน</SelectItem>
-                    <SelectItem value="broken">ชำรุด</SelectItem>
+                    <SelectItem value="broken">ชำรุด/เสียหาย</SelectItem>
                     <SelectItem value="lost">สูญหาย</SelectItem>
                     <SelectItem value="retired">เลิกใช้งาน</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-            </div>
+              </div>
 
-            <div className="space-y-2">
+              <div className="space-y-2">
               <Label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">ประเภทอุปกรณ์</Label>
               <Select onValueChange={(v) => setValue("category", v as string)} value={watch("category") || ""}>
                 <SelectTrigger className="border-none bg-gray-50 h-14 rounded-2xl font-bold"><SelectValue placeholder="เลือกประเภท" /></SelectTrigger>
                 <SelectContent className="rounded-2xl shadow-2xl border-none bg-white z-[60]">
-                  <SelectItem value="computer">Computer / Laptop</SelectItem>
-                  <SelectItem value="printer">Printer</SelectItem>
-                  <SelectItem value="network">Network Device</SelectItem>
-                  <SelectItem value="monitor">Monitor</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="computer">คอมพิวเตอร์/โน้ตบุ๊ค</SelectItem>
+                  <SelectItem value="printer">เครื่องพิมพ์</SelectItem>
+                  <SelectItem value="network">อุปกรณ์เครือข่าย</SelectItem>
+                  <SelectItem value="monitor">จอภาพ</SelectItem>
+                  <SelectItem value="other">อื่นๆ</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
-          </div>
+              </div>          </div>
 
           <div className="grid grid-cols-2 gap-4 border-t border-gray-50 pt-8">
             <div className="space-y-2">

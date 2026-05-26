@@ -33,9 +33,15 @@ export async function GET(req: Request) {
     }
 
     // กรองตามโรงงาน (โรงงาน 1, โรงงาน 2, ทั้ง 2 โรงงาน)
-    // ใช้ ilike เพื่อให้ยืดหยุ่นในการค้นหามากขึ้น
+    // ใช้ ilike เพื่อรองรับกรณีข้อมูลเก่าที่เป็นภาษาอังกฤษ (Factory 1) และข้อมูลใหม่ที่เป็นภาษาไทย
     if (factory && factory !== "all") {
-      conditions.push(ilike(assets.factory, `%${factory}%`));
+      if (factory === "โรงงาน 1") {
+        conditions.push(or(ilike(assets.factory, "%โรงงาน 1%"), ilike(assets.factory, "%Factory 1%")));
+      } else if (factory === "โรงงาน 2") {
+        conditions.push(or(ilike(assets.factory, "%โรงงาน 2%"), ilike(assets.factory, "%Factory 2%")));
+      } else {
+        conditions.push(ilike(assets.factory, `%${factory}%`));
+      }
     }
 
     // ค้นหาด้วยคำสำคัญ (Search)

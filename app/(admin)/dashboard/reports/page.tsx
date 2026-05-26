@@ -268,6 +268,8 @@ export default function ExportPDFPage() {
                             <SelectItem value="all" className="font-bold">ทุกสถานะ</SelectItem>
                             <SelectItem value="active" className="font-bold text-emerald-600">ใช้งานปกติ</SelectItem>
                             <SelectItem value="broken" className="font-bold text-rose-600">ชำรุด/เสียหาย</SelectItem>
+                            <SelectItem value="pending" className="font-bold text-amber-600">รอลงทะเบียน</SelectItem>
+                            <SelectItem value="retired" className="font-bold text-zinc-600">เลิกใช้งาน</SelectItem>
                             <SelectItem value="lost" className="font-bold text-zinc-500">สูญหาย</SelectItem>
                         </SelectContent>
                     </Select>
