@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { FileText, Printer, Loader2, ArrowLeft, Settings2, ShieldCheck, Filter, Factory, Tag, Activity } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -219,10 +220,10 @@ export default function ExportPDFPage() {
                 {/* Factory Filter */}
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] ml-1 flex items-center gap-1.5">
-                        <Factory className="h-3 w-3" /> Factory
+                        <Factory className="h-3 w-3" /> โรงงาน
                     </Label>
-                    <Select value={factoryFilter} onValueChange={setFactoryFilter}>
-                        <SelectTrigger className="border-none bg-white h-12 rounded-2xl font-bold shadow-sm">
+                    <Select value={factoryFilter} onValueChange={(val) => setFactoryFilter(val || "all")}>
+                        <SelectTrigger className="border-none bg-white h-12 rounded-2xl font-bold shadow-sm text-zinc-900">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="rounded-2xl border-none shadow-2xl bg-white z-[60]">
@@ -237,18 +238,18 @@ export default function ExportPDFPage() {
                 {/* Category Filter */}
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] ml-1 flex items-center gap-1.5">
-                        <Tag className="h-3 w-3" /> Category
+                        <Tag className="h-3 w-3" /> ประเภท
                     </Label>
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                        <SelectTrigger className="border-none bg-white h-12 rounded-2xl font-bold shadow-sm">
+                    <Select value={categoryFilter} onValueChange={(val) => setCategoryFilter(val || "all")}>
+                        <SelectTrigger className="border-none bg-white h-12 rounded-2xl font-bold shadow-sm text-zinc-900">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="rounded-2xl border-none shadow-2xl bg-white z-[60]">
                             <SelectItem value="all" className="font-bold">ทุกประเภท</SelectItem>
-                            <SelectItem value="computer" className="font-bold">Computer/Laptop</SelectItem>
-                            <SelectItem value="printer" className="font-bold">Printer</SelectItem>
-                            <SelectItem value="monitor" className="font-bold">Monitor</SelectItem>
-                            <SelectItem value="network" className="font-bold">Network</SelectItem>
+                            <SelectItem value="computer" className="font-bold">คอมพิวเตอร์/โน้ตบุ๊ค</SelectItem>
+                            <SelectItem value="printer" className="font-bold">เครื่องพิมพ์</SelectItem>
+                            <SelectItem value="monitor" className="font-bold">จอภาพ</SelectItem>
+                            <SelectItem value="network" className="font-bold">อุปกรณ์เครือข่าย</SelectItem>
                             <SelectItem value="other" className="font-bold">อื่นๆ</SelectItem>
                         </SelectContent>
                     </Select>
@@ -257,10 +258,10 @@ export default function ExportPDFPage() {
                 {/* Status Filter */}
                 <div className="space-y-2">
                     <Label className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.2em] ml-1 flex items-center gap-1.5">
-                        <Activity className="h-3 w-3" /> Status
+                        <Activity className="h-3 w-3" /> สถานะ
                     </Label>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="border-none bg-white h-12 rounded-2xl font-bold shadow-sm">
+                    <Select value={statusFilter} onValueChange={(val) => setStatusFilter(val || "all")}>
+                        <SelectTrigger className="border-none bg-white h-12 rounded-2xl font-bold shadow-sm text-zinc-900">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="rounded-2xl border-none shadow-2xl bg-white z-[60]">
@@ -360,26 +361,43 @@ export default function ExportPDFPage() {
 
             {/* Mobile Card Preview */}
             <div className="md:hidden space-y-3">
-              {assets.slice(0, 5).map((asset, idx) => (
+              {assets.slice(0, 5).map((asset, idx) => {
+                const statusMap: Record<string, string> = {
+                    active: "ใช้งานปกติ", broken: "ชำรุด", pending: "รอลงทะเบียน", retired: "เลิกใช้", lost: "สูญหาย"
+                };
+                const statusThai = statusMap[(asset as any).status] || (asset as any).status;
+
+                return (
                 <Card key={idx} className="border-none shadow-md rounded-2xl p-5 bg-white space-y-3">
                   <div className="flex justify-between items-start">
                     <span className="font-mono font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded text-[10px]">
                       {(asset as any).assetCode || "N/A"}
                     </span>
-                    <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest opacity-60">
-                      {(asset as any).status}
+                    <Badge className={cn(
+                        "text-[8px] font-black uppercase tracking-widest border-none text-white",
+                        (asset as any).status === 'active' ? "bg-emerald-500" :
+                        (asset as any).status === 'broken' ? "bg-rose-500" :
+                        (asset as any).status === 'pending' ? "bg-amber-500" : "bg-zinc-400"
+                    )}>
+                      {statusThai}
                     </Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-y-2">
-                    {columns.filter(c => selectedColumns.includes(c.id) && c.id !== "assetCode" && c.id !== "status").slice(0, 4).map(col => (
-                      <div key={col.id}>
-                        <p className="text-[8px] font-black text-zinc-300 uppercase tracking-tighter">{col.label}</p>
-                        <p className="text-[10px] font-bold text-zinc-600 truncate">{(asset as any)[col.id] || "-"}</p>
-                      </div>
-                    ))}
+                    {columns.filter(c => selectedColumns.includes(c.id) && c.id !== "assetCode" && c.id !== "status").slice(0, 4).map(col => {
+                        let val = (asset as any)[col.id];
+                        if (col.id.toLowerCase().includes("date") || col.id.toLowerCase().includes("expire")) {
+                            val = val ? new Date(val).toLocaleDateString("th-TH") : "-";
+                        }
+                        return (
+                            <div key={col.id}>
+                                <p className="text-[8px] font-black text-zinc-300 uppercase tracking-tighter">{col.label}</p>
+                                <p className="text-[10px] font-bold text-zinc-600 truncate">{val || "-"}</p>
+                            </div>
+                        );
+                    })}
                   </div>
                 </Card>
-              ))}
+              )})}
               {assets.length > 5 && (
                 <p className="text-center text-[10px] font-black text-zinc-300 uppercase tracking-widest pt-2">
                   + {assets.length - 5} more items
