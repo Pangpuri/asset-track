@@ -264,6 +264,7 @@ function AssetsList() {
               <SelectItem value="all" className="font-bold rounded-xl focus:bg-indigo-50">ทุกโรงงาน</SelectItem>
               <SelectItem value="Factory 1" className="font-bold rounded-xl focus:bg-indigo-50">โรงงาน 1</SelectItem>
               <SelectItem value="Factory 2" className="font-bold rounded-xl focus:bg-indigo-50">โรงงาน 2</SelectItem>
+              <SelectItem value="both" className="font-bold rounded-xl focus:bg-indigo-50">ใช้งานทั้ง 2 โรงงาน</SelectItem>
             </SelectContent>
           </Select>
 
