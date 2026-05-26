@@ -29,7 +29,8 @@ export default function ExportPDFPage() {
     columns.filter(c => c.default).map(c => c.id)
   );
   const [isExporting, setIsGenerating] = useState(false);
-  const [assets, setAssets] = useState<any[]>([]);
+  const [isCsvExporting, setIsCsvExporting] = useState(false);
+  const [assets, setAssets] = useState<unknown[]>([]);
 
   useEffect(() => {
     fetch("/api/assets").then(res => res.json()).then(setAssets);
@@ -49,6 +50,18 @@ export default function ExportPDFPage() {
         window.print();
         setIsGenerating(false);
     }, 200);
+  };
+
+  const handleExportCsv = async () => {
+    setIsCsvExporting(true);
+    try {
+      window.location.href = "/api/reports/export/csv";
+      toast.success("กำลังดาวน์โหลดไฟล์ CSV...");
+    } catch (error) {
+      toast.error("ไม่สามารถดาวน์โหลดไฟล์ได้");
+    } finally {
+      setTimeout(() => setIsCsvExporting(false), 2000);
+    }
   };
 
   const isLandscape = selectedColumns.length > 6;
@@ -109,6 +122,15 @@ export default function ExportPDFPage() {
                 {isExporting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Printer className="h-5 w-5" />}
                 Print PDF
             </Button>
+
+            <Button 
+                className="w-full h-14 mt-4 bg-white hover:bg-zinc-50 text-zinc-900 border-2 border-zinc-200 rounded-2xl font-[1000] text-sm uppercase tracking-widest active:scale-95 transition-all gap-3 shadow-sm" 
+                onClick={handleExportCsv}
+                disabled={isCsvExporting}
+            >
+                {isCsvExporting ? <Loader2 className="h-5 w-5 animate-spin" /> : <FileText className="h-5 w-5 text-indigo-600" />}
+                Export CSV
+            </Button>
           </CardContent>
         </Card>
 
@@ -118,10 +140,10 @@ export default function ExportPDFPage() {
             <div className="w-20 h-20 bg-white rounded-[1.5rem] shadow-2xl flex items-center justify-center mb-6">
                 <ShieldCheck className="h-10 w-10 text-emerald-500" />
             </div>
-            <h3 className="font-[1000] text-xl text-zinc-900 tracking-tight mb-2 uppercase">Ready for Printing</h3>
+            <h3 className="font-[1000] text-xl text-zinc-900 tracking-tight mb-2 uppercase">Ready for Export</h3>
             <p className="text-zinc-500 text-sm font-bold max-w-sm leading-relaxed mb-10">
-                ระบบใช้ฟอนต์สากล <span className="text-indigo-600">Tahoma / Segoe UI</span> 
-                รองรับภาษาไทย 100% โปรดเลือกปลายทางเป็น <span className="underline">Save as PDF</span>
+                ระบบรองรับการส่งออกไฟล์ <span className="text-indigo-600">PDF</span> สำหรับพิมพ์ 
+                และไฟล์ <span className="text-emerald-600">CSV</span> สำหรับวิเคราะห์ข้อมูลใน Excel
             </p>
             <div className="bg-white px-8 py-5 rounded-[1.8rem] shadow-sm border border-zinc-100 inline-flex items-center gap-3">
                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
@@ -175,9 +197,9 @@ export default function ExportPDFPage() {
           </thead>
           <tbody>
             {assets.map((asset) => (
-              <tr key={asset.id}>
+              <tr key={(asset as { id: string }).id}>
                 {columns.filter(c => selectedColumns.includes(c.id)).map(col => {
-                  let val = asset[col.id];
+                  let val = (asset as Record<string, any>)[col.id];
                   if (col.id.toLowerCase().includes("date") || col.id.toLowerCase().includes("expire")) {
                     val = val ? new Date(val).toLocaleDateString("th-TH") : "-";
                   }
@@ -185,7 +207,7 @@ export default function ExportPDFPage() {
                     const statusMap: Record<string, string> = {
                         active: "ใช้งานปกติ", broken: "ชำรุด", pending: "รอลงทะเบียน", retired: "เลิกใช้", lost: "สูญหาย"
                     };
-                    val = statusMap[val] || val;
+                    val = statusMap[val as string] || val;
                   }
                   return <td key={col.id}>{val || "-"}</td>;
                 })}
