@@ -7,7 +7,7 @@ export async function GET() {
     const allAssets = await db.select().from(assets);
 
     // ส่วนหัวของไฟล์ CSV
-    const headers = ["Asset Code", "Category", "Brand", "Model", "Serial Number", "Status", "Location", "Created At", "Factory"];
+    const headers = ["Asset Code", "Category", "Brand", "Model", "Serial Number", "Status", "Location", "Warranty Expire", "Created At", "Factory"];
     
     // แปลงข้อมูลเป็นแถวของ CSV
     const rows = allAssets.map((a) => [
@@ -18,6 +18,7 @@ export async function GET() {
       a.serialNumber || "",
       a.status,
       a.location || "",
+      a.warrantyExpire ? new Date(a.warrantyExpire).toLocaleDateString("th-TH") : "-",
       // ป้องกัน Error หาก createdAt เป็นค่าว่างหรือรูปแบบผิด
       a.createdAt ? new Date(a.createdAt).toLocaleDateString("th-TH") : "-",
       a.factory || ""
