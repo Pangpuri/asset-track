@@ -52,15 +52,53 @@ export default function ExportPDFPage() {
     }, 200);
   };
 
-  const handleExportCsv = async () => {
+  const handleExportCsv = () => {
     setIsCsvExporting(true);
     try {
-      window.location.href = "/api/reports/export/csv";
-      toast.success("กำลังดาวน์โหลดไฟล์ CSV...");
+      // 1. กรองเฉพาะคอลัมน์ที่ผู้ใช้เลือก
+      const activeCols = columns.filter(c => selectedColumns.includes(c.id));
+      const headers = activeCols.map(c => c.label);
+      
+      // 2. แปลงข้อมูล assets เป็นแถวตามคอลัมน์ที่เลือก
+      const rows = assets.map(asset => {
+        return activeCols.map(col => {
+          let val = (asset as Record<string, any>)[col.id];
+          
+          // จัดการรูปแบบข้อมูลพิเศษเหมือนในหน้า Preview
+          if (col.id.toLowerCase().includes("date") || col.id.toLowerCase().includes("expire")) {
+            val = val ? new Date(val).toLocaleDateString("th-TH") : "-";
+          }
+          if (col.id === "status") {
+            const statusMap: Record<string, string> = {
+                active: "ใช้งานปกติ", broken: "ชำรุด", pending: "รอลงทะเบียน", retired: "เลิกใช้", lost: "สูญหาย"
+            };
+            val = statusMap[val as string] || val;
+          }
+          return val || "-";
+        });
+      });
+
+      // 3. สร้างเนื้อหา CSV พร้อม BOM (\uFEFF) เพื่อภาษาไทย
+      const csvContent = "\uFEFF" + [headers, ...rows]
+        .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+        .join("\n");
+
+      // 4. สร้าง Blob และดาวน์โหลด
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `asset-report-${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success("ดาวน์โหลด CSV เรียบร้อยแล้ว (ตามคอลัมน์ที่เลือก)");
     } catch (error) {
-      toast.error("ไม่สามารถดาวน์โหลดไฟล์ได้");
+      console.error("Export Error:", error);
+      toast.error("ไม่สามารถสร้างไฟล์ CSV ได้");
     } finally {
-      setTimeout(() => setIsCsvExporting(false), 2000);
+      setIsCsvExporting(false);
     }
   };
 
