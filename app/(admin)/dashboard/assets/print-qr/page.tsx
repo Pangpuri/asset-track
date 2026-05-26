@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Printer, Plus, Loader2, ArrowLeft, QrCode } from "lucide-react";
 import Link from "next/link";
+import { Factory } from "lucide-react";
 import { toast } from "sonner";
 import { generateAssetQRCode } from "@/lib/qr";
 
@@ -19,6 +20,7 @@ interface BulkAsset {
 export default function BulkPrintPage() {
   const [count, setCount] = useState(10);
   const [category, setCategory] = useState("computer");
+  const [factory, setFactory] = useState("โรงงาน 1");
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedQRs, setGeneratedQRs] = useState<{ id: string, assetCode: string, qrData: string }[]>([]);
 
@@ -28,7 +30,7 @@ export default function BulkPrintPage() {
       const response = await fetch("/api/assets/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ count, category }),
+        body: JSON.stringify({ count, category, factory }),
       });
 
       if (!response.ok) throw new Error("Failed to generate assets");
@@ -126,6 +128,22 @@ export default function BulkPrintPage() {
             <CardDescription className="text-zinc-400 text-xs">เลือกหมวดหมู่และระบุจำนวน</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 pt-6">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1 flex items-center gap-1.5">
+                <Factory className="h-3 w-3" /> โรงงาน (สำหรับระบุ Prefix)
+              </Label>
+              <Select value={factory} onValueChange={(val) => setFactory(val || "โรงงาน 1")}>
+                <SelectTrigger className="h-12 rounded-2xl border-zinc-100 bg-zinc-50 font-bold">
+                  <SelectValue placeholder="เลือกโรงงาน" />
+                </SelectTrigger>
+                <SelectContent className="bg-white rounded-2xl border-none shadow-2xl">
+                  <SelectItem value="โรงงาน 1" className="font-bold">โรงงาน 1 (Prefix: 1)</SelectItem>
+                  <SelectItem value="โรงงาน 2" className="font-bold">โรงงาน 2 (Prefix: 2)</SelectItem>
+                  <SelectItem value="อื่นๆ" className="font-bold">อื่นๆ (Prefix: E)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase tracking-widest text-zinc-400 ml-1">หมวดหมู่</Label>
               <Select value={category} onValueChange={(val) => setCategory(val || "other")}>

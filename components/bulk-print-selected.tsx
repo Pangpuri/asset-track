@@ -31,7 +31,7 @@ export function BulkPrintSelected({ selectedAssets, onClear }: BulkPrintSelected
             <div class="sticker-header">
               <img src="${asset.qrData}" alt="QR" class="qr-img" />
               <div class="asset-info">
-                <div class="label">AssetID</div>
+                <div class="label">รหัสทรัพย์สิน</div>
                 <div class="value">${asset.assetCode || "NEW-QR"}</div>
               </div>
             </div>
@@ -59,11 +59,11 @@ export function BulkPrintSelected({ selectedAssets, onClear }: BulkPrintSelected
                 justify-content: space-between;
                 box-sizing: border-box;
               }
-              .sticker-header { display: flex; align-items: center; justify-content: center; gap: 8px; flex: 1; }
-              .qr-img { width: 65px; height: 65px; }
-              .asset-info { text-align: left; }
-              .label { font-size: 8px; font-weight: bold; color: #666; }
-              .value { font-size: 14px; font-weight: bold; color: black; }
+              .sticker-header { display: flex; align-items: center; justify-content: flex-start; gap: 8px; flex: 1; }
+              .qr-img { width: 50px; height: 50px; }
+              .asset-info { text-align: left; flex: 1; min-width: 0; } /* เพิ่ม flex: 1 และ min-width: 0 */
+              .label { font-size: 7px; font-weight: bold; color: #666; text-transform: uppercase; }
+              .value { font-size: 12px; font-weight: bold; color: black; word-break: break-all; line-height: 1.2; } /* ลดขนาดและเพิ่ม word-break */
               .footer { border-top: 0.5px solid #eee; padding-top: 2px; font-size: 8px; font-weight: bold; }
               @media print {
                 .no-print { display: none; }
