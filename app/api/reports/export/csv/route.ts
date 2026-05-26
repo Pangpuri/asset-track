@@ -7,21 +7,47 @@ export async function GET() {
     const allAssets = await db.select().from(assets);
 
     // ส่วนหัวของไฟล์ CSV
-    const headers = ["Asset Code", "Category", "Brand", "Model", "Serial Number", "Status", "Location", "Warranty Expire", "Created At", "Factory"];
+    const headers = [
+      "Asset Code", 
+      "Asset Name",
+      "Category", 
+      "Brand", 
+      "Model", 
+      "Serial Number", 
+      "Status", 
+      "Location", 
+      "Department",
+      "Factory",
+      "Vendor",
+      "Price",
+      "Purchase Date",
+      "Warranty Expire",
+      "Received By",
+      "Delivered By",
+      "Notes",
+      "Created At"
+    ];
     
     // แปลงข้อมูลเป็นแถวของ CSV
     const rows = allAssets.map((a) => [
-      a.assetCode,
-      a.category,
+      a.assetCode || "",
+      a.assetName || "",
+      a.category || "",
       a.brand || "",
       a.model || "",
       a.serialNumber || "",
-      a.status,
+      a.status || "",
       a.location || "",
+      a.department || "",
+      a.factory || "",
+      a.vendor || "",
+      a.price ? a.price.toString() : "0",
+      a.purchaseDate ? new Date(a.purchaseDate).toLocaleDateString("th-TH") : "-",
       a.warrantyExpire ? new Date(a.warrantyExpire).toLocaleDateString("th-TH") : "-",
-      // ป้องกัน Error หาก createdAt เป็นค่าว่างหรือรูปแบบผิด
-      a.createdAt ? new Date(a.createdAt).toLocaleDateString("th-TH") : "-",
-      a.factory || ""
+      a.receivedBy || "",
+      a.deliveredBy || "",
+      a.notes || "",
+      a.createdAt ? new Date(a.createdAt).toLocaleDateString("th-TH") : "-"
     ]);
 
     // สร้างเนื้อหา CSV พร้อม BOM (\uFEFF) เพื่อให้อ่านภาษาไทยใน Excel ได้ทันที
