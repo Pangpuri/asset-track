@@ -240,9 +240,9 @@ export default function EditAssetPage() {
                   <SelectValue placeholder="เลือกโรงงาน (ถ้ามี)" />
                 </SelectTrigger>
                 <SelectContent className="rounded-2xl shadow-2xl border-none bg-white z-[60]">
-                  <SelectItem value="Factory 1" className="font-bold">โรงงาน 1 (Factory 1)</SelectItem>
-                  <SelectItem value="Factory 2" className="font-bold">โรงงาน 2 (Factory 2)</SelectItem>
-                  <SelectItem value="both" className="font-bold">ใช้งานทั้ง 2 โรงงาน</SelectItem>
+                  <SelectItem value="โรงงาน 1" className="font-bold">โรงงาน 1</SelectItem>
+                  <SelectItem value="โรงงาน 2" className="font-bold">โรงงาน 2</SelectItem>
+                  <SelectItem value="ทั้ง 2 โรงงาน" className="font-bold">ทั้ง 2 โรงงาน</SelectItem>
                 </SelectContent>
               </Select>
             </div>

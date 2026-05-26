@@ -262,9 +262,9 @@ function AssetsList() {
             </SelectTrigger>
             <SelectContent className="rounded-2xl border border-zinc-200 shadow-[0_20px_50px_rgba(0,0,0,0.15)] p-2 bg-white">
               <SelectItem value="all" className="font-bold rounded-xl focus:bg-indigo-50">ทุกโรงงาน</SelectItem>
-              <SelectItem value="Factory 1" className="font-bold rounded-xl focus:bg-indigo-50">โรงงาน 1</SelectItem>
-              <SelectItem value="Factory 2" className="font-bold rounded-xl focus:bg-indigo-50">โรงงาน 2</SelectItem>
-              <SelectItem value="both" className="font-bold rounded-xl focus:bg-indigo-50">ใช้งานทั้ง 2 โรงงาน</SelectItem>
+              <SelectItem value="โรงงาน 1" className="font-bold rounded-xl focus:bg-indigo-50">โรงงาน 1</SelectItem>
+              <SelectItem value="โรงงาน 2" className="font-bold rounded-xl focus:bg-indigo-50">โรงงาน 2</SelectItem>
+              <SelectItem value="ทั้ง 2 โรงงาน" className="font-bold rounded-xl focus:bg-indigo-50">ทั้ง 2 โรงงาน</SelectItem>
             </SelectContent>
           </Select>
 
@@ -336,12 +336,12 @@ function AssetsList() {
                 <TableHeader>
                   <TableRow className="border-b border-indigo-50 hover:bg-transparent">
                     <TableHead className="w-[50px]"></TableHead>
-                    <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">Asset Code</TableHead>
-                    <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">ประเภท/ยี่ห้อ</TableHead>
-                    <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">โรงงาน</TableHead>
-                    <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">สถานที่ติดตั้ง</TableHead>
-                    <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">สถานะ</TableHead>
-                    <TableHead className="text-right font-black text-indigo-900/40 uppercase tracking-widest text-[10px]">การจัดการ</TableHead>
+                    <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[12px]">Asset Code</TableHead>
+                    <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[12px]">ประเภท/ยี่ห้อ</TableHead>
+                    <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[12px]">โรงงาน</TableHead>
+                    <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[12px]">สถานที่ติดตั้ง</TableHead>
+                    <TableHead className="font-black text-indigo-900/40 uppercase tracking-widest text-[12px]">สถานะ</TableHead>
+                    <TableHead className="text-right font-black text-indigo-900/40 uppercase tracking-widest text-[12px]">การจัดการ</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
