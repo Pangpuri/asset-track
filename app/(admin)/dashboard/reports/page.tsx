@@ -333,7 +333,7 @@ export default function ExportPDFPage() {
             <h3 className="font-black text-sm text-zinc-400 uppercase tracking-[0.3em]">Inventory Analytics</h3>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 gap-6">
             {/* Chart 1: Distribution by Factory */}
             <Card className="border-none shadow-xl bg-white rounded-[2.5rem] p-8">
               <div className="flex items-center gap-3 mb-6">
@@ -365,76 +365,6 @@ export default function ExportPDFPage() {
                     </div>
                   ));
                 })()}
-              </div>
-            </Card>
-
-            {/* Chart 2: Distribution by Status */}
-            <Card className="border-none shadow-xl bg-white rounded-[2.5rem] p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
-                  <Activity className="h-5 w-5 text-emerald-600" />
-                </div>
-                <h4 className="font-black text-zinc-900 uppercase tracking-tight">สถานะอุปกรณ์</h4>
-              </div>
-              <div className="flex flex-col sm:flex-row items-center gap-8">
-                {/* Simple CSS Circular Chart */}
-                <div className="relative w-32 h-32 flex-shrink-0">
-                  <svg className="w-full h-full" viewBox="0 0 36 36">
-                    <circle cx="18" cy="18" r="16" fill="none" className="stroke-zinc-50" strokeWidth="4" />
-                    {(() => {
-                      let offset = 0;
-                      const statuses = [
-                        { key: 'active', color: '#10b981' }, // emerald-500
-                        { key: 'broken', color: '#f43f5e' }, // rose-500
-                        { key: 'pending', color: '#f59e0b' }, // amber-500
-                        { key: 'retired', color: '#71717a' }, // zinc-500
-                      ];
-                      return statuses.map(s => {
-                        const count = assets.filter((a: any) => a.status === s.key).length;
-                        if (count === 0) return null;
-                        const percentage = (count / assets.length) * 100;
-                        const strokeDasharray = `${percentage} ${100 - percentage}`;
-                        const rotation = (offset / 100) * 360 - 90;
-                        offset += percentage;
-                        return (
-                          <circle 
-                            key={s.key}
-                            cx="18" cy="18" r="16" fill="none" 
-                            stroke={s.color} strokeWidth="4" 
-                            strokeDasharray={strokeDasharray}
-                            transform={`rotate(${rotation} 18 18)`}
-                            className="transition-all duration-1000"
-                          />
-                        );
-                      });
-                    })()}
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <span className="text-xl font-black text-zinc-900">{assets.length}</span>
-                    <span className="text-[8px] font-black text-zinc-400 uppercase tracking-tighter">Total</span>
-                  </div>
-                </div>
-
-                <div className="flex-1 w-full space-y-2">
-                   {[
-                    { key: 'active', label: 'ใช้งานปกติ', color: 'bg-emerald-500' },
-                    { key: 'broken', label: 'ชำรุด/เสียหาย', color: 'bg-rose-500' },
-                    { key: 'pending', label: 'รอลงทะเบียน', color: 'bg-amber-500' },
-                    { key: 'retired', label: 'เลิกใช้งาน', color: 'bg-zinc-500' }
-                   ].map(s => {
-                     const count = assets.filter((a: any) => a.status === s.key).length;
-                     if (count === 0 && assets.length > 0) return null;
-                     return (
-                        <div key={s.key} className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className={cn("w-2 h-2 rounded-full", s.color)} />
-                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{s.label}</span>
-                          </div>
-                          <span className="text-[10px] font-black text-zinc-900">{count}</span>
-                        </div>
-                     );
-                   })}
-                </div>
               </div>
             </Card>
           </div>

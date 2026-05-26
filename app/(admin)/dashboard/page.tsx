@@ -204,6 +204,78 @@ export default async function DashboardPage() {
             </div>
           </div>
 
+          {/* New: Visual Status Distribution (Donut Chart) */}
+          <div className="bg-white rounded-[2.2rem] p-8 shadow-sm border border-zinc-100 overflow-hidden">
+            <h3 className="text-xs font-black text-zinc-900 mb-8 uppercase tracking-[0.2em] flex items-center gap-2">
+              <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
+              Status Overview
+            </h3>
+            
+            <div className="flex flex-col sm:flex-row items-center gap-10">
+              {/* SVG Donut Chart */}
+              <div className="relative w-36 h-36 flex-shrink-0">
+                <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                  <circle cx="18" cy="18" r="16" fill="none" className="stroke-zinc-50" strokeWidth="4" />
+                  {(() => {
+                    let offset = 0;
+                    const statusConfig = [
+                      { key: 'active', value: stats.active, color: '#10b981' }, // emerald-500
+                      { key: 'broken', value: stats.broken, color: '#f43f5e' }, // rose-500
+                      { key: 'pending', value: stats.pending, color: '#f59e0b' }, // amber-500
+                      { key: 'retired', value: 0, color: '#71717a' }, // Placeholder for retired if needed
+                    ];
+                    
+                    return statusConfig.map(s => {
+                      if (s.value === 0 || stats.total === 0) return null;
+                      const percentage = (s.value / stats.total) * 100;
+                      const strokeDasharray = `${percentage} ${100 - percentage}`;
+                      const currentOffset = offset;
+                      offset += percentage;
+                      
+                      return (
+                        <circle 
+                          key={s.key}
+                          cx="18" cy="18" r="16" fill="none" 
+                          stroke={s.color} strokeWidth="4" 
+                          strokeDasharray={strokeDasharray}
+                          strokeDashoffset={-currentOffset}
+                          className="transition-all duration-1000 ease-out"
+                        />
+                      );
+                    });
+                  })()}
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-2xl font-[1000] text-zinc-900 leading-none">{stats.total}</span>
+                  <span className="text-[8px] font-black text-zinc-400 uppercase tracking-tighter mt-1">Items</span>
+                </div>
+              </div>
+
+              {/* Legend */}
+              <div className="flex-1 w-full space-y-3">
+                {[
+                  { label: 'ใช้งานปกติ', value: stats.active, color: 'bg-emerald-500', sub: 'Healthy' },
+                  { label: 'ชำรุด/เสียหาย', value: stats.broken, color: 'bg-rose-500', sub: 'Needs Repair' },
+                  { label: 'รอลงทะเบียน', value: stats.pending, color: 'bg-amber-500', sub: 'Processing' }
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between group">
+                    <div className="flex items-center gap-3">
+                      <div className={cn("w-2 h-2 rounded-full shadow-sm", item.color)} />
+                      <div className="flex flex-col">
+                        <span className="text-[11px] font-black text-zinc-700 leading-none">{item.label}</span>
+                        <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-tight mt-0.5">{item.sub}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-baseline gap-1">
+                       <span className="text-xs font-black text-zinc-900">{item.value}</span>
+                       <span className="text-[9px] font-bold text-zinc-300">({stats.total > 0 ? ((item.value / stats.total) * 100).toFixed(0) : 0}%)</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
         </div>
 
         {/* Footer info */}
