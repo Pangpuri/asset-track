@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { assets } from "@/db/schema/assets";
+import { assets, logs } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
@@ -31,26 +31,33 @@ export async function PATCH(
     const body = await req.json();
 
     // 1. แยกค่าที่ต้องจัดการพิเศษออกมา
-    const { 
-      id: _, 
-      computerName, ipAddress, monitorSize, 
+    const {
+      id: _,
+      computerName, ipAddress, monitorSize,
       purchaseDate, warrantyExpire,
       assignedTo, // รับค่าจากหน้า Register
       specifications: existingSpecs,
-      ...rest 
+      ...rest
     } = body;
 
     if (!id) {
       return NextResponse.json({ error: "Missing id" }, { status: 400 });
     }
 
+    // ดึงข้อมูลเดิมเพื่อตรวจสอบความถูกต้อง (Defensive Programming)
+    const currentAsset = await db.query.assets.findFirst({
+      where: eq(assets.id, id),
+    });
+
+    if (!currentAsset) return NextResponse.json({ error: "Asset not found" }, { status: 404 });
+
     // 2. จัดการข้อมูล specifications (JSONB)
     // รวบรวมข้อมูลสเปกจาก root level ของ body มาใส่ใน object เดียวกัน
     const updatedSpecs = {
-      ...(existingSpecs || {}),
-      ...(computerName !== undefined && { computerName }),
-      ...(ipAddress !== undefined && { ipAddress }),
-      ...(monitorSize !== undefined && { monitorSize }),
+      ...(currentAsset.specifications || {}),
+      ...(computerName !== undefined && { computerName: computerName || null }),
+      ...(ipAddress !== undefined && { ipAddress: ipAddress || null }),
+      ...(monitorSize !== undefined && { monitorSize: monitorSize || null }),
     };
 
     // 3. เตรียมข้อมูลสำหรับการอัปเดต (กรองค่า undefined ออก)
@@ -67,8 +74,9 @@ export async function PATCH(
     if (warrantyExpire !== undefined) {
       updateFields.warrantyExpire = warrantyExpire && warrantyExpire !== "" ? new Date(warrantyExpire) : null;
     }
-    if (assignedTo !== undefined || rest.receivedBy !== undefined) {
-      updateFields.receivedBy = rest.receivedBy || assignedTo || null;
+    // จัดการเรื่องผู้รับมอบให้รองรับทั้งจากหน้า Admin และหน้า Register
+    if (assignedTo !== undefined) {
+      updateFields.receivedBy = assignedTo || null;
     }
 
     // ทำการอัปเดตข้อมูลในฐานข้อมูล
@@ -112,6 +120,14 @@ export async function DELETE(
     if (retired.length === 0) {
       return NextResponse.json({ error: "Asset not found" }, { status: 404 });
     }
+
+    // บันทึก Log การจำหน่ายออกเพื่อใช้ทำรายงานภายหลัง
+    await db.insert(logs).values({
+      assetId: id,
+      action: "retire",
+      notes: "จำหน่ายออก/เลิกใช้งานผ่านระบบ (Soft Delete)",
+      actionDate: new Date(),
+    });
 
     return NextResponse.json({ success: true, retired: retired[0] });
   } catch (error) {

@@ -12,7 +12,8 @@ import {
   Menu,
   X,
   PlusSquare,
-  FileText
+  FileText,
+  Trash2
 } from "lucide-react";
 
 const navItems = [
@@ -35,6 +36,11 @@ const navItems = [
     title: "พิมพ์ QR (Bulk Print)",
     href: "/dashboard/assets/print-qr",
     icon: QrCode,
+  },
+  {
+    title: "รายการจำหน่ายออก (Archive)",
+    href: "/dashboard/assets?status=retired&includeDeleted=true",
+    icon: Trash2,
   },
   {
     title: "รายงาน PDF (Export)",

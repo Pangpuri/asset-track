@@ -12,7 +12,8 @@ import {
   Network,
   Laptop,
   MoreHorizontal,
-  ArrowRight
+  ArrowRight,
+  Trash2
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ async function getStats() {
       active: sql<number>`count(*) filter (where ${assets.status} = 'active' and ${assets.deletedAt} is null)::int`,
       broken: sql<number>`count(*) filter (where ${assets.status} = 'broken' and ${assets.deletedAt} is null)::int`,
       pending: sql<number>`count(*) filter (where ${assets.status} = 'pending' and ${assets.deletedAt} is null)::int`,
+      retired: sql<number>`count(*) filter (where ${assets.deletedAt} is not null)::int`,
       // แยกตามประเภท
       computer: sql<number>`count(*) filter (where ${assets.category} = 'computer' and ${assets.deletedAt} is null)::int`,
       printer: sql<number>`count(*) filter (where ${assets.category} = 'printer' and ${assets.deletedAt} is null)::int`,
@@ -43,6 +45,7 @@ async function getStats() {
       active: stats?.active || 0,
       broken: stats?.broken || 0,
       pending: stats?.pending || 0,
+      retired: stats?.retired || 0,
       categories: {
         computer: stats?.computer || 0,
         printer: stats?.printer || 0,
@@ -96,6 +99,14 @@ export default async function DashboardPage() {
       color: "text-amber-500",
       bgColor: "bg-amber-50",
       href: "/dashboard/assets?status=pending"
+    },
+    {
+      title: "จำหน่ายออก",
+      value: stats.retired,
+      icon: Trash2,
+      color: "text-zinc-500",
+      bgColor: "bg-zinc-100",
+      href: "/dashboard/assets?status=retired&includeDeleted=true"
     }
   ];
 
@@ -148,8 +159,8 @@ export default async function DashboardPage() {
 
         <div className="px-5 py-6 space-y-6">
           
-          {/* Status Grid - 3 Columns (Fits on one row) */}
-          <div className="grid grid-cols-3 gap-3">
+          {/* Status Grid - 4 Columns (Scrollable on Mobile) */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {statusCards.map((card) => (
               <Link key={card.title} href={card.href} className="group active:scale-95 transition-transform">
                 <div className="bg-white p-4 rounded-[1.8rem] shadow-sm border border-white flex flex-col items-center text-center gap-2 h-full">

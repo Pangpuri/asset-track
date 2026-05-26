@@ -22,7 +22,8 @@ export const actionTypeEnum = pgEnum("action_type", [
   "transfer",  // ย้ายสถานที่/แผนก
   "return",    // คืนอุปกรณ์
   "damage",    // รายงานความเสียหาย
-  "lost"       // รายงานสูญหาย
+  "lost",      // รายงานสูญหาย
+  "retire"     // จำหน่ายออก/เลิกใช้งาน
 ]);
 
 /**
@@ -50,6 +51,13 @@ export const assets = pgTable("assets", {
   factory: text("factory"), // โรงงานที่ใช้งาน (สำหรับอุปกรณ์ที่มีการย้ายหลายแผนก)
   //ประวัติการลบอุปกรณ์ (Soft Delete)
   deletedAt: timestamp("deleted_at", { withTimezone: true }).default(sql`null`),
+  
+  // ข้อมูลการจำหน่ายออก (Disposal Info)
+  disposalReason: text("disposal_reason"),
+  disposalMethod: text("disposal_method"),
+  disposalValue: decimal("disposal_value", { precision: 12, scale: 2 }),
+  disposalAuthorizedBy: text("disposal_authorized_by"),
+
   // ข้อมูลเฉพาะตามประเภท (เก็บเป็น JSONB)
   specifications: jsonb("specifications").$type<{
     assetcode?: string;
