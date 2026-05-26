@@ -53,81 +53,75 @@ export default function AssetEntryPage() {
 
   // State สำหรับ OCR Scanner
   const [isScannerOpen, setScannerOpen] = useState(false);
+  const [countdown, setCountdown] = useState(0); // Countdown for aiming
   const videoRef = useRef<HTMLVideoElement>(null);
-  const scanningLoopRef = useRef<number | null>(null); // For requestAnimationFrame ID
+  const scanningLoopRef = useRef<number | null>(null);
   const lastScanTimeRef = useRef<number>(0);
 
   // Camera Logic
   useEffect(() => {
     let stream: MediaStream | null = null;
+    let detector: any = null;
 
-    const startBarcodeDetection = async (videoElement: HTMLVideoElement) => {
-      // ตรวจสอบว่า Browser รองรับ BarcodeDetector หรือไม่
-      if (!('BarcodeDetector' in window)) {
+    const initDetector = () => {
+      if (!('BarcodeDetector' in window)) return null;
+      
+      interface BarcodeDetectorOptions { formats?: string[]; }
+      const BarcodeDetectorClass = (window as any).BarcodeDetector;
+      return new BarcodeDetectorClass({
+        formats: ['code_128', 'code_39', 'qr_code', 'ean_13', 'upc_a', 'upc_e']
+      });
+    };
+
+    const startScanning = async (videoElement: HTMLVideoElement) => {
+      const barcodeDetector = initDetector();
+      if (!barcodeDetector) {
         toast.error("เบราว์เซอร์ของคุณไม่รองรับการสแกนบาร์โค้ด");
         return;
       }
 
-      // ให้เวลาผู้ใช้เล็ง 1.5 วินาทีก่อนเริ่มสแกนครั้งแรก
+      // เริ่มนับถอยหลัง 2 วินาทีเพื่อให้เล็ง
+      setCountdown(2);
       const startTime = Date.now();
 
-      // ปรับ Regex ให้รองรับ S/N ได้หลากหลายขึ้น
       const serialNumberRegex = /^[a-zA-Z0-9-_.]{3,}$/;
 
-      // Define BarcodeDetector interface locally to avoid 'any'
-      interface DetectedBarcode {
-        rawValue: string;
-        format: string;
-      }
+      const detect = async () => {
+        if (!isScannerOpen || !videoRef.current) return;
 
-      interface BarcodeDetectorOptions {
-        formats?: string[];
-      }
+        const now = Date.now();
+        const elapsed = now - startTime;
 
-      interface BarcodeDetector {
-        detect(source: HTMLVideoElement | HTMLImageElement | HTMLCanvasElement): Promise<DetectedBarcode[]>;
-      }
+        // อัปเดตตัวเลขเล็ง (Countdown)
+        if (elapsed < 1000) setCountdown(2);
+        else if (elapsed < 2000) setCountdown(1);
+        else setCountdown(0);
 
-      const BarcodeDetectorClass = (window as unknown as { 
-        BarcodeDetector: new (options?: BarcodeDetectorOptions) => BarcodeDetector 
-      }).BarcodeDetector;
-      
-      const barcodeDetector = new BarcodeDetectorClass({
-        formats: ['code_128', 'code_39', 'qr_code', 'ean_13']
-      });
-
-      const detect = async (time: number) => {
-        if (videoElement && isScannerOpen) {
-          const now = Date.now();
-          
-          // หน่วงเวลา: เริ่มสแกนหลังจากผ่านไป 1.5 วินาที และสแกนทุกๆ 500ms
-          if (now - startTime > 1500 && now - lastScanTimeRef.current > 500) {
-            lastScanTimeRef.current = now;
-            
+        // เริ่มสแกนหลังจากผ่านไป 2 วินาที (2000ms)
+        if (elapsed >= 2000 && now - lastScanTimeRef.current > 300) {
+          lastScanTimeRef.current = now;
           try {
-            const barcodes = await barcodeDetector.detect(videoElement);
-            if (barcodes.length > 0) {
-              const scannedValue = barcodes[0].rawValue.trim(); // Get the raw value and trim whitespace
-
-              if (serialNumberRegex.test(scannedValue)) {
-                setValue("serialNumber", scannedValue);
-                toast.success(`สแกนสำเร็จ: ${scannedValue}`);
-                setScannerOpen(false); // Close scanner on successful and valid scan
-                return; // Stop scanning loop
-              } else {
-                toast.error("ไม่พบ Serial Number ที่ถูกต้อง กรุณาลองใหม่");
-                // Continue scanning if the detected barcode is not a valid serial number
+            // ตรวจสอบสถานะวิดีโอก่อนสแกน
+            if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
+              const barcodes = await barcodeDetector.detect(videoElement);
+              if (barcodes.length > 0) {
+                const scannedValue = barcodes[0].rawValue.trim();
+                if (serialNumberRegex.test(scannedValue)) {
+                  setValue("serialNumber", scannedValue);
+                  toast.success(`สแกนสำเร็จ: ${scannedValue}`);
+                  setScannerOpen(false);
+                  return; 
+                }
               }
             }
           } catch (e) {
-              // Non-blocking error logging
-              console.error("Detection attempt failed:", e);
+            console.error("Scanning error:", e);
           }
-          }
-
-          scanningLoopRef.current = requestAnimationFrame(detect);
         }
+
+        scanningLoopRef.current = requestAnimationFrame(detect);
       };
+
       scanningLoopRef.current = requestAnimationFrame(detect);
     };
 
@@ -135,14 +129,22 @@ export default function AssetEntryPage() {
       if (isScannerOpen && videoRef.current) {
         try {
           stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } 
+            video: { 
+              facingMode: "environment", 
+              width: { ideal: 1280 }, 
+              height: { ideal: 720 },
+              frameRate: { ideal: 30 }
+            } 
           });
           if (videoRef.current) {
             videoRef.current.srcObject = stream;
-            startBarcodeDetection(videoRef.current);
+            // รอให้วิดีโอโหลด Metadata ก่อนเริ่ม Loop
+            videoRef.current.onloadedmetadata = () => {
+              startScanning(videoRef.current!);
+            };
           }
         } catch (err) {
-          console.error("Camera access error:", err); // Added console.error for camera access issues
+          console.error("Camera access error:", err);
           toast.error("ไม่สามารถเข้าถึงกล้องได้");
           setScannerOpen(false);
         }
@@ -151,10 +153,14 @@ export default function AssetEntryPage() {
 
     startCamera();
     return () => {
-      stream?.getTracks().forEach(t => t.stop());
-      if (scanningLoopRef.current) cancelAnimationFrame(scanningLoopRef.current);
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop());
+      }
+      if (scanningLoopRef.current) {
+        cancelAnimationFrame(scanningLoopRef.current);
+      }
     };
-  }, [isScannerOpen]);
+  }, [isScannerOpen, setValue]);
 
   const onSubmit = async (data: AssetFormValues) => {
     try {
@@ -371,7 +377,14 @@ export default function AssetEntryPage() {
           {/* Scanning Frame Area */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="w-[85%] h-40 border-2 border-white/20 rounded-3xl relative overflow-hidden shadow-[0_0_0_1000px_rgba(0,0,0,0.6)]">
-              <div className="absolute top-1/2 left-0 w-full h-[2px] bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse" />
+              {countdown > 0 ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-indigo-600/20 backdrop-blur-[2px]">
+                   <span className="text-6xl font-black text-white drop-shadow-2xl animate-bounce">{countdown}</span>
+                   <span className="text-[10px] font-black text-white uppercase tracking-[0.3em] mt-2">กำลังเตรียมเล็ง...</span>
+                </div>
+              ) : (
+                <div className="absolute top-1/2 left-0 w-full h-[2px] bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse" />
+              )}
               
               {/* Visual Corners for scan frame */}
               <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-white rounded-tl-xl" />

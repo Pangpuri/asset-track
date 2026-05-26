@@ -1,13 +1,12 @@
 "use client";
 
 import { generateAssetQRCode } from "@/lib/qr";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -68,7 +67,10 @@ export default function EditAssetPage() {
   // Camera Scanner State
   const [isScanning, setIsScanning] = useState(false);
   const [isFlashOn, setIsFlashOn] = useState(false);
+  const [countdown, setCountdown] = useState(0); 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const scanningLoopRef = useRef<number | null>(null);
+  const lastScanTimeRef = useRef<number>(0);
 
   const { register, handleSubmit, setValue, watch, reset, formState: { isSubmitting, errors } } = useForm<AssetFormValues>({
     resolver: zodResolver(assetSchema),
@@ -76,53 +78,78 @@ export default function EditAssetPage() {
 
   const selectedCategory = watch("category");
 
+  const stopScanning = useCallback(() => {
+    if (videoRef.current?.srcObject) {
+      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+      tracks.forEach(track => track.stop());
+    }
+    if (scanningLoopRef.current) cancelAnimationFrame(scanningLoopRef.current);
+    setIsScanning(false);
+    setCountdown(0);
+  }, []);
+
   const startScanning = async () => {
     setIsScanning(true);
+    setCountdown(2);
+    const startTime = Date.now();
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: "environment" } 
+        video: { 
+          facingMode: "environment",
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        } 
       });
+      
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         
-        // Start Detection Loop
-        if ("BarcodeDetector" in window) {
-          interface DetectedBarcode {
-            rawValue: string;
-            format: string;
+        videoRef.current.onloadedmetadata = () => {
+          if (!("BarcodeDetector" in window)) {
+            toast.error("เบราว์เซอร์ไม่รองรับการสแกนบาร์โค้ด");
+            return;
           }
-          interface BarcodeDetectorOptions {
-            formats?: string[];
-          }
-          interface BarcodeDetector {
-            detect(source: HTMLVideoElement | HTMLImageElement | HTMLCanvasElement): Promise<DetectedBarcode[]>;
-          }
-          const BarcodeDetectorClass = (window as unknown as { 
-            BarcodeDetector: new (options?: BarcodeDetectorOptions) => BarcodeDetector 
-          }).BarcodeDetector;
-          
+
+          const BarcodeDetectorClass = (window as any).BarcodeDetector;
           const detector = new BarcodeDetectorClass({
-            formats: ["code_128", "code_39", "ean_13", "qr_code"]
+            formats: ["code_128", "code_39", "ean_13", "qr_code", "upc_a", "upc_e"]
           });
 
           const detectLoop = async () => {
-            if (!videoRef.current || videoRef.current.paused) return;
-            try {
-              const barcodes = await detector.detect(videoRef.current);
-              if (barcodes.length > 0) {
-                const sn = barcodes[0].rawValue;
-                setValue("serialNumber", sn);
-                toast.success(`พบ S/N: ${sn}`);
-                stopScanning();
-              } else {
-                requestAnimationFrame(detectLoop);
+            if (!videoRef.current) return;
+
+            const now = Date.now();
+            const elapsed = now - startTime;
+
+            // Visual Countdown logic
+            if (elapsed < 1000) setCountdown(2);
+            else if (elapsed < 2000) setCountdown(1);
+            else setCountdown(0);
+
+            // Start actual detection after 2 seconds
+            if (elapsed >= 2000 && now - lastScanTimeRef.current > 300) {
+              lastScanTimeRef.current = now;
+              try {
+                if (videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
+                  const barcodes = await detector.detect(videoRef.current);
+                  if (barcodes.length > 0) {
+                    const sn = barcodes[0].rawValue.trim();
+                    setValue("serialNumber", sn);
+                    toast.success(`พบ S/N: ${sn}`);
+                    stopScanning();
+                    return;
+                  }
+                }
+              } catch (e) {
+                console.error("Detection error:", e);
               }
-            } catch (e) {
-              requestAnimationFrame(detectLoop);
             }
+            scanningLoopRef.current = requestAnimationFrame(detectLoop);
           };
-          detectLoop();
-        }
+          
+          scanningLoopRef.current = requestAnimationFrame(detectLoop);
+        };
       }
     } catch (err) {
       console.error(err);
@@ -131,25 +158,13 @@ export default function EditAssetPage() {
     }
   };
 
-  const stopScanning = () => {
-    if (videoRef.current?.srcObject) {
-      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-      tracks.forEach(track => track.stop());
-    }
-    setIsScanning(false);
-  };
-
   const toggleFlash = async () => {
     const stream = videoRef.current?.srcObject as MediaStream;
     const track = stream?.getVideoTracks()[0];
     if (track && "applyConstraints" in track) {
       try {
         const newFlash = !isFlashOn;
-        // Fix (track as any) by using a more specific constraint check
-        interface MediaStreamTrackWithTorch extends MediaStreamTrack {
-          applyConstraints(constraints?: MediaTrackConstraints & { advanced?: Array<{ torch?: boolean }> }): Promise<void>;
-        }
-        await (track as unknown as MediaStreamTrackWithTorch).applyConstraints({
+        await (track as any).applyConstraints({
           advanced: [{ torch: newFlash }]
         });
         setIsFlashOn(newFlash);
@@ -183,6 +198,9 @@ export default function EditAssetPage() {
       }
     };
     fetchAsset();
+    return () => {
+      if (scanningLoopRef.current) cancelAnimationFrame(scanningLoopRef.current);
+    };
   }, [params.id, reset, router]);
 
   const onSubmit = async (data: AssetFormValues) => {
@@ -380,10 +398,23 @@ export default function EditAssetPage() {
 
           <div className="relative w-full aspect-[3/4] max-w-md overflow-hidden flex items-center justify-center">
             <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
-            <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-32 border-2 border-white/20 rounded-3xl" />
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-32 border-t-2 border-b-2 border-indigo-50 rounded-3xl animate-pulse" />
-              <div className="absolute top-[45%] left-1/2 -translate-x-1/2 w-72 h-[2px] bg-gradient-to-r from-transparent via-indigo-500 to-transparent animate-bounce shadow-[0_0_15px_rgba(99,102,241,1)]" />
+            <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+              <div className="w-64 h-32 border-2 border-white/20 rounded-3xl relative overflow-hidden">
+                {countdown > 0 ? (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center bg-indigo-600/20 backdrop-blur-[2px]">
+                     <span className="text-6xl font-black text-white drop-shadow-2xl animate-bounce">{countdown}</span>
+                     <span className="text-[10px] font-black text-white uppercase tracking-[0.3em] mt-2">เตรียมเล็ง...</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="absolute top-1/2 left-0 w-full h-[2px] bg-red-500 shadow-[0_0_15px_rgba(239,68,68,1)] animate-pulse" />
+                    <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-white rounded-tl-xl" />
+                    <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-white rounded-tr-xl" />
+                    <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-white rounded-bl-xl" />
+                    <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-white rounded-br-xl" />
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
