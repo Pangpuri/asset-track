@@ -13,6 +13,7 @@ export async function GET(req: Request) {
     const factory = searchParams.get("factory");
     const q = searchParams.get("q");
     const filter = searchParams.get("filter");
+    const includeDeleted = searchParams.get("includeDeleted") === "true";
 
     if (id) {
       const result = await db.select().from(assets).where(eq(assets.id, id as string)).limit(1);
@@ -21,6 +22,11 @@ export async function GET(req: Request) {
     }
 
     const conditions = [];
+
+    // กรองเอาเฉพาะข้อมูลที่ยังไม่ถูกลบ (Soft Delete) เป็นค่าเริ่มต้น
+    if (!includeDeleted) {
+      conditions.push(isNull(assets.deletedAt));
+    }
 
     // กรองตามสถานะ (เช่น active, broken, pending)
     if (status && status !== "all") {
@@ -99,7 +105,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { 
-      assetCode, category, brand, model, serialNumber, location, factory,
+      assetCode, assetName, category, brand, model, serialNumber, location, factory,
       computerName, monitorSize, ipAddress, vendor,
       receivedBy, deliveredBy, purchaseDate, warrantyExpire
     } = body;
@@ -113,6 +119,7 @@ export async function POST(req: Request) {
 
     const newAsset = await db.insert(assets).values({
       assetCode,
+      assetName,
       category,
       brand,
       model,

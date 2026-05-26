@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 
 const assetSchema = z.object({
   assetCode: z.string().min(2, "รหัสทรัพย์สินต้องมีอย่างน้อย 2 ตัวอักษร"),
-  assetName: z.string().min(2, "ชื่ออุปกรณ์ต้องมีอย่างน้อย 2 ตัวอักษร"),
+  assetName: z.string().optional(),
   category: z.string().min(1, "โปรดระบุประเภทอุปกรณ์"),
   brand: z.string().optional(),
   model: z.string().optional(),
@@ -314,18 +314,37 @@ export default function AssetEntryPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-10 pb-20">
           {/* Section 1: Core Info */}
           <div className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="factory" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">โรงงาน / สาขาที่สังกัด</Label>
-              <Select value={factoryValue} onValueChange={(value) => setValue("factory", value as string)}>
-                <SelectTrigger className="border-none bg-gray-50 h-14 rounded-2xl text-base font-bold text-zinc-900">
-                  <SelectValue placeholder="เลือกโรงงาน (ถ้ามี)" />
-                </SelectTrigger>
-                <SelectContent className="rounded-2xl border-gray-100 shadow-2xl bg-white z-[60]">
-                  <SelectItem value="โรงงาน 1" className="font-bold">โรงงาน 1</SelectItem>
-                  <SelectItem value="โรงงาน 2" className="font-bold">โรงงาน 2</SelectItem>
-                  <SelectItem value="ทั้ง 2 โรงงาน" className="font-bold">ทั้ง 2 โรงงาน</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="factory" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">โรงงาน / สาขา *</Label>
+                <Select value={factoryValue} onValueChange={(value) => setValue("factory", value as string)}>
+                  <SelectTrigger className="border-none bg-gray-50 h-14 rounded-2xl text-base font-bold text-zinc-900">
+                    <SelectValue placeholder="เลือกโรงงาน" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-gray-100 shadow-2xl bg-white z-[60]">
+                    <SelectItem value="โรงงาน 1" className="font-bold">โรงงาน 1</SelectItem>
+                    <SelectItem value="โรงงาน 2" className="font-bold">โรงงาน 2</SelectItem>
+                    <SelectItem value="ทั้ง 2 โรงงาน" className="font-bold">ทั้ง 2 โรงงาน</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="category" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">ประเภทอุปกรณ์ *</Label>
+                <Select value={selectedCategory} onValueChange={(value) => setValue("category", value as string)}>
+                  <SelectTrigger className="border-none bg-gray-50 h-14 rounded-2xl text-base font-bold">
+                    <SelectValue placeholder="ระบุประเภท" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-2xl border-gray-100 shadow-2xl bg-white z-[60]">
+                    <SelectItem value="computer">คอมพิวเตอร์/โน้ตบุ๊ค</SelectItem>
+                    <SelectItem value="printer">เครื่องพิมพ์</SelectItem>
+                    <SelectItem value="network">อุปกรณ์เครือข่าย</SelectItem>
+                    <SelectItem value="monitor">จอภาพ</SelectItem>
+                    <SelectItem value="other">อื่นๆ</SelectItem>
+                  </SelectContent>
+                </Select>
+                {errors.category && <p className="text-[10px] text-red-500 font-bold ml-1">{errors.category.message}</p>}
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -336,29 +355,6 @@ export default function AssetEntryPage() {
               </div>
               {errors.assetCode && <p className="text-[10px] text-red-500 font-bold ml-1">{errors.assetCode.message}</p>}
               {isCodeTaken && <p className="text-[10px] text-red-500 font-black ml-1 uppercase animate-pulse">รหัสนี้ถูกใช้งานแล้ว โปรดเปลี่ยนใหม่</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="assetName" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">ชื่ออุปกรณ์ (Asset Name) *</Label>
-              <Input id="assetName" {...register("assetName")} placeholder="ระบุชื่ออุปกรณ์" className="border-none bg-gray-50 h-14 rounded-2xl text-lg font-bold" />
-              {errors.assetName && <p className="text-[10px] text-red-500 font-bold ml-1">{errors.assetName.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="category" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">ประเภทอุปกรณ์ *</Label>
-              <Select value={selectedCategory} onValueChange={(value) => setValue("category", value as string)}>
-                <SelectTrigger className="border-none bg-gray-50 h-14 rounded-2xl text-base font-bold">
-                  <SelectValue placeholder="ระบุประเภท" />
-                </SelectTrigger>
-                <SelectContent className="rounded-2xl border-gray-100 shadow-2xl bg-white z-[60]">
-                  <SelectItem value="computer">คอมพิวเตอร์/โน้ตบุ๊ค</SelectItem>
-                  <SelectItem value="printer">เครื่องพิมพ์</SelectItem>
-                  <SelectItem value="network">อุปกรณ์เครือข่าย</SelectItem>
-                  <SelectItem value="monitor">จอภาพ</SelectItem>
-                  <SelectItem value="other">อื่นๆ</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.category && <p className="text-[10px] text-red-500 font-bold ml-1">{errors.category.message}</p>}
             </div>
           </div>
 

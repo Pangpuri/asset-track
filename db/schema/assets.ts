@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { pgTable, text, timestamp, uuid, varchar, pgEnum, jsonb, boolean, decimal } from "drizzle-orm/pg-core";
 
 /**
@@ -47,7 +48,8 @@ export const assets = pgTable("assets", {
   location: text("location"),   // สถานที่ติดตั้งปัจจุบัน
   department: text("department"), // แผนกที่ดูแล/ใช้งาน
   factory: text("factory"), // โรงงานที่ใช้งาน (สำหรับอุปกรณ์ที่มีการย้ายหลายแผนก)
-  
+  //ประวัติการลบอุปกรณ์ (Soft Delete)
+  deletedAt: timestamp("deleted_at", { withTimezone: true }).default(sql`null`),
   // ข้อมูลเฉพาะตามประเภท (เก็บเป็น JSONB)
   specifications: jsonb("specifications").$type<{
     assetcode?: string;

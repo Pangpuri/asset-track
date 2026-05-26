@@ -16,7 +16,7 @@ import Link from "next/link";
 
 const registerSchema = z.object({
   assetCode: z.string().min(2, "กรุณาระบุรหัสทรัพย์สิน").optional().or(z.literal("")),
-  assetName: z.string().min(2, "กรุณาระบุชื่ออุปกรณ์").optional().or(z.literal("")),
+  assetName: z.string().optional(),
   category: z.string().optional(),
   brand: z.string().optional(),
   model: z.string().optional(),
@@ -310,9 +310,8 @@ export default function RegisterPage() {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="assetName" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">ชื่ออุปกรณ์ *</Label>
+                    <Label htmlFor="assetName" className="text-[10px] uppercase font-bold tracking-widest text-gray-400">ชื่ออุปกรณ์ (ถ้ามี)</Label>
                     <Input id="assetName" {...register("assetName")} placeholder="เช่น Notebook" className="h-11 border-gray-200" />
-                    {errors.assetName && <p className="text-[10px] text-red-500 font-bold">{errors.assetName.message}</p>}
                   </div>
 
                   <div className="space-y-1.5">

@@ -1,6 +1,6 @@
 import { db } from "@/db";
 import { assets } from "@/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, isNull } from "drizzle-orm";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { 
@@ -58,8 +58,8 @@ export default async function TrackAssetPage({
   let asset;
   try {
     // ดึงข้อมูล Asset และ Log ล่าสุด พร้อมพนักงานที่ได้รับมอบหมาย
-    asset = await db.query.assets.findFirst({
-      where: eq(assets.id, id)
+    asset = await db.query.assets.findFirst({ // เพิ่มเงื่อนไข deletedAt
+      where: and(eq(assets.id, id), isNull(assets.deletedAt))
     });
   } catch (error) {
     console.error("Fetch error:", error);

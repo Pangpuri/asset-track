@@ -5,7 +5,7 @@ import { assets } from "@/db/schema/assets";
 import { desc, eq, or, isNull, and } from "drizzle-orm";
 import { 
   Table, 
-  TableBody, 
+  TableBody,
   TableCell, 
   TableHead, 
   TableHeader, 
@@ -114,7 +114,7 @@ function AssetsList() {
       if (factoryParam) sp.append("factory", factoryParam);
       if (queryParam) sp.append("q", queryParam);
       
-      const res = await fetch(`/api/assets?${sp.toString()}`, { cache: "no-store" });
+      const res = await fetch(`/api/assets?${sp.toString()}&includeDeleted=false`, { cache: "no-store" }); // เพิ่ม filter เพื่อไม่รวมรายการที่ถูกลบ
       if (!res.ok) throw new Error();
       
       const data: RawAsset[] = await res.json();
@@ -133,21 +133,21 @@ function AssetsList() {
   }, [filterParam, statusParam, categoryParam, factoryParam, queryParam]);
 
   useEffect(() => {
-    // ใช้ setTimeout เพื่อแยกวงจรการทำงานออกจากรอบการ Render ของ React
-    // ช่วยให้ข้ามข้อจำกัด "cascading renders" ได้อย่างสมบูรณ์
+    // ใช้ setTimeout เพื่อแยกวงจรการทำงานออกจากรอบการ Render ของ React (ป้องกัน cascading renders)
     const timer = setTimeout(() => {
       fetchAssets(false);
     }, 0);
     return () => clearTimeout(timer);
   }, [fetchAssets]);
 
-  const handleDelete = async (id: string, code: string | null) => {
-    if (!confirm(`คุณต้องการลบอุปกรณ์ ${code || id.substring(0,8)} ใช่หรือไม่? ประวัติทั้งหมดจะถูกลบไปด้วย`)) return;
+
+  const handleRetire = async (id: string, code: string | null) => {
+    if (!confirm(`คุณต้องการทำเครื่องหมายอุปกรณ์ ${code || id.substring(0,8)} เป็น 'เลิกใช้งาน' ใช่หรือไม่? อุปกรณ์จะไม่ปรากฏในรายการปกติ แต่ยังคงอยู่ในระบบเพื่อการตรวจสอบย้อนหลัง`)) return;
     
     try {
       const res = await fetch(`/api/assets/${id}?id=${id}`, { method: "DELETE" });
       if (res.ok) {
-        toast.success("ลบข้อมูลเรียบร้อยแล้ว");
+        toast.success("อุปกรณ์ถูกทำเครื่องหมายเป็น 'เลิกใช้งาน' เรียบร้อยแล้ว");
         setLoading(true); // สั่ง loading ที่นี่แทน (ปลอดภัยเพราะอยู่ใน Event Handler)
         fetchAssets();
       } else {
@@ -413,7 +413,7 @@ function AssetsList() {
                               variant="ghost" 
                               size="icon" 
                               className="h-9 w-9 rounded-xl bg-white border border-rose-50 shadow-sm text-rose-500 hover:bg-rose-600 hover:text-white transition-all"
-                              onClick={() => handleDelete(asset.id, asset.assetCode)}
+                              onClick={() => handleRetire(asset.id, asset.assetCode)}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -493,7 +493,7 @@ function AssetsList() {
                             variant="ghost" 
                             size="icon" 
                             className="h-8 w-8 rounded-lg bg-white border border-rose-50 text-rose-500 shadow-sm"
-                            onClick={() => handleDelete(asset.id, asset.assetCode)}
+                            onClick={() => handleRetire(asset.id, asset.assetCode)}
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>

@@ -21,21 +21,21 @@ export const dynamic = "force-dynamic";
 
 async function getStats() {
   try {
-    const [stats] = await db.select({
-      total: sql<number>`count(*)::int`,
-      active: sql<number>`count(*) filter (where ${assets.status} = 'active')::int`,
-      broken: sql<number>`count(*) filter (where ${assets.status} = 'broken')::int`,
-      pending: sql<number>`count(*) filter (where ${assets.status} = 'pending')::int`,
+    const [stats] = await db.select({ // เพิ่มเงื่อนไข deletedAt IS NULL ในทุกๆ count
+      total: sql<number>`count(*) filter (where ${assets.deletedAt} is null)::int`,
+      active: sql<number>`count(*) filter (where ${assets.status} = 'active' and ${assets.deletedAt} is null)::int`,
+      broken: sql<number>`count(*) filter (where ${assets.status} = 'broken' and ${assets.deletedAt} is null)::int`,
+      pending: sql<number>`count(*) filter (where ${assets.status} = 'pending' and ${assets.deletedAt} is null)::int`,
       // แยกตามประเภท
-      computer: sql<number>`count(*) filter (where ${assets.category} = 'computer')::int`,
-      printer: sql<number>`count(*) filter (where ${assets.category} = 'printer')::int`,
-      monitor: sql<number>`count(*) filter (where ${assets.category} = 'monitor')::int`,
-      network: sql<number>`count(*) filter (where ${assets.category} = 'network')::int`,
-      other: sql<number>`count(*) filter (where ${assets.category} = 'other' or ${assets.category} is null)::int`,
+      computer: sql<number>`count(*) filter (where ${assets.category} = 'computer' and ${assets.deletedAt} is null)::int`,
+      printer: sql<number>`count(*) filter (where ${assets.category} = 'printer' and ${assets.deletedAt} is null)::int`,
+      monitor: sql<number>`count(*) filter (where ${assets.category} = 'monitor' and ${assets.deletedAt} is null)::int`,
+      network: sql<number>`count(*) filter (where ${assets.category} = 'network' and ${assets.deletedAt} is null)::int`,
+      other: sql<number>`count(*) filter (where (${assets.category} = 'other' or ${assets.category} is null) and ${assets.deletedAt} is null)::int`,
       // แยกตามโรงงาน
-      f1: sql<number>`count(*) filter (where ${assets.factory} ilike '%โรงงาน 1%' or ${assets.factory} ilike '%Factory 1%')::int`,
-      f2: sql<number>`count(*) filter (where ${assets.factory} ilike '%โรงงาน 2%' or ${assets.factory} ilike '%Factory 2%')::int`,
-      both: sql<number>`count(*) filter (where ${assets.factory} ilike '%ทั้ง 2 โรงงาน%' or ${assets.factory} ilike '%both%')::int`,
+      f1: sql<number>`count(*) filter (where (${assets.factory} ilike '%โรงงาน 1%' or ${assets.factory} ilike '%Factory 1%') and ${assets.deletedAt} is null)::int`,
+      f2: sql<number>`count(*) filter (where (${assets.factory} ilike '%โรงงาน 2%' or ${assets.factory} ilike '%Factory 2%') and ${assets.deletedAt} is null)::int`,
+      both: sql<number>`count(*) filter (where (${assets.factory} ilike '%ทั้ง 2 โรงงาน%' or ${assets.factory} ilike '%both%') and ${assets.deletedAt} is null)::int`,
     }).from(assets);
 
     return {

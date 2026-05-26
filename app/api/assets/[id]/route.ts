@@ -105,13 +105,15 @@ export async function DELETE(
       return NextResponse.json({ error: "Missing id" }, { status: 400 });
     }
 
-    const deleted = await db.delete(assets).where(eq(assets.id, id)).returning();
+    // ทำการ Soft Delete โดยการอัปเดต deletedAt และเปลี่ยนสถานะเป็น retired
+    const retired = await db.update(assets).set({ deletedAt: new Date(), status: "retired", updatedAt: new Date() }).where(eq(assets.id, id)).returning();
+    revalidatePath("/dashboard/assets"); // ล้าง cache ของหน้า Assets List
 
-    if (deleted.length === 0) {
+    if (retired.length === 0) {
       return NextResponse.json({ error: "Asset not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, deleted: deleted[0] });
+    return NextResponse.json({ success: true, retired: retired[0] });
   } catch (error) {
     console.error("Error deleting asset:", error);
     return NextResponse.json({ error: "Failed to delete asset" }, { status: 500 });
