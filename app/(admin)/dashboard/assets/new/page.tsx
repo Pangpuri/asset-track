@@ -11,8 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { Loader2, ArrowLeft, Save, PackagePlus, Scan, X } from "lucide-react";
+import { Loader2, ArrowLeft, Save, PackagePlus, Scan, X, Zap, ZapOff } from "lucide-react";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 
 const assetSchema = z.object({
   assetCode: z.string().min(2, "รหัสทรัพย์สินต้องมีอย่างน้อย 2 ตัวอักษร"),
@@ -53,6 +54,7 @@ export default function AssetEntryPage() {
 
   // State สำหรับ OCR Scanner
   const [isScannerOpen, setScannerOpen] = useState(false);
+  const [isFlashOn, setIsFlashOn] = useState(false);
   const [countdown, setCountdown] = useState(0); // Countdown for aiming
   const videoRef = useRef<HTMLVideoElement>(null);
   const scanningLoopRef = useRef<number | null>(null);
@@ -67,6 +69,7 @@ export default function AssetEntryPage() {
       
       interface DetectedBarcode {
         rawValue: string;
+        boundingBox: DOMRectReadOnly;
       }
       interface BarcodeDetectorOptions {
         formats?: string[];
@@ -80,7 +83,7 @@ export default function AssetEntryPage() {
       }).BarcodeDetector;
 
       return new BarcodeDetectorClass({
-        formats: ['code_128', 'code_39', 'qr_code', 'ean_13', 'upc_a', 'upc_e']
+        formats: ['code_128', 'code_39', 'ean_13'] // เน้นเฉพาะ format ของ Serial Number
       });
     };
 
@@ -96,6 +99,8 @@ export default function AssetEntryPage() {
       const startTime = Date.now();
 
       const serialNumberRegex = /^[a-zA-Z0-9-_.]{3,}$/;
+      let consecutiveMatches = 0;
+      let lastScannedValue = "";
 
       const detect = async () => {
         if (!isScannerOpen || !videoRef.current) return;
@@ -116,12 +121,31 @@ export default function AssetEntryPage() {
             if (videoElement.readyState === videoElement.HAVE_ENOUGH_DATA) {
               const barcodes = await barcodeDetector.detect(videoElement);
               if (barcodes.length > 0) {
-                const scannedValue = barcodes[0].rawValue.trim();
-                if (serialNumberRegex.test(scannedValue)) {
-                  setValue("serialNumber", scannedValue);
-                  toast.success(`สแกนสำเร็จ: ${scannedValue}`);
-                  setScannerOpen(false);
-                  return; 
+                // ค้นหาบาร์โค้ดที่อยู่ใกล้กึ่งกลางแนวตั้งของวิดีโอมากที่สุด
+                const centerY = videoElement.videoHeight / 2;
+                const validBarcodes = barcodes
+                  .filter(b => serialNumberRegex.test(b.rawValue.trim()))
+                  .sort((a, b) => {
+                    const distA = Math.abs((a.boundingBox.top + a.boundingBox.bottom) / 2 - centerY);
+                    const distB = Math.abs((b.boundingBox.top + b.boundingBox.bottom) / 2 - centerY);
+                    return distA - distB;
+                  });
+
+                if (validBarcodes.length > 0) {
+                  const scannedValue = validBarcodes[0].rawValue.trim();
+                  // ทำ Verification เพื่อความแม่นยำ (ต้องเจอค่าเดิม 2 ครั้งติดกัน)
+                  if (scannedValue === lastScannedValue) {
+                    consecutiveMatches++;
+                    if (consecutiveMatches >= 2) {
+                      setValue("serialNumber", scannedValue);
+                      toast.success(`สแกนสำเร็จ: ${scannedValue}`);
+                      setScannerOpen(false);
+                      return;
+                    }
+                  } else {
+                    lastScannedValue = scannedValue;
+                    consecutiveMatches = 1;
+                  }
                 }
               }
             }
@@ -142,8 +166,8 @@ export default function AssetEntryPage() {
           stream = await navigator.mediaDevices.getUserMedia({ 
             video: { 
               facingMode: "environment", 
-              width: { ideal: 1280 }, 
-              height: { ideal: 720 },
+              width: { ideal: 1920 }, // ปรับเป็น Full HD เพื่อความคมชัด
+              height: { ideal: 1080 },
               frameRate: { ideal: 30 }
             } 
           });
@@ -172,6 +196,24 @@ export default function AssetEntryPage() {
       }
     };
   }, [isScannerOpen, setValue]);
+
+  // ลอจิกสำหรับเปิด/ปิดไฟแฟลช
+  const toggleFlash = async () => {
+    if (videoRef.current?.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      const track = stream.getVideoTracks()[0];
+      
+      interface TorchConstraint extends MediaTrackConstraintSet { torch?: boolean; }
+      
+      if (track && "applyConstraints" in track) {
+        try {
+          const newFlash = !isFlashOn;
+          await track.applyConstraints({ advanced: [{ torch: newFlash } as TorchConstraint] } as MediaTrackConstraints);
+          setIsFlashOn(newFlash);
+        } catch (e) { toast.error("อุปกรณ์ไม่รองรับการเปิดไฟแฟลช"); }
+      }
+    }
+  };
 
   const onSubmit = async (data: AssetFormValues) => {
     try {
@@ -387,7 +429,7 @@ export default function AssetEntryPage() {
 
           {/* Scanning Frame Area */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-[85%] h-40 border-2 border-white/20 rounded-3xl relative overflow-hidden shadow-[0_0_0_1000px_rgba(0,0,0,0.6)]">
+            <div className="w-[85%] h-24 border-2 border-white/40 rounded-3xl relative overflow-hidden shadow-[0_0_0_1000px_rgba(0,0,0,0.6)] bg-white/5">
               {countdown > 0 ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-indigo-600/20 backdrop-blur-[2px]">
                    <span className="text-6xl font-black text-white drop-shadow-2xl animate-bounce">{countdown}</span>
@@ -412,9 +454,14 @@ export default function AssetEntryPage() {
                 เคล็ดลับ: หากสแกนไม่ติด ให้ลองขยับกล้องเข้า-ออกช้าๆ หรือเปิดไฟให้สว่างเพียงพอ
               </p>
             </div>
-            <Button type="button" variant="ghost" className="text-white h-12 w-12 rounded-full bg-white/10" onClick={() => setScannerOpen(false)}>
-              <X size={24} />
-            </Button>
+            <div className="flex gap-4">
+              <Button type="button" variant="ghost" className={cn("text-white h-14 w-14 rounded-2xl", isFlashOn ? "bg-amber-500" : "bg-white/10")} onClick={toggleFlash}>
+                {isFlashOn ? <Zap size={24} /> : <ZapOff size={24} />}
+              </Button>
+              <Button type="button" variant="ghost" className="text-white h-14 w-14 rounded-2xl bg-white/10" onClick={() => setScannerOpen(false)}>
+                <X size={24} />
+              </Button>
+            </div>
           </div>
         </div>
       )}

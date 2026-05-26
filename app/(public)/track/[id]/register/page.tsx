@@ -111,6 +111,7 @@ export default function RegisterPage() {
       // Define BarcodeDetector interface locally to avoid 'any'
       interface DetectedBarcode {
         rawValue: string;
+        boundingBox: DOMRectReadOnly;
         format: string;
       }
 
@@ -127,8 +128,11 @@ export default function RegisterPage() {
       }).BarcodeDetector;
 
       const barcodeDetector = new BarcodeDetectorClass({
-        formats: ['code_128', 'code_39', 'qr_code', 'ean_13']
+        formats: ['code_128', 'code_39', 'ean_13'] // ตัด qr_code ออกเพื่อความเร็วและแม่นยำในฟิลด์ S/N
       });
+
+      let consecutiveMatches = 0;
+      let lastScannedValue = "";
 
       const detect = async (time: number) => {
         if (videoElement && isScannerOpen) {
@@ -140,13 +144,29 @@ export default function RegisterPage() {
           try {
             const barcodes = await barcodeDetector.detect(videoElement);
             if (barcodes.length > 0) {
-              const scannedValue = barcodes[0].rawValue.trim(); // Get the raw value and trim whitespace
+              const centerY = videoElement.videoHeight / 2;
+              const targetBarcode = barcodes
+                .filter(b => serialNumberRegex.test(b.rawValue.trim()))
+                .sort((a, b) => {
+                  const distA = Math.abs((a.boundingBox.top + a.boundingBox.bottom) / 2 - centerY);
+                  const distB = Math.abs((b.boundingBox.top + b.boundingBox.bottom) / 2 - centerY);
+                  return distA - distB;
+                })[0];
 
-              if (serialNumberRegex.test(scannedValue)) {
-                setValue("serialNumber", scannedValue);
-                toast.success(`สแกนสำเร็จ: ${scannedValue}`);
-                setScannerOpen(false); // Close scanner on successful and valid scan
-                return; // Stop scanning loop
+              if (targetBarcode) {
+                const scannedValue = targetBarcode.rawValue.trim();
+                if (scannedValue === lastScannedValue) {
+                  consecutiveMatches++;
+                  if (consecutiveMatches >= 2) {
+                    setValue("serialNumber", scannedValue);
+                    toast.success(`สแกนสำเร็จ: ${scannedValue}`);
+                    setScannerOpen(false);
+                    return;
+                  }
+                } else {
+                  lastScannedValue = scannedValue;
+                  consecutiveMatches = 1;
+                }
               } else {
                 toast.error("ไม่พบ Serial Number ที่ถูกต้อง กรุณาลองใหม่");
                 // Continue scanning if the detected barcode is not a valid serial number
@@ -412,7 +432,7 @@ export default function RegisterPage() {
             </div>
 
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-[85%] h-32 border-2 border-white/20 rounded-2xl relative overflow-hidden shadow-[0_0_0_1000px_rgba(0,0,0,0.7)]">
+              <div className="w-[85%] h-20 border-2 border-white/40 rounded-2xl relative overflow-hidden shadow-[0_0_0_1000px_rgba(0,0,0,0.7)] bg-white/5">
                 <div className="absolute top-1/2 left-0 w-full h-[2px] bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)] animate-pulse" />
                 
                 {/* Visual Corners for scan frame */}

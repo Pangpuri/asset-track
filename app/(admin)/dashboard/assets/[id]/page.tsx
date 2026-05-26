@@ -113,6 +113,7 @@ export default function EditAssetPage() {
 
           interface DetectedBarcode {
             rawValue: string;
+            boundingBox: DOMRectReadOnly;
           }
           interface BarcodeDetectorOptions {
             formats?: string[];
@@ -146,8 +147,18 @@ export default function EditAssetPage() {
               try {
                 if (videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
                   const barcodes = await detector.detect(videoRef.current);
-                  if (barcodes.length > 0) {
-                    const sn = barcodes[0].rawValue.trim();
+                  
+                  const centerY = videoRef.current.videoHeight / 2;
+                  const targetBarcode = barcodes
+                    .filter(b => /^[a-zA-Z0-9-_.]{3,}$/.test(b.rawValue.trim()))
+                    .sort((a, b) => {
+                      const distA = Math.abs((a.boundingBox.top + a.boundingBox.bottom) / 2 - centerY);
+                      const distB = Math.abs((b.boundingBox.top + b.boundingBox.bottom) / 2 - centerY);
+                      return distA - distB;
+                    })[0];
+
+                  if (targetBarcode) {
+                    const sn = targetBarcode.rawValue.trim();
                     setValue("serialNumber", sn);
                     toast.success(`พบ S/N: ${sn}`);
                     stopScanning();
@@ -417,7 +428,7 @@ export default function EditAssetPage() {
           <div className="relative w-full aspect-[3/4] max-w-md overflow-hidden flex items-center justify-center">
             <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
             <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-              <div className="w-64 h-32 border-2 border-white/20 rounded-3xl relative overflow-hidden">
+              <div className="w-72 h-20 border-2 border-white/40 rounded-2xl relative overflow-hidden bg-white/5">
                 {countdown > 0 ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-indigo-600/20 backdrop-blur-[2px]">
                      <span className="text-6xl font-black text-white drop-shadow-2xl animate-bounce">{countdown}</span>
