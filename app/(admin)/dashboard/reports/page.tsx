@@ -326,50 +326,7 @@ export default function ExportPDFPage() {
         </Card>
       </div>
 
-      {/* 1.1 Analytics Summary (On-screen & Print-friendly optionally) */}
-      {!loading && assets.length > 0 && (
-        <div className="space-y-6 print:hidden">
-          <div className="flex items-center justify-between px-2">
-            <h3 className="font-black text-sm text-zinc-400 uppercase tracking-[0.3em]">Inventory Analytics</h3>
-          </div>
-          
-          <div className="grid grid-cols-1 gap-6">
-            {/* Chart 1: Distribution by Factory */}
-            <Card className="border-none shadow-xl bg-white rounded-[2.5rem] p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
-                  <Factory className="h-5 w-5 text-indigo-600" />
-                </div>
-                <h4 className="font-black text-zinc-900 uppercase tracking-tight">สัดส่วนตามโรงงาน</h4>
-              </div>
-              <div className="space-y-4">
-                {(() => {
-                  const factories = ["โรงงาน 1", "โรงงาน 2", "ทั้ง 2 โรงงาน"];
-                  const stats = factories.map(f => ({
-                    label: f,
-                    count: assets.filter((a: any) => (a.factory || "").includes(f)).length
-                  })).filter(s => s.count > 0);
-                  
-                  return stats.map(stat => (
-                    <div key={stat.label} className="space-y-1.5">
-                      <div className="flex justify-between text-xs font-black uppercase tracking-widest text-zinc-500">
-                        <span>{stat.label}</span>
-                        <span className="text-indigo-600">{stat.count} เครื่อง ({((stat.count / assets.length) * 100).toFixed(0)}%)</span>
-                      </div>
-                      <div className="h-3 bg-zinc-50 rounded-full overflow-hidden border border-zinc-100">
-                        <div 
-                          className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all duration-1000" 
-                          style={{ width: `${(stat.count / assets.length) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                  ));
-                })()}
-              </div>
-            </Card>
-          </div>
-        </div>
-      )}
+      </div>
 
       {/* 1.2 Data Preview (On-screen) */}
       <div className="space-y-6 print:hidden">

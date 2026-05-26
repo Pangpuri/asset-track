@@ -32,6 +32,10 @@ async function getStats() {
       monitor: sql<number>`count(*) filter (where ${assets.category} = 'monitor')::int`,
       network: sql<number>`count(*) filter (where ${assets.category} = 'network')::int`,
       other: sql<number>`count(*) filter (where ${assets.category} = 'other' or ${assets.category} is null)::int`,
+      // แยกตามโรงงาน
+      f1: sql<number>`count(*) filter (where ${assets.factory} ilike '%โรงงาน 1%' or ${assets.factory} ilike '%Factory 1%')::int`,
+      f2: sql<number>`count(*) filter (where ${assets.factory} ilike '%โรงงาน 2%' or ${assets.factory} ilike '%Factory 2%')::int`,
+      both: sql<number>`count(*) filter (where ${assets.factory} ilike '%ทั้ง 2 โรงงาน%' or ${assets.factory} ilike '%both%')::int`,
     }).from(assets);
 
     return {
@@ -45,6 +49,11 @@ async function getStats() {
         monitor: stats?.monitor || 0,
         network: stats?.network || 0,
         other: stats?.other || 0,
+      },
+      factories: {
+        f1: stats?.f1 || 0,
+        f2: stats?.f2 || 0,
+        both: stats?.both || 0,
       }
     };
   } catch (error) {
@@ -273,6 +282,42 @@ export default async function DashboardPage() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+
+          {/* New: Factory Distribution Progress Bars */}
+          <div className="bg-white rounded-[2.2rem] p-8 shadow-sm border border-zinc-100">
+            <h3 className="text-xs font-black text-zinc-900 mb-8 uppercase tracking-[0.2em] flex items-center gap-2">
+              <div className="w-1.5 h-4 bg-purple-500 rounded-full" />
+              Factory Distribution
+            </h3>
+            
+            <div className="space-y-6">
+              {[
+                { label: 'โรงงาน 1', value: stats.factories.f1, color: 'from-blue-500 to-indigo-600' },
+                { label: 'โรงงาน 2', value: stats.factories.f2, color: 'from-purple-500 to-pink-600' },
+                { label: 'ทั้ง 2 โรงงาน', value: stats.factories.both, color: 'from-amber-400 to-orange-500' }
+              ].map((f) => {
+                if (f.value === 0 && stats.total > 0) return null;
+                const percentage = stats.total > 0 ? (f.value / stats.total) * 100 : 0;
+                return (
+                  <div key={f.label} className="space-y-2">
+                    <div className="flex justify-between items-end px-1">
+                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{f.label}</span>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-xs font-black text-zinc-900">{f.value}</span>
+                        <span className="text-[9px] font-bold text-zinc-300">({percentage.toFixed(0)}%)</span>
+                      </div>
+                    </div>
+                    <div className="h-3 w-full bg-zinc-50 rounded-full overflow-hidden border border-zinc-100/50 p-[1px]">
+                      <div 
+                        className={cn("h-full rounded-full transition-all duration-1000 ease-out bg-gradient-to-r shadow-sm", f.color)} 
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
