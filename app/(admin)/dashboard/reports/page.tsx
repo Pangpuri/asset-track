@@ -326,7 +326,122 @@ export default function ExportPDFPage() {
         </Card>
       </div>
 
-      {/* 1.1 Data Preview (On-screen) */}
+      {/* 1.1 Analytics Summary (On-screen & Print-friendly optionally) */}
+      {!loading && assets.length > 0 && (
+        <div className="space-y-6 print:hidden">
+          <div className="flex items-center justify-between px-2">
+            <h3 className="font-black text-sm text-zinc-400 uppercase tracking-[0.3em]">Inventory Analytics</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Chart 1: Distribution by Factory */}
+            <Card className="border-none shadow-xl bg-white rounded-[2.5rem] p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center">
+                  <Factory className="h-5 w-5 text-indigo-600" />
+                </div>
+                <h4 className="font-black text-zinc-900 uppercase tracking-tight">สัดส่วนตามโรงงาน</h4>
+              </div>
+              <div className="space-y-4">
+                {(() => {
+                  const factories = ["โรงงาน 1", "โรงงาน 2", "ทั้ง 2 โรงงาน"];
+                  const stats = factories.map(f => ({
+                    label: f,
+                    count: assets.filter((a: any) => (a.factory || "").includes(f)).length
+                  })).filter(s => s.count > 0);
+                  
+                  return stats.map(stat => (
+                    <div key={stat.label} className="space-y-1.5">
+                      <div className="flex justify-between text-xs font-black uppercase tracking-widest text-zinc-500">
+                        <span>{stat.label}</span>
+                        <span className="text-indigo-600">{stat.count} เครื่อง ({((stat.count / assets.length) * 100).toFixed(0)}%)</span>
+                      </div>
+                      <div className="h-3 bg-zinc-50 rounded-full overflow-hidden border border-zinc-100">
+                        <div 
+                          className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full transition-all duration-1000" 
+                          style={{ width: `${(stat.count / assets.length) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
+            </Card>
+
+            {/* Chart 2: Distribution by Status */}
+            <Card className="border-none shadow-xl bg-white rounded-[2.5rem] p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center">
+                  <Activity className="h-5 w-5 text-emerald-600" />
+                </div>
+                <h4 className="font-black text-zinc-900 uppercase tracking-tight">สถานะอุปกรณ์</h4>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center gap-8">
+                {/* Simple CSS Circular Chart */}
+                <div className="relative w-32 h-32 flex-shrink-0">
+                  <svg className="w-full h-full" viewBox="0 0 36 36">
+                    <circle cx="18" cy="18" r="16" fill="none" className="stroke-zinc-50" strokeWidth="4" />
+                    {(() => {
+                      let offset = 0;
+                      const statuses = [
+                        { key: 'active', color: '#10b981' }, // emerald-500
+                        { key: 'broken', color: '#f43f5e' }, // rose-500
+                        { key: 'pending', color: '#f59e0b' }, // amber-500
+                        { key: 'retired', color: '#71717a' }, // zinc-500
+                      ];
+                      return statuses.map(s => {
+                        const count = assets.filter((a: any) => a.status === s.key).length;
+                        if (count === 0) return null;
+                        const percentage = (count / assets.length) * 100;
+                        const strokeDasharray = `${percentage} ${100 - percentage}`;
+                        const rotation = (offset / 100) * 360 - 90;
+                        offset += percentage;
+                        return (
+                          <circle 
+                            key={s.key}
+                            cx="18" cy="18" r="16" fill="none" 
+                            stroke={s.color} strokeWidth="4" 
+                            strokeDasharray={strokeDasharray}
+                            transform={`rotate(${rotation} 18 18)`}
+                            className="transition-all duration-1000"
+                          />
+                        );
+                      });
+                    })()}
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-xl font-black text-zinc-900">{assets.length}</span>
+                    <span className="text-[8px] font-black text-zinc-400 uppercase tracking-tighter">Total</span>
+                  </div>
+                </div>
+
+                <div className="flex-1 w-full space-y-2">
+                   {[
+                    { key: 'active', label: 'ใช้งานปกติ', color: 'bg-emerald-500' },
+                    { key: 'broken', label: 'ชำรุด/เสียหาย', color: 'bg-rose-500' },
+                    { key: 'pending', label: 'รอลงทะเบียน', color: 'bg-amber-500' },
+                    { key: 'retired', label: 'เลิกใช้งาน', color: 'bg-zinc-500' }
+                   ].map(s => {
+                     const count = assets.filter((a: any) => a.status === s.key).length;
+                     if (count === 0 && assets.length > 0) return null;
+                     return (
+                        <div key={s.key} className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className={cn("w-2 h-2 rounded-full", s.color)} />
+                            <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{s.label}</span>
+                          </div>
+                          <span className="text-[10px] font-black text-zinc-900">{count}</span>
+                        </div>
+                     );
+                   })}
+                </div>
+              </div>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {/* 1.2 Data Preview (On-screen) */}
       <div className="space-y-6 print:hidden">
         <div className="flex items-center justify-between px-2">
           <h3 className="font-black text-sm text-zinc-400 uppercase tracking-[0.3em]">Preview Data ({assets.length})</h3>
