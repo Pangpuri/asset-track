@@ -31,8 +31,8 @@ export default function ScanPage() {
       }
     }
     
-    toast.success("ดึงข้อมูลอุปกรณ์เรียบร้อย");
-    router.push(`/dashboard/assets/${assetId}`);
+    // เปลี่ยนไปที่หน้า Public Track เพื่อให้ระบบจัดการ Error ผ่านหน้า Not Found
+    router.push(`/track/${assetId}`);
   };
 
   const handleFileScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
