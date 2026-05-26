@@ -21,6 +21,7 @@ const columns = [
   { id: "serialNumber", label: "Serial Number", default: true },
   { id: "purchaseDate", label: "วันที่ซื้อ", default: false },
   { id: "warrantyExpire", label: "ประกันหมด", default: false },
+  { id: "factory", label: "โรงงาน", default: true },
 ];
 
 export default function ExportPDFPage() {

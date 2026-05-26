@@ -59,7 +59,7 @@ export const assets = pgTable("assets", {
     os?: string;
     monitorSize?: string;
     printerType?: string; // Laser, Inkjet
-    [key: string]: any;   // รองรับฟิลด์อื่นๆ ในอนาคต
+    [key: string]: unknown; 
   }>(),
 
   // ข้อมูลการจัดซื้อและประกัน

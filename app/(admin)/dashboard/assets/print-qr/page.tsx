@@ -11,6 +11,11 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { generateAssetQRCode } from "@/lib/qr";
 
+interface BulkAsset {
+  id: string;
+  assetCode: string;
+}
+
 export default function BulkPrintPage() {
   const [count, setCount] = useState(10);
   const [category, setCategory] = useState("computer");
@@ -28,9 +33,9 @@ export default function BulkPrintPage() {
 
       if (!response.ok) throw new Error("Failed to generate assets");
 
-      const assets = await response.json();
+      const assets: BulkAsset[] = await response.json();
       
-      const qrs = await Promise.all(assets.map(async (asset: any) => ({
+      const qrs = await Promise.all(assets.map(async (asset: BulkAsset) => ({
         id: asset.id,
         assetCode: asset.assetCode,
         qrData: await generateAssetQRCode(asset.id)

@@ -36,11 +36,33 @@ const assetSchema = z.object({
 
 type AssetFormValues = z.infer<typeof assetSchema>;
 
+interface AssetData {
+  id: string;
+  assetCode: string | null;
+  assetName?: string | null;
+  category: string | null;
+  brand: string | null;
+  model: string | null;
+  serialNumber: string | null;
+  location: string | null;
+  status: string;
+  factory: string | null;
+  receivedBy: string | null;
+  deliveredBy: string | null;
+  purchaseDate: string | null;
+  warrantyExpire: string | null;
+  specifications?: {
+    computerName?: string;
+    ipAddress?: string;
+    monitorSize?: string;
+  } | null;
+}
+
 export default function EditAssetPage() {
   const router = useRouter();
   const params = useParams();
   const [loading, setLoading] = useState(true);
-  const [assetData, setAssetData] = useState<any>(null);
+  const [assetData, setAssetData] = useState<AssetData | null>(null);
   const [showReplaceDialog, setShowReplaceDialog] = useState(false);
   
   // Camera Scanner State
@@ -65,7 +87,21 @@ export default function EditAssetPage() {
         
         // Start Detection Loop
         if ("BarcodeDetector" in window) {
-          const detector = new (window as any).BarcodeDetector({
+          interface DetectedBarcode {
+            rawValue: string;
+            format: string;
+          }
+          interface BarcodeDetectorOptions {
+            formats?: string[];
+          }
+          interface BarcodeDetector {
+            detect(source: HTMLVideoElement | HTMLImageElement | HTMLCanvasElement): Promise<DetectedBarcode[]>;
+          }
+          const BarcodeDetectorClass = (window as unknown as { 
+            BarcodeDetector: new (options?: BarcodeDetectorOptions) => BarcodeDetector 
+          }).BarcodeDetector;
+          
+          const detector = new BarcodeDetectorClass({
             formats: ["code_128", "code_39", "ean_13", "qr_code"]
           });
 
@@ -109,7 +145,11 @@ export default function EditAssetPage() {
     if (track && "applyConstraints" in track) {
       try {
         const newFlash = !isFlashOn;
-        await (track as any).applyConstraints({
+        // Fix (track as any) by using a more specific constraint check
+        interface MediaStreamTrackWithTorch extends MediaStreamTrack {
+          applyConstraints(constraints?: MediaTrackConstraints & { advanced?: Array<{ torch?: boolean }> }): Promise<void>;
+        }
+        await (track as unknown as MediaStreamTrackWithTorch).applyConstraints({
           advanced: [{ torch: newFlash }]
         });
         setIsFlashOn(newFlash);

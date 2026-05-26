@@ -38,7 +38,8 @@ export async function POST(req: Request) {
 
     let lastNumber = 0;
     if (lastAsset.length > 0) {
-      const lastCode = (lastAsset[0] as any).asset_code as string;
+      const row = lastAsset[0] as unknown as { asset_code: string };
+      const lastCode = row.asset_code;
       // ดึงเฉพาะตัวเลขออกมา
       const match = lastCode.match(/\d+/);
       if (match) {

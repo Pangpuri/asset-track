@@ -14,6 +14,7 @@ export async function GET() {
         <td style="border: 1px solid #ddd; padding: 8px;">${a.location || "-"}</td>
         <td style="border: 1px solid #ddd; padding: 8px;">${a.status}</td>
         <td style="border: 1px solid #ddd; padding: 8px;">${a.createdAt ? new Date(a.createdAt).toLocaleDateString("th-TH") : ""}</td>
+        <td style="border: 1px solid #ddd; padding: 8px;">${a.factory || "-"}</td>
       </tr>
     `).join("");
 
@@ -59,6 +60,7 @@ export async function GET() {
               <th>สถานที่ติดตั้ง</th>
               <th>สถานะ</th>
               <th>วันที่เพิ่ม</th>
+              <th>โรงงาน</th>
             </tr>
           </thead>
           <tbody>

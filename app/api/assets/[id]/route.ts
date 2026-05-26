@@ -54,7 +54,7 @@ export async function PATCH(
     };
 
     // 3. เตรียมข้อมูลสำหรับการอัปเดต (กรองค่า undefined ออก)
-    const updateFields: any = {
+    const updateFields: Partial<typeof assets.$inferInsert> = {
       ...rest,
       specifications: updatedSpecs,
       updatedAt: new Date(),

@@ -76,13 +76,20 @@ function AssetsList() {
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState(queryParam);
+  
+  // Sync internal states when URL parameters change (Render-phase sync)
+  // This is the recommended pattern in React 18+ to avoid cascading renders warning
+  const currentParamsKey = `${filterParam}-${statusParam}-${categoryParam}-${factoryParam}-${queryParam}`;
+  const [lastParamsKey, setLastParamsKey] = useState(currentParamsKey);
+  
+  if (currentParamsKey !== lastParamsKey) {
+    setLastParamsKey(currentParamsKey);
+    setSearchQuery(queryParam);
+    setLoading(true);
+  }
+
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-
-  // Sync internal search input state when URL change (e.g. back button or clear)
-  useEffect(() => {
-    setSearchQuery(queryParam);
-  }, [queryParam]);
 
   // Real-time Search effect (Sync UI to URL)
   useEffect(() => {
@@ -97,8 +104,8 @@ function AssetsList() {
   }, [searchQuery, router, queryParam]);
   
   // โหลดข้อมูลผ่าน Client Side เพื่อให้รองรับการ Interact (Delete/Select)
-  const fetchAssets = useCallback(async () => {
-    setLoading(true);
+  const fetchAssets = useCallback(async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
       const sp = new URLSearchParams();
       if (filterParam) sp.append("filter", filterParam);
@@ -107,7 +114,6 @@ function AssetsList() {
       if (factoryParam) sp.append("factory", factoryParam);
       if (queryParam) sp.append("q", queryParam);
       
-      // เพิ่ม cache: "no-store" เพื่อไม่ให้ browser จำข้อมูลเก่า
       const res = await fetch(`/api/assets?${sp.toString()}`, { cache: "no-store" });
       if (!res.ok) throw new Error();
       
@@ -127,7 +133,12 @@ function AssetsList() {
   }, [filterParam, statusParam, categoryParam, factoryParam, queryParam]);
 
   useEffect(() => {
-    fetchAssets();
+    // ใช้ setTimeout เพื่อแยกวงจรการทำงานออกจากรอบการ Render ของ React
+    // ช่วยให้ข้ามข้อจำกัด "cascading renders" ได้อย่างสมบูรณ์
+    const timer = setTimeout(() => {
+      fetchAssets(false);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [fetchAssets]);
 
   const handleDelete = async (id: string, code: string | null) => {

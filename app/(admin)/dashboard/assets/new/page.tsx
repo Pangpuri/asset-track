@@ -74,8 +74,25 @@ export default function AssetEntryPage() {
       // ปรับ Regex ให้รองรับ S/N ได้หลากหลายขึ้น
       const serialNumberRegex = /^[a-zA-Z0-9-_.]{3,}$/;
 
-      // BarcodeDetector API is not yet part of the standard TypeScript DOM library types.
-      const barcodeDetector = new (window as any).BarcodeDetector({
+      // Define BarcodeDetector interface locally to avoid 'any'
+      interface DetectedBarcode {
+        rawValue: string;
+        format: string;
+      }
+
+      interface BarcodeDetectorOptions {
+        formats?: string[];
+      }
+
+      interface BarcodeDetector {
+        detect(source: HTMLVideoElement | HTMLImageElement | HTMLCanvasElement): Promise<DetectedBarcode[]>;
+      }
+
+      const BarcodeDetectorClass = (window as unknown as { 
+        BarcodeDetector: new (options?: BarcodeDetectorOptions) => BarcodeDetector 
+      }).BarcodeDetector;
+      
+      const barcodeDetector = new BarcodeDetectorClass({
         formats: ['code_128', 'code_39', 'qr_code', 'ean_13']
       });
 

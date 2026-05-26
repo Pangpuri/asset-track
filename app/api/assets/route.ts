@@ -20,11 +20,11 @@ export async function GET(req: Request) {
       return NextResponse.json(result[0]);
     }
 
-    let conditions = [];
+    const conditions = [];
 
     // กรองตามสถานะ (เช่น active, broken, pending)
     if (status && status !== "all") {
-      conditions.push(eq(assets.status, status as any));
+      conditions.push(eq(assets.status, status as "active" | "broken" | "lost" | "retired" | "pending"));
     }
 
     // กรองตามหมวดหมู่

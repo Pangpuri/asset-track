@@ -7,7 +7,7 @@ export async function GET() {
     const allAssets = await db.select().from(assets);
 
     // ส่วนหัวของไฟล์ CSV
-    const headers = ["Asset Code", "Category", "Brand", "Model", "Serial Number", "Status", "Location", "Created At"];
+    const headers = ["Asset Code", "Category", "Brand", "Model", "Serial Number", "Status", "Location", "Created At", "Factory"];
     
     // แปลงข้อมูลเป็นแถวของ CSV
     const rows = allAssets.map((a) => [
@@ -19,7 +19,8 @@ export async function GET() {
       a.status,
       a.location || "",
       // ป้องกัน Error หาก createdAt เป็นค่าว่างหรือรูปแบบผิด
-      a.createdAt ? new Date(a.createdAt).toLocaleDateString("th-TH") : "-"
+      a.createdAt ? new Date(a.createdAt).toLocaleDateString("th-TH") : "-",
+      a.factory || ""
     ]);
 
     // สร้างเนื้อหา CSV พร้อม BOM (\uFEFF) เพื่อให้อ่านภาษาไทยใน Excel ได้ทันที
