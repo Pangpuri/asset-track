@@ -61,13 +61,24 @@ export default function AssetEntryPage() {
   // Camera Logic
   useEffect(() => {
     let stream: MediaStream | null = null;
-    let detector: any = null;
 
     const initDetector = () => {
       if (!('BarcodeDetector' in window)) return null;
       
-      interface BarcodeDetectorOptions { formats?: string[]; }
-      const BarcodeDetectorClass = (window as any).BarcodeDetector;
+      interface DetectedBarcode {
+        rawValue: string;
+      }
+      interface BarcodeDetectorOptions {
+        formats?: string[];
+      }
+      interface BarcodeDetector {
+        detect(source: HTMLVideoElement): Promise<DetectedBarcode[]>;
+      }
+
+      const BarcodeDetectorClass = (window as unknown as { 
+        BarcodeDetector: new (options?: BarcodeDetectorOptions) => BarcodeDetector 
+      }).BarcodeDetector;
+
       return new BarcodeDetectorClass({
         formats: ['code_128', 'code_39', 'qr_code', 'ean_13', 'upc_a', 'upc_e']
       });

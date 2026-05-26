@@ -38,7 +38,7 @@ export default function ExportPDFPage() {
   );
   const [isExporting, setIsGenerating] = useState(false);
   const [isCsvExporting, setIsCsvExporting] = useState(false);
-  const [assets, setAssets] = useState<unknown[]>([]);
+  const [assets, setAssets] = useState<Record<string, unknown>[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Filter States
@@ -66,7 +66,12 @@ export default function ExportPDFPage() {
   }, [factoryFilter, categoryFilter, statusFilter]);
 
   useEffect(() => {
-    fetchFilteredAssets();
+    // ใช้ setTimeout เพื่อแยกวงจรการทำงานออกจากรอบการ Render ของ React
+    // ช่วยให้ข้ามข้อจำกัด "cascading renders" ที่เกิดจากการเรียก setState ทันทีใน Effect
+    const timer = setTimeout(() => {
+      fetchFilteredAssets();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [fetchFilteredAssets]);
 
   const toggleColumn = (id: string) => {
@@ -95,11 +100,11 @@ export default function ExportPDFPage() {
       // 2. แปลงข้อมูล assets เป็นแถวตามคอลัมน์ที่เลือก
       const rows = assets.map(asset => {
         return activeCols.map(col => {
-          let val = (asset as Record<string, any>)[col.id];
+          let val = (asset as Record<string, unknown>)[col.id];
           
           // จัดการรูปแบบข้อมูลพิเศษเหมือนในหน้า Preview
           if (col.id.toLowerCase().includes("date") || col.id.toLowerCase().includes("expire")) {
-            val = val ? new Date(val).toLocaleDateString("th-TH") : "-";
+            val = val ? new Date(val as string).toLocaleDateString("th-TH") : "-";
           }
           if (col.id === "status") {
             const statusMap: Record<string, string> = {
@@ -357,9 +362,9 @@ export default function ExportPDFPage() {
                     {assets.slice(0, 10).map((asset, idx) => (
                       <tr key={idx} className="hover:bg-zinc-50 transition-colors border-b border-zinc-50">
                         {columns.filter(c => selectedColumns.includes(c.id)).map(col => {
-                          let val = (asset as Record<string, any>)[col.id];
+                          let val = (asset as Record<string, unknown>)[col.id];
                           if (col.id.toLowerCase().includes("date") || col.id.toLowerCase().includes("expire")) {
-                            val = val ? new Date(val).toLocaleDateString("th-TH") : "-";
+                            val = val ? new Date(val as string).toLocaleDateString("th-TH") : "-";
                           }
                           if (col.id === "status") {
                             const statusMap: Record<string, string> = {
@@ -367,7 +372,7 @@ export default function ExportPDFPage() {
                             };
                             val = statusMap[val as string] || val;
                           }
-                          return <td key={col.id} className="p-4 text-xs font-bold text-zinc-600 truncate max-w-[150px]">{val || "-"}</td>;
+                          return <td key={col.id} className="p-4 text-xs font-bold text-zinc-600 truncate max-w-[150px]">{String(val ?? "-")}</td>;
                         })}
                       </tr>
                     ))}
@@ -387,33 +392,35 @@ export default function ExportPDFPage() {
                 const statusMap: Record<string, string> = {
                     active: "ใช้งานปกติ", broken: "ชำรุด", pending: "รอลงทะเบียน", retired: "เลิกใช้", lost: "สูญหาย"
                 };
-                const statusThai = statusMap[(asset as any).status] || (asset as any).status;
+                const assetObj = asset as Record<string, unknown>;
+                const status = String(assetObj.status || "");
+                const statusThai = statusMap[status] || status;
 
                 return (
                 <Card key={idx} className="border-none shadow-md rounded-2xl p-5 bg-white space-y-3">
                   <div className="flex justify-between items-start">
                     <span className="font-mono font-black text-indigo-600 bg-indigo-50 px-2 py-1 rounded text-[10px]">
-                      {(asset as any).assetCode || "N/A"}
+                      {String(assetObj.assetCode || "N/A")}
                     </span>
                     <Badge className={cn(
                         "text-[8px] font-black uppercase tracking-widest border-none text-white",
-                        (asset as any).status === 'active' ? "bg-emerald-500" :
-                        (asset as any).status === 'broken' ? "bg-rose-500" :
-                        (asset as any).status === 'pending' ? "bg-amber-500" : "bg-zinc-400"
+                        status === 'active' ? "bg-emerald-500" :
+                        status === 'broken' ? "bg-rose-500" :
+                        status === 'pending' ? "bg-amber-500" : "bg-zinc-400"
                     )}>
                       {statusThai}
                     </Badge>
                   </div>
                   <div className="grid grid-cols-2 gap-y-2">
                     {columns.filter(c => selectedColumns.includes(c.id) && c.id !== "assetCode" && c.id !== "status").slice(0, 4).map(col => {
-                        let val = (asset as any)[col.id];
+                        let val = (asset as Record<string, unknown>)[col.id];
                         if (col.id.toLowerCase().includes("date") || col.id.toLowerCase().includes("expire")) {
-                            val = val ? new Date(val).toLocaleDateString("th-TH") : "-";
+                            val = val ? new Date(val as string).toLocaleDateString("th-TH") : "-";
                         }
                         return (
                             <div key={col.id}>
                                 <p className="text-[8px] font-black text-zinc-300 uppercase tracking-tighter">{col.label}</p>
-                                <p className="text-[10px] font-bold text-zinc-600 truncate">{val || "-"}</p>
+                                <p className="text-[10px] font-bold text-zinc-600 truncate">{String(val ?? "-")}</p>
                             </div>
                         );
                     })}
@@ -475,9 +482,9 @@ export default function ExportPDFPage() {
             {assets.map((asset) => (
               <tr key={(asset as { id: string }).id}>
                 {columns.filter(c => selectedColumns.includes(c.id)).map(col => {
-                  let val = (asset as Record<string, any>)[col.id];
+                  let val = (asset as Record<string, unknown>)[col.id];
                   if (col.id.toLowerCase().includes("date") || col.id.toLowerCase().includes("expire")) {
-                    val = val ? new Date(val).toLocaleDateString("th-TH") : "-";
+                    val = val ? new Date(val as string).toLocaleDateString("th-TH") : "-";
                   }
                   if (col.id === "status") {
                     const statusMap: Record<string, string> = {
@@ -485,7 +492,7 @@ export default function ExportPDFPage() {
                     };
                     val = statusMap[val as string] || val;
                   }
-                  return <td key={col.id}>{val || "-"}</td>;
+                  return <td key={col.id}>{String(val ?? "-")}</td>;
                 })}
               </tr>
             ))}

@@ -111,7 +111,20 @@ export default function EditAssetPage() {
             return;
           }
 
-          const BarcodeDetectorClass = (window as any).BarcodeDetector;
+          interface DetectedBarcode {
+            rawValue: string;
+          }
+          interface BarcodeDetectorOptions {
+            formats?: string[];
+          }
+          interface BarcodeDetector {
+            detect(source: HTMLVideoElement): Promise<DetectedBarcode[]>;
+          }
+
+          const BarcodeDetectorClass = (window as unknown as { 
+            BarcodeDetector: new (options?: BarcodeDetectorOptions) => BarcodeDetector 
+          }).BarcodeDetector;
+
           const detector = new BarcodeDetectorClass({
             formats: ["code_128", "code_39", "ean_13", "qr_code", "upc_a", "upc_e"]
           });
@@ -161,12 +174,17 @@ export default function EditAssetPage() {
   const toggleFlash = async () => {
     const stream = videoRef.current?.srcObject as MediaStream;
     const track = stream?.getVideoTracks()[0];
+
+    interface TorchConstraint extends MediaTrackConstraintSet {
+      torch?: boolean;
+    }
+
     if (track && "applyConstraints" in track) {
       try {
         const newFlash = !isFlashOn;
-        await (track as any).applyConstraints({
-          advanced: [{ torch: newFlash }]
-        });
+        await track.applyConstraints({
+          advanced: [{ torch: newFlash } as TorchConstraint]
+        } as MediaTrackConstraints);
         setIsFlashOn(newFlash);
       } catch (e) {
         toast.error("อุปกรณ์ไม่รองรับการเปิดไฟแฟลช");
