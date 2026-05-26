@@ -63,7 +63,8 @@ async function getStats() {
       active: 0, 
       broken: 0, 
       pending: 0, 
-      categories: { computer: 0, printer: 0, monitor: 0, network: 0, other: 0 } 
+      categories: { computer: 0, printer: 0, monitor: 0, network: 0, other: 0 },
+      factories: { f1: 0, f2: 0, both: 0 }
     };
   }
 }

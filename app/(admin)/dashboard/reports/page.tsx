@@ -199,7 +199,7 @@ export default function ExportPDFPage() {
                 onClick={handleExportCsv}
                 disabled={isCsvExporting}
             >
-                {isCsvExporting ? <Loader2 className="h-5 w-5 animate-spin" /> : <FileText className="h-5 w-5 text-indigo-600" />}
+                {isCsvExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-5 w-5 text-indigo-600" />}
                 Export CSV
             </Button>
           </CardContent>
@@ -324,8 +324,6 @@ export default function ExportPDFPage() {
                 )}
             </div>
         </Card>
-      </div>
-
       </div>
 
       {/* 1.2 Data Preview (On-screen) */}
