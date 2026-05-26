@@ -3,6 +3,77 @@ import { db } from "@/db";
 import { assets } from "@/db/schema/assets";
 import { sql } from "drizzle-orm";
 
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const category = searchParams.get("category");
+    const factory = searchParams.get("factory");
+    const checkCode = searchParams.get("checkCode");
+    const excludeId = searchParams.get("excludeId"); // สำหรับกรณีหน้า Edit ไม่ให้เช็คซ้ำกับตัวเอง
+
+    // ลอจิกสำหรับเช็คว่ารหัสซ้ำหรือไม่
+    if (checkCode) {
+      const query = excludeId 
+        ? sql`SELECT id FROM assets WHERE asset_code = ${checkCode} AND id != ${excludeId} LIMIT 1`
+        : sql`SELECT id FROM assets WHERE asset_code = ${checkCode} LIMIT 1`;
+      
+      const existing = await db.execute(query);
+      return NextResponse.json({ exists: existing.length > 0 });
+    }
+
+    if (!category || !factory) {
+      return NextResponse.json({ error: "Missing params" }, { status: 400 });
+    }
+
+    const prefixMap: Record<string, string> = {
+      computer: "PC",
+      printer: "PT",
+      monitor: "MO",
+      network: "NW",
+      other: "E",
+    };
+
+    const factoryMap: Record<string, string> = {
+      "โรงงาน 1": "1",
+      "โรงงาน 2": "2",
+      "อื่นๆ": "E",
+      "ทั้ง 2 โรงงาน": "E",
+    };
+
+    const fullPrefix = `${prefixMap[category] || "E"}${factoryMap[factory] || "E"}`;
+
+    // ค้นหาเลขล่าสุดที่ขึ้นต้นด้วย fullPrefix นี้
+    const lastAsset = await db.execute(sql`
+      SELECT asset_code 
+      FROM assets 
+      WHERE asset_code LIKE ${fullPrefix + '%'} 
+      ORDER BY length(asset_code) DESC, asset_code DESC 
+      LIMIT 1
+    `);
+
+    let lastNumber = 0;
+    if (lastAsset.length > 0) {
+      const row = lastAsset[0] as unknown as { asset_code: string };
+      const lastCode = row.asset_code;
+      const suffix = lastCode.substring(fullPrefix.length);
+      if (suffix) {
+        lastNumber = parseInt(suffix) || 0;
+      }
+    }
+
+    const nextNumber = lastNumber + 1;
+    const nextCode = `${fullPrefix}${nextNumber.toString().padStart(5, '0')}`;
+
+    return NextResponse.json({ nextCode });
+  } catch (error) {
+    console.error("Error fetching next code:", error);
+    return NextResponse.json(
+      { error: "ไม่สามารถคำนวณรหัสถัดไปได้" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const { count, category, factory } = await req.json();

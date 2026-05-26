@@ -77,6 +77,26 @@ export default function EditAssetPage() {
   });
 
   const selectedCategory = watch("category");
+  const assetCodeValue = watch("assetCode");
+  const [isCodeTaken, setIsCodeTaken] = useState(false);
+
+  useEffect(() => {
+    if (!assetCodeValue || assetCodeValue.length < 3) return;
+    
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/assets/bulk?checkCode=${encodeURIComponent(assetCodeValue)}&excludeId=${params.id}`);
+        if (res.ok) {
+          const data = await res.json();
+          setIsCodeTaken(data.exists);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [assetCodeValue, params.id]);
 
   const stopScanning = useCallback(() => {
     if (videoRef.current?.srcObject) {

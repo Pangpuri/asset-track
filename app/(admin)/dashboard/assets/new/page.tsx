@@ -49,8 +49,63 @@ export default function AssetEntryPage() {
   });
 
   const selectedCategory = watch("category");
+  const assetCodeValue = watch("assetCode");
   const statusValue = watch("status");
   const factoryValue = watch("factory");
+
+  const [isCodeTaken, setIsCodeTaken] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+
+  // ระบบ Auto-generate Asset Code เมื่อเลือก Factory และ Category ครบ
+  useEffect(() => {
+    const generateNextCode = async () => {
+      if (factoryValue && selectedCategory) {
+        try {
+          const res = await fetch(
+            `/api/assets/bulk?category=${selectedCategory}&factory=${encodeURIComponent(factoryValue)}`
+          );
+          if (res.ok) {
+            const data = await res.json();
+            // กำหนดค่าให้ assetCode อัตโนมัติ (เฉพาะกรณีที่ยังไม่ได้พิมพ์อะไรลงไป หรือต้องการให้ทับ)
+            setValue("assetCode", data.nextCode, { shouldValidate: true });
+            toast.info(`แนะนำรหัส: ${data.nextCode}`, {
+              description: "อ้างอิงจากลำดับล่าสุดในระบบ",
+              duration: 2000
+            });
+          }
+        } catch (error) {
+          console.error("Auto-gen error:", error);
+        }
+      }
+    };
+
+    generateNextCode();
+  }, [factoryValue, selectedCategory, setValue]);
+
+  // ระบบเช็ครหัสซ้ำเมื่อมีการพิมพ์ (Debounced)
+  useEffect(() => {
+    if (!assetCodeValue || assetCodeValue.length < 3) {
+      setIsCodeTaken(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsValidating(true);
+      try {
+        const res = await fetch(`/api/assets/bulk?checkCode=${encodeURIComponent(assetCodeValue)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setIsCodeTaken(data.exists);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsValidating(false);
+      }
+    }, 500); // รอให้พิมพ์หยุด 0.5 วินาทีค่อยเช็ค
+
+    return () => clearTimeout(timer);
+  }, [assetCodeValue]);
 
   // State สำหรับ OCR Scanner
   const [isScannerOpen, setScannerOpen] = useState(false);
@@ -216,6 +271,11 @@ export default function AssetEntryPage() {
   };
 
   const onSubmit = async (data: AssetFormValues) => {
+    if (isCodeTaken) {
+      toast.error("ไม่สามารถบันทึกได้: รหัสทรัพย์สินนี้มีอยู่ในระบบแล้ว");
+      return;
+    }
+
     try {
       const response = await fetch("/api/assets", {
         method: "POST",
@@ -270,8 +330,12 @@ export default function AssetEntryPage() {
 
             <div className="space-y-2">
               <Label htmlFor="assetCode" className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">รหัสอุปกรณ์ (Asset Code) *</Label>
-              <Input id="assetCode" {...register("assetCode")} placeholder="ระบุรหัสทรัพย์สิน" className="border-none bg-gray-50 h-14 rounded-2xl text-lg font-bold" />
+              <div className="relative">
+                <Input id="assetCode" {...register("assetCode")} placeholder="ระบุรหัสทรัพย์สิน" className={cn("border-none bg-gray-50 h-14 rounded-2xl text-lg font-bold", isCodeTaken && "ring-2 ring-red-500 bg-red-50")} />
+                {isValidating && <Loader2 className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-zinc-400" />}
+              </div>
               {errors.assetCode && <p className="text-[10px] text-red-500 font-bold ml-1">{errors.assetCode.message}</p>}
+              {isCodeTaken && <p className="text-[10px] text-red-500 font-black ml-1 uppercase animate-pulse">รหัสนี้ถูกใช้งานแล้ว โปรดเปลี่ยนใหม่</p>}
             </div>
 
             <div className="space-y-2">
