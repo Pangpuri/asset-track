@@ -32,9 +32,10 @@ export async function GET(req: Request) {
       conditions.push(eq(assets.category, category));
     }
 
-    // กรองตามโรงงาน (Factory 1, Factory 2)
+    // กรองตามโรงงาน (โรงงาน 1, โรงงาน 2, ทั้ง 2 โรงงาน)
+    // ใช้ ilike เพื่อให้ยืดหยุ่นในการค้นหามากขึ้น
     if (factory && factory !== "all") {
-      conditions.push(eq(assets.factory, factory));
+      conditions.push(ilike(assets.factory, `%${factory}%`));
     }
 
     // ค้นหาด้วยคำสำคัญ (Search)

@@ -274,6 +274,26 @@ export default function ExportPDFPage() {
                 </div>
             </div>
 
+            {/* Mobile Actions (Visible only on Mobile) */}
+            <div className="grid grid-cols-2 gap-3 mb-8 md:hidden">
+                <Button 
+                    className="h-14 bg-zinc-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest gap-2 shadow-lg" 
+                    onClick={handlePrint}
+                    disabled={isExporting}
+                >
+                    {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
+                    PDF
+                </Button>
+                <Button 
+                    className="h-14 bg-white text-zinc-900 border-2 border-zinc-100 rounded-2xl font-black text-xs uppercase tracking-widest gap-2 shadow-sm" 
+                    onClick={handleExportCsv}
+                    disabled={isCsvExporting}
+                >
+                    {isCsvExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4 text-indigo-600" />}
+                    CSV
+                </Button>
+            </div>
+
             <div className="flex-1 flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-zinc-200 rounded-[2rem] bg-white/50 min-h-[200px]">
                 {loading ? (
                     <div className="space-y-4">
