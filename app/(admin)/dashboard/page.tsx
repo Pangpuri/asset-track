@@ -28,6 +28,8 @@ async function getStats() {
       broken: sql<number>`count(*) filter (where ${assets.status} = 'broken' and ${assets.deletedAt} is null)::int`,
       pending: sql<number>`count(*) filter (where ${assets.status} = 'pending' and ${assets.deletedAt} is null)::int`,
       retired: sql<number>`count(*) filter (where ${assets.deletedAt} is not null)::int`,
+      // ข้อมูลไม่สมบูรณ์
+      incomplete: sql<number>`count(*) filter (where ${assets.status} = 'active' and ${assets.deletedAt} is null and (${assets.serialNumber} is null or ${assets.serialNumber} = '' or ${assets.brand} is null or ${assets.brand} = '' or ${assets.location} is null or ${assets.location} = ''))::int`,
       // แยกตามประเภท
       computer: sql<number>`count(*) filter (where ${assets.category} = 'computer' and ${assets.deletedAt} is null)::int`,
       printer: sql<number>`count(*) filter (where ${assets.category} = 'printer' and ${assets.deletedAt} is null)::int`,
@@ -57,7 +59,8 @@ async function getStats() {
         f1: stats?.f1 || 0,
         f2: stats?.f2 || 0,
         both: stats?.both || 0,
-      }
+      },
+      incomplete: stats?.incomplete || 0,
     };
   } catch (error) {
     console.error("Database error:", error);
@@ -187,7 +190,7 @@ export default async function DashboardPage() {
                        <div className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse" />
                        <h3 className="text-lg font-[1000] text-zinc-900 tracking-tight">DATA INTEGRITY</h3>
                     </div>
-                    <p className="text-[10px] font-bold text-zinc-500 leading-relaxed uppercase tracking-tighter">ตรวจสอบและเติมข้อมูลเครื่องที่ยังไม่สมบูรณ์</p>
+                    <p className="text-[10px] font-bold text-zinc-500 leading-relaxed uppercase tracking-tighter">พบอุปกรณ์ข้อมูลไม่สมบูรณ์ <span className="text-rose-600 font-black">{stats.incomplete}</span> รายการ</p>
                  </div>
                  <div className="relative z-10 bg-zinc-900 text-white p-3 rounded-2xl shadow-lg">
                     <ArrowRight size={18} strokeWidth={3} />
