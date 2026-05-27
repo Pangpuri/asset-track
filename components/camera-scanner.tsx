@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { toast } from "sonner";
+import { usePathname } from "next/navigation";
 
 interface CameraScannerProps {
   isFlashOn: boolean;
@@ -14,34 +15,53 @@ interface TorchConstraint extends MediaTrackConstraintSet {
 
 export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const pathname = usePathname(); // ติดตามการเปลี่ยนหน้า
   const [hasCamera, setHasCamera] = useState(false);
   
-  // Target Lock Refs
+  // Track Refs สำหรับการปิดที่แน่นอน
+  const streamRef = useRef<MediaStream | null>(null);
   const lastCodeRef = useRef<string | null>(null);
   const matchCountRef = useRef(0);
   const scanningLoopRef = useRef<number | null>(null);
 
-  const stopScanning = useCallback(async () => {
-    if (videoRef.current?.srcObject) {
-      const stream = videoRef.current.srcObject as MediaStream;
-      const tracks = stream.getTracks();
-      
-      // พยายามปิดไฟแฟลชก่อนปิดกล้อง
-      for (const track of stream.getVideoTracks()) {
-        try {
-          const capabilities = (track as any).getCapabilities?.() || {};
-          if (capabilities.torch) {
-            await track.applyConstraints({
-              advanced: [{ torch: false } as TorchConstraint]
-            } as MediaTrackConstraints);
-          }
-        } catch (e) { console.warn("Could not turn off torch during cleanup"); }
-      }
-
-      tracks.forEach(track => track.stop());
+  // ฟังก์ชัน "ฆ่า" ทุกอย่างที่เกี่ยวกับกล้อง
+  const killCamera = useCallback(async () => {
+    // 1. ยกเลิก Loop การแสกน
+    if (scanningLoopRef.current) {
+        cancelAnimationFrame(scanningLoopRef.current);
+        scanningLoopRef.current = null;
     }
-    if (scanningLoopRef.current) cancelAnimationFrame(scanningLoopRef.current);
+
+    // 2. จัดการ Stream และ Flash
+    const stream = streamRef.current || (videoRef.current?.srcObject as MediaStream);
+    if (stream) {
+      const tracks = stream.getTracks();
+      for (const track of tracks) {
+        if (track.kind === "video") {
+           // พยายามดับไฟแบบ Force
+           try {
+             await track.applyConstraints({ advanced: [{ torch: false } as any] });
+           } catch (e) {}
+           track.enabled = false; // ปิด track ก่อน stop
+        }
+        track.stop(); // สั่งหยุด Hardware
+      }
+    }
+
+    // 3. ล้างค่าใน Video Element
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+      videoRef.current.load(); // Force reset element
+    }
+    streamRef.current = null;
   }, []);
+
+  // ดักจับการเปลี่ยนหน้า (Aggressive Cleanup)
+  useEffect(() => {
+    return () => {
+      killCamera();
+    };
+  }, [pathname, killCamera]);
 
   useEffect(() => {
     const startScanner = async () => {
@@ -54,21 +74,19 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
           } 
         });
         
+        streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           setHasCamera(true);
           
           videoRef.current.onloadedmetadata = () => {
-            if (!("BarcodeDetector" in window)) {
-              return;
-            }
+            if (!("BarcodeDetector" in window)) return;
 
             const BarcodeDetectorClass = (window as any).BarcodeDetector;
             const detector = new BarcodeDetectorClass({ formats: ["qr_code"] });
 
             const detectLoop = async () => {
-              if (!videoRef.current || videoRef.current.readyState !== videoRef.current.HAVE_ENOUGH_DATA) {
-                scanningLoopRef.current = requestAnimationFrame(detectLoop);
+              if (!videoRef.current || videoRef.current.readyState !== videoRef.current.HAVE_ENOUGH_DATA || !streamRef.current) {
                 return;
               }
 
@@ -82,7 +100,7 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
                     if (matchCountRef.current >= 3) {
                       if (navigator.vibrate) navigator.vibrate(100);
                       onScanSuccess(decodedText);
-                      stopScanning();
+                      killCamera();
                       return;
                     }
                   } else {
@@ -90,9 +108,7 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
                     matchCountRef.current = 1;
                   }
                 }
-              } catch (e) {
-                console.error("QR Detect Error:", e);
-              }
+              } catch (e) {}
               scanningLoopRef.current = requestAnimationFrame(detectLoop);
             };
             
@@ -106,22 +122,8 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
     };
 
     startScanner();
-    
-    return () => {
-      if (videoRef.current?.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach(track => {
-          if (track.kind === "video") {
-            track.applyConstraints({
-              advanced: [{ torch: false } as any]
-            }).catch(() => {});
-          }
-          track.stop();
-        });
-      }
-      if (scanningLoopRef.current) cancelAnimationFrame(scanningLoopRef.current);
-    };
-  }, [onScanSuccess, stopScanning]);
+    return () => { killCamera(); };
+  }, [onScanSuccess, killCamera]);
 
   // ป้องกันกรณี Refresh หน้าจอหรือปิด Browser ทันที
   useEffect(() => {
