@@ -40,7 +40,9 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
         if (track.kind === "video") {
            // พยายามดับไฟแบบ Force
            try {
-             await track.applyConstraints({ advanced: [{ torch: false } as any] });
+             await track.applyConstraints({ 
+               advanced: [{ torch: false } as TorchConstraint] 
+             } as MediaTrackConstraints);
            } catch (e) {}
            track.enabled = false; // ปิด track ก่อน stop
         }
