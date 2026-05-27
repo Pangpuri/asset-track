@@ -96,28 +96,43 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
     return () => stopScanning();
   }, [onScanSuccess, stopScanning]);
 
-  // ลอจิกสำหรับเปิด/ปิดไฟแฟลช (ใช้ลอจิกเดียวกับ S/N ที่เวิร์กแล้ว)
+  // ลอจิกสำหรับเปิด/ปิดไฟแฟลช (เพิ่มความทนทานและระบบ Retry)
   useEffect(() => {
-    const handleFlash = async () => {
-      if (videoRef.current?.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        const track = stream.getVideoTracks()[0];
-        
-        if (track && "applyConstraints" in track) {
-          try {
-            const capabilities = (track as any).getCapabilities?.() || {};
-            if (capabilities.torch) {
-              await track.applyConstraints({
-                advanced: [{ torch: isFlashOn } as TorchConstraint]
-              } as MediaTrackConstraints);
-            }
-          } catch (e) {
-            console.warn("Flash constraint error:", e);
+    let retryCount = 0;
+    const maxRetries = 3;
+
+    const tryApplyFlash = async () => {
+      if (!videoRef.current?.srcObject) return;
+
+      const stream = videoRef.current.srcObject as MediaStream;
+      const track = stream.getVideoTracks()[0];
+
+      if (track && "applyConstraints" in track) {
+        try {
+          // รอให้เครื่องเตรียม Hardware ให้พร้อมแป๊บนึง (แก้ปัญหาต้องกดหลายรอบ)
+          await new Promise(resolve => setTimeout(resolve, 150));
+          
+          const capabilities = (track as any).getCapabilities?.() || {};
+          
+          if (capabilities.torch) {
+            await track.applyConstraints({
+              advanced: [{ torch: isFlashOn } as TorchConstraint]
+            } as MediaTrackConstraints);
+          } else if (retryCount < maxRetries) {
+            // ถ้ายังไม่เห็นความสามารถ torch ให้ลองใหม่ (บางเครื่องใช้เวลาโหลด)
+            retryCount++;
+            setTimeout(tryApplyFlash, 200);
+          }
+        } catch (e) {
+          if (retryCount < maxRetries) {
+            retryCount++;
+            setTimeout(tryApplyFlash, 200);
           }
         }
       }
     };
-    handleFlash();
+
+    tryApplyFlash();
   }, [isFlashOn]);
 
   return (
