@@ -91,34 +91,20 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
 
   // ลอจิกสำหรับเปิด/ปิดไฟแฟลช
   useEffect(() => {
-    const handleFlash = async () => {
-      if (!scannerRef.current?.isScanning) return;
-
-      try {
-        // ดึง Stream ปัจจุบันจาก Video Element โดยตรง
-        const videoElement = document.querySelector("#reader video") as HTMLVideoElement;
-        if (!videoElement?.srcObject) return;
-
-        const stream = videoElement.srcObject as MediaStream;
-        const tracks = stream.getVideoTracks();
-
-        for (const track of tracks) {
-          const capabilities = (track as any).getCapabilities?.() || {};
-          
-          // ตรวจสอบว่า track นี้รองรับ torch (ไฟแฟลช) หรือไม่
-          if (capabilities.torch) {
-            await track.applyConstraints({
-              advanced: [{ torch: isFlashOn } as TorchConstraint]
-            } as MediaTrackConstraints);
-            // ถ้าเจอตัวที่มีไฟแล้วและตั้งค่าสำเร็จ ก็จบ loop
-            break;
-          }
+    const toggleFlash = async () => {
+      if (scannerRef.current && scannerRef.current.isScanning) {
+        try {
+          await scannerRef.current.applyVideoConstraints({
+            advanced: [{ torch: isFlashOn } as TorchConstraint]
+          } as MediaTrackConstraints);
+        } catch (err) {
+          // ถ้าเปิดไม่ได้ อาจเป็นเพราะเครื่องไม่รองรับหรือสิทธิ์กล้อง
+          console.warn("ไม่สามารถเปิดไฟแฟลชผ่าน Library ได้:", err);
         }
-      } catch (err) {
-        console.error("QR Flash error:", err);
       }
     };
-    handleFlash();
+    
+    toggleFlash();
   }, [isFlashOn]);
 
   return (
