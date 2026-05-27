@@ -90,7 +90,7 @@ export default async function DashboardPage() {
       icon: AlertTriangle,
       color: "text-rose-500",
       bgColor: "bg-rose-50",
-      href: "/dashboard/assets?status=broken"
+      href: "/dashboard/assets/repairs"
     },
     {
       title: "รอลงทะเบียน",

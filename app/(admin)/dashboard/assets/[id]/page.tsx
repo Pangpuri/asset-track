@@ -337,7 +337,7 @@ export default function EditAssetPage() {
                     <SelectItem value="pending">รอลงทะเบียน</SelectItem>
                     <SelectItem value="broken">ชำรุด/เสียหาย</SelectItem>
                     <SelectItem value="lost">สูญหาย</SelectItem>
-                    <SelectItem value="retired">เลิกใช้งาน</SelectItem>
+                    <SelectItem value="retired">จำหน่ายออก</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

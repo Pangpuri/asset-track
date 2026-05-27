@@ -26,10 +26,15 @@ const columns = [
   { id: "location", label: "จุดติดตั้ง", default: true },
   { id: "receivedBy", label: "ผู้รับมอบ", default: false },   
   { id: "status", label: "สถานะ", default: true },
+  { id: "disposalReason", label: "สาเหตุการจำหน่าย", default: false },
+  { id: "disposalMethod", label: "วิธีการจำหน่าย", default: false },
+  { id: "disposalValue", label: "มูลค่าจำหน่าย", default: false },
+  { id: "disposalAuthorizedBy", label: "ผู้อนุมัติ", default: false },
   { id: "serialNumber", label: "Serial Number", default: true },
   { id: "purchaseDate", label: "วันที่ซื้อ", default: false },
   { id: "warrantyExpire", label: "ประกันหมด", default: false },
   { id: "factory", label: "โรงงาน", default: true },
+  { id: "updatedAt", label: "แก้ไขล่าสุด", default: false },
 ];
 
 export default function ExportPDFPage() {
@@ -275,7 +280,7 @@ export default function ExportPDFPage() {
                             <SelectItem value="active" className="font-bold text-emerald-600">ใช้งานปกติ</SelectItem>
                             <SelectItem value="broken" className="font-bold text-rose-600">ชำรุด/เสียหาย</SelectItem>
                             <SelectItem value="pending" className="font-bold text-amber-600">รอลงทะเบียน</SelectItem>
-                            <SelectItem value="retired" className="font-bold text-zinc-600">เลิกใช้งาน</SelectItem>
+                            <SelectItem value="retired" className="font-bold text-zinc-600">จำหน่ายออก</SelectItem>
                             <SelectItem value="lost" className="font-bold text-zinc-500">สูญหาย</SelectItem>
                         </SelectContent>
                     </Select>

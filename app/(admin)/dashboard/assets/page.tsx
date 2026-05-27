@@ -317,6 +317,7 @@ function AssetsList() {
               <SelectItem value="broken" className="font-bold text-rose-600 rounded-xl focus:bg-rose-50">ชำรุด/เสียหาย</SelectItem>
               <SelectItem value="incomplete" className="font-bold text-amber-600 rounded-xl focus:bg-amber-50">ข้อมูลไม่สมบูรณ์</SelectItem>
               <SelectItem value="pending" className="font-bold text-indigo-400 rounded-xl focus:bg-indigo-50">รอลงทะเบียน</SelectItem>
+              <SelectItem value="retired" className="font-bold text-zinc-600 rounded-xl focus:bg-zinc-50">จำหน่ายออก</SelectItem>
               <SelectItem value="lost" className="font-bold text-zinc-500 rounded-xl focus:bg-zinc-50">สูญหาย</SelectItem>
             </SelectContent>
           </Select>
@@ -401,7 +402,7 @@ function AssetsList() {
                             {asset.status === 'active' ? "ใช้งานปกติ" :
                              asset.status === 'broken' ? "ชำรุด/เสียหาย" :
                              asset.status === 'pending' ? "รอลงทะเบียน" :
-                             asset.status === 'retired' ? "เลิกใช้งาน" :
+                             asset.status === 'retired' ? "จำหน่ายออก" :
                              asset.status === 'lost' ? "สูญหาย" : asset.status}
                           </Badge>
                         </TableCell>
@@ -475,11 +476,11 @@ function AssetsList() {
                           asset.status === 'pending' ? 'bg-amber-500 text-white' : 
                           asset.status === 'retired' ? 'bg-zinc-500 text-white' : 'bg-indigo-200 text-indigo-700'
                         }`}>
-                          {asset.status === 'active' ? "ใช้งานปกติ" :
-                           asset.status === 'broken' ? "ชำรุด/เสียหาย" :
-                           asset.status === 'pending' ? "รอลงทะเบียน" :
-                           asset.status === 'retired' ? "เลิกใช้งาน" :
-                           asset.status === 'lost' ? "สูญหาย" : asset.status}
+                           {asset.status === 'active' ? "ใช้งานปกติ" :
+                            asset.status === 'broken' ? "ชำรุด/เสียหาย" :
+                            asset.status === 'pending' ? "รอลงทะเบียน" :
+                            asset.status === 'retired' ? "จำหน่ายออก" :
+                            asset.status === 'lost' ? "สูญหาย" : asset.status}
                         </Badge>
                       </div>
 

@@ -13,7 +13,8 @@ import {
   X,
   PlusSquare,
   FileText,
-  Trash2
+  Trash2,
+  RefreshCw
 } from "lucide-react";
 
 const navItems = [
@@ -31,6 +32,11 @@ const navItems = [
     title: "คลังอุปกรณ์ (Assets)",
     href: "/dashboard/assets",
     icon: Package,
+  },
+  {
+    title: "จัดการการซ่อม (Repairs)",
+    href: "/dashboard/assets/repairs",
+    icon: RefreshCw,
   },
   {
     title: "พิมพ์ QR (Bulk Print)",
