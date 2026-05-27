@@ -112,9 +112,21 @@ export default function EditAssetPage() {
     return () => clearTimeout(timer);
   }, [assetCodeValue, params.id]);
 
-  const stopScanning = useCallback(() => {
+  const stopScanning = useCallback(async () => {
     if (videoRef.current?.srcObject) {
-      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+      const stream = videoRef.current.srcObject as MediaStream;
+      const tracks = stream.getTracks();
+
+      // ปิดไฟแฟลชก่อน
+      for (const track of stream.getVideoTracks()) {
+        try {
+          const capabilities = (track as any).getCapabilities?.() || {};
+          if (capabilities.torch) {
+            await track.applyConstraints({ advanced: [{ torch: false } as TorchConstraint] } as MediaTrackConstraints);
+          }
+        } catch (e) { console.warn("Flash cleanup error"); }
+      }
+
       tracks.forEach(track => track.stop());
     }
     if (scanningLoopRef.current) cancelAnimationFrame(scanningLoopRef.current);

@@ -21,9 +21,23 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
   const matchCountRef = useRef(0);
   const scanningLoopRef = useRef<number | null>(null);
 
-  const stopScanning = useCallback(() => {
+  const stopScanning = useCallback(async () => {
     if (videoRef.current?.srcObject) {
-      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+      const stream = videoRef.current.srcObject as MediaStream;
+      const tracks = stream.getTracks();
+      
+      // พยายามปิดไฟแฟลชก่อนปิดกล้อง
+      for (const track of stream.getVideoTracks()) {
+        try {
+          const capabilities = (track as any).getCapabilities?.() || {};
+          if (capabilities.torch) {
+            await track.applyConstraints({
+              advanced: [{ torch: false } as TorchConstraint]
+            } as MediaTrackConstraints);
+          }
+        } catch (e) { console.warn("Could not turn off torch during cleanup"); }
+      }
+
       tracks.forEach(track => track.stop());
     }
     if (scanningLoopRef.current) cancelAnimationFrame(scanningLoopRef.current);
