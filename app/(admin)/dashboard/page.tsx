@@ -109,7 +109,7 @@ export default async function DashboardPage() {
       icon: Trash2,
       color: "text-zinc-500",
       bgColor: "bg-zinc-100",
-      href: "/dashboard/assets?status=retired&includeDeleted=true"
+      href: "/dashboard/assets/retired"
     }
   ];
 
