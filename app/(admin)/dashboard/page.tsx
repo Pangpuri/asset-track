@@ -182,7 +182,7 @@ export default async function DashboardPage() {
             ))}
           </div>
 
-          {/* Featured Action Card - Compact */}
+          {/* Featured Action Card - Compact data integrity */}
           <Link href="/dashboard/assets?filter=incomplete">
             <div className="relative group active:scale-[0.98] transition-all overflow-hidden rounded-[2.2rem] bg-zinc-900 shadow-xl p-[2px]">
                <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 opacity-80" />
@@ -191,7 +191,7 @@ export default async function DashboardPage() {
                  <div className="relative z-10 flex-1 pr-4">
                     <div className="flex items-center gap-2 mb-1">
                        <div className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse" />
-                       <h3 className="text-lg font-[1000] text-zinc-900 tracking-tight">DATA INTEGRITY</h3>
+                       <h3 className="text-lg font-[1000] text-zinc-900 tracking-tight">ข้อมูลยังไม่สมบูรณ์</h3>
                     </div>
                     <p className="text-[10px] font-bold text-zinc-500 leading-relaxed uppercase tracking-tighter">พบอุปกรณ์ข้อมูลไม่สมบูรณ์ <span className="text-rose-600 font-black">{stats.incomplete}</span> รายการ</p>
                  </div>
@@ -202,7 +202,7 @@ export default async function DashboardPage() {
             </div>
           </Link>
 
-          {/* Featured Action Card - Compact */}
+          {/* Featured Action Card - Compact lost assets */}
           <Link href="/dashboard/assets/lost">
             <div className="relative group active:scale-[0.98] transition-all overflow-hidden rounded-[2.2rem] bg-zinc-900 shadow-xl p-[2px]">
                <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 opacity-80" />
@@ -211,7 +211,7 @@ export default async function DashboardPage() {
                  <div className="relative z-10 flex-1 pr-4">
                     <div className="flex items-center gap-2 mb-1">
                        <div className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse" />
-                       <h3 className="text-lg font-[1000] text-zinc-900 tracking-tight">LOST ASSETS</h3>
+                       <h3 className="text-lg font-[1000] text-zinc-900 tracking-tight">อุปกรณ์ที่สูญหาย</h3>
                     </div>
                     <p className="text-[10px] font-bold text-zinc-500 leading-relaxed uppercase tracking-tighter">อุปกรณ์สูญหาย <span className="text-rose-600 font-black">{stats.lost}</span> รายการ</p>
                  </div>
