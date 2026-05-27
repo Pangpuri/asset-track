@@ -83,6 +83,8 @@ export default function EditAssetPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const scanningLoopRef = useRef<number | null>(null);
   const lastScanTimeRef = useRef<number>(0);
+  const lastScannedRef = useRef<string | null>(null);
+  const matchCountRef = useRef<number>(0);
 
   const { register, handleSubmit, setValue, watch, reset, formState: { isSubmitting, errors } } = useForm<AssetFormValues>({
     resolver: zodResolver(assetSchema),
@@ -173,14 +175,19 @@ export default function EditAssetPage() {
             else if (elapsed < 2000) setCountdown(1);
             else setCountdown(0);
 
-            // Start actual detection after 2 seconds
-            if (elapsed >= 2000 && now - lastScanTimeRef.current > 300) {
+            // Logic: Target Lock & Verification
+            // 1. ตรวจพบรหัสเดิมซ้ำกัน 3 เฟรมติดต่อกันถึงจะยอมรับ
+            // 2. รหัสต้องอยู่ใกล้จุดกึ่งกลางหน้าจอ (Target Zone)
+            
+            if (elapsed >= 2000 && now - lastScanTimeRef.current > 150) {
               lastScanTimeRef.current = now;
               try {
                 if (videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
                   const barcodes = await detector.detect(videoRef.current);
                   
                   const centerY = videoRef.current.videoHeight / 2;
+                  const centerX = videoRef.current.videoWidth / 2;
+
                   const targetBarcode = barcodes
                     .filter(b => /^[a-zA-Z0-9-_.]{3,}$/.test(b.rawValue.trim()))
                     .sort((a, b) => {
@@ -191,10 +198,24 @@ export default function EditAssetPage() {
 
                   if (targetBarcode) {
                     const sn = targetBarcode.rawValue.trim();
-                    setValue("serialNumber", sn);
-                    toast.success(`พบ S/N: ${sn}`);
-                    stopScanning();
-                    return;
+                    
+                    // ระบบ Lock เป้า: ต้องเจอค่าเดิมซ้ำๆ
+                    if (sn === lastScannedRef.current) {
+                      matchCountRef.current++;
+                      if (matchCountRef.current >= 3) { // เจอ 3 ครั้งติดกัน
+                        setValue("serialNumber", sn);
+                        toast.success(`ล็อคเป้าสำเร็จ S/N: ${sn}`);
+                        
+                        // Feedback: สั่น (ถ้ามือถือรองรับ)
+                        if (navigator.vibrate) navigator.vibrate(100);
+                        
+                        stopScanning();
+                        return;
+                      }
+                    } else {
+                      lastScannedRef.current = sn;
+                      matchCountRef.current = 1;
+                    }
                   }
                 }
               } catch (e) {

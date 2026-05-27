@@ -21,6 +21,10 @@ interface TorchConstraint extends MediaTrackConstraintSet {
 export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [hasCamera, setHasCamera] = useState(false);
+  
+  // Target Lock Refs
+  const lastCodeRef = useRef<string | null>(null);
+  const matchCountRef = useRef(0);
 
   useEffect(() => {
     const scannerId = "reader";
@@ -32,29 +36,40 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
 
     const startScanner = async () => {
       try {
-        // ขั้นตอนที่ 1: ตรวจสอบการเชื่อมต่อกับกล้องและขออนุญาตเข้าถึงกล้อง
         const cameras = await Html5Qrcode.getCameras();
         
         if (cameras && cameras.length > 0) {
           setHasCamera(true);
           
-          // ขั้นตอนที่ 2: เริ่มการสแกนโดยใช้กล้องหลัง (Environment)
           await scanner.start(
             { facingMode: "environment" },
             {
-              fps: 10,
-            },
-            (decodedText) => {
-              // เมื่อสแกนสำเร็จ: ดึง ID จาก URL หรือข้อความ
-              if (decodedText) {
-                // เรียกใช้ callback ที่ส่งมาจากหน้าหลัก
-                onScanSuccess(decodedText);
-                if (scanner.isScanning) scanner.stop();
+              fps: 20, // เพิ่ม FPS เพื่อการตอบสนองที่ไวขึ้น
+              qrbox: (viewWidth, viewHeight) => {
+                const size = Math.min(viewWidth, viewHeight) * 0.7;
+                return { width: size, height: size };
               }
             },
-            () => {
-              // กำลังสแกน...
-            }
+            (decodedText) => {
+              if (decodedText) {
+                // ระบบ Target Lock: ต้องเจอค่าเดิมซ้ำกัน 3 ครั้งติดต่อกัน
+                if (decodedText === lastCodeRef.current) {
+                  matchCountRef.current++;
+                  
+                  if (matchCountRef.current >= 3) {
+                    // ล็อคเป้าสำเร็จ!
+                    if (navigator.vibrate) navigator.vibrate(100);
+                    onScanSuccess(decodedText);
+                    if (scanner.isScanning) scanner.stop();
+                  }
+                } else {
+                  // เปลี่ยนค่า หรือยังไม่นิ่ง: เริ่มนับใหม่
+                  lastCodeRef.current = decodedText;
+                  matchCountRef.current = 1;
+                }
+              }
+            },
+            () => {}
           );
         } else {
           toast.error("ไม่พบกล้องสำหรับใช้งาน");

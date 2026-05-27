@@ -116,6 +116,8 @@ export default function AssetEntryPage() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const scanningLoopRef = useRef<number | null>(null);
   const lastScanTimeRef = useRef<number>(0);
+  const lastScannedRef = useRef<string | null>(null);
+  const matchCountRef = useRef<number>(0);
 
   // Camera Logic
   useEffect(() => {
