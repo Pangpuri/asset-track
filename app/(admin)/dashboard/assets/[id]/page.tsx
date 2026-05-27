@@ -69,6 +69,10 @@ interface AssetData {
   } | null;
 }
 
+interface TorchConstraint extends MediaTrackConstraintSet {
+  torch?: boolean;
+}
+
 export default function EditAssetPage() {
   const router = useRouter();
   const params = useParams();

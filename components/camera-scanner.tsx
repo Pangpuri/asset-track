@@ -107,7 +107,9 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
     };
 
     startScanner();
-    return () => stopScanning();
+    return () => {
+      stopScanning();
+    };
   }, [onScanSuccess, stopScanning]);
 
   // ลอจิกสำหรับเปิด/ปิดไฟแฟลช (เพิ่มความทนทานและระบบ Retry)
