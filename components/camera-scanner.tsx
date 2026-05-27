@@ -202,7 +202,7 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
                 <div className="w-3 h-3 bg-rose-500 rounded-full animate-ping" />
             </div>
             <p className="text-white text-xs font-black uppercase tracking-[0.2em] leading-relaxed">
-                กรุณากด 'อนุญาต'<br />เพื่อเข้าถึงกล้อง
+                กรุณากดอนุญาต<br />เพื่อเข้าถึงกล้อง
             </p>
           </div>
         </div>
