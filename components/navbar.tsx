@@ -35,6 +35,11 @@ const navItems = [
     icon: Package,
   },
   {
+    title: "พิมพ์ QR (Bulk Print)",
+    href: "/dashboard/assets/print-qr",
+    icon: QrCode,
+  },
+  {
     title: "จัดการการซ่อม (Repairs)",
     href: "/dashboard/assets/repairs",
     icon: RefreshCw,
@@ -43,12 +48,7 @@ const navItems = [
     title: "อุปกรณ์สูญหาย (Lost Assets)",
     href: "/dashboard/assets/lost",
     icon: Ghost,
-  },
-  {
-    title: "พิมพ์ QR (Bulk Print)",
-    href: "/dashboard/assets/print-qr",
-    icon: QrCode,
-  },
+  }, 
   {
     title: "รายการจำหน่ายออก (Archive)",
     href: "/dashboard/assets/retired",
