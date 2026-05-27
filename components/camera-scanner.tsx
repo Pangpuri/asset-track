@@ -168,6 +168,15 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
         }
         #reader video {
             object-fit: cover !important;
+            width: 100% !important;
+            height: 100% !important;
+        }
+        /* ซ่อนกรอบสีขาวและพื้นที่ซ้อนทับดั้งเดิมของ Library */
+        #reader__scan_region {
+            display: none !important;
+        }
+        #reader {
+            border: none !important;
         }
       `}</style>
     </div>
