@@ -53,10 +53,10 @@ export const assets = pgTable("assets", {
   deletedAt: timestamp("deleted_at", { withTimezone: true }).default(sql`null`),
   
   // ข้อมูลการจำหน่ายออก (Disposal Info)
-  disposalReason: text("disposal_reason"),
-  disposalMethod: text("disposal_method"),
-  disposalValue: decimal("disposal_value", { precision: 12, scale: 2 }),
-  disposalAuthorizedBy: text("disposal_authorized_by"),
+  disposalReason: text("disposal_reason"),// สาเหตุการจำหน่าย
+  disposalMethod: text("disposal_method"),// วิธีการจำหน่าย (ขาย, บริจาค, ทิ้ง)
+  disposalValue: decimal("disposal_value", { precision: 12, scale: 2 }),// มูลค่าที่จำหน่ายออก (ถ้ามี)
+  disposalAuthorizedBy: text("disposal_authorized_by"),// ผู้อนุมัติการจำหน่ายออก
 
   // ข้อมูลเฉพาะตามประเภท (เก็บเป็น JSONB)
   specifications: jsonb("specifications").$type<{

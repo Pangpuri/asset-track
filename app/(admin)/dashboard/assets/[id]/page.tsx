@@ -31,6 +31,11 @@ const assetSchema = z.object({
   ipAddress: z.string().optional(),
   status: z.string().optional(),
   factory: z.string().optional(),
+  // ข้อมูลการจำหน่ายออก
+  disposalReason: z.string().optional(),
+  disposalMethod: z.string().optional(),
+  disposalValue: z.string().optional(),
+  disposalAuthorizedBy: z.string().optional(),
 });
 
 type AssetFormValues = z.infer<typeof assetSchema>;
@@ -50,6 +55,10 @@ interface AssetData {
   deliveredBy: string | null;
   purchaseDate: string | null;
   warrantyExpire: string | null;
+  disposalReason?: string | null;
+  disposalMethod?: string | null;
+  disposalValue?: string | null;
+  disposalAuthorizedBy?: string | null;
   specifications?: {
     computerName?: string;
     ipAddress?: string;
@@ -409,6 +418,36 @@ export default function EditAssetPage() {
               </div>
             </div>
           </div>
+
+          {watch("status") === "retired" && (
+            <div className="border-t-4 border-rose-100 bg-rose-50/30 p-6 rounded-[2rem] space-y-6 animate-in slide-in-from-top-4 duration-500">
+              <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest ml-1 flex items-center gap-2">
+                <span className="w-2 h-2 bg-rose-500 rounded-full animate-pulse" />
+                ข้อมูลการจำหน่ายออก (Disposal Information)
+              </p>
+              
+              <div className="space-y-2">
+                <Label className="text-xs text-rose-700 font-bold ml-1">สาเหตุการจำหน่าย</Label>
+                <Input {...register("disposalReason")} placeholder="เช่น ชำรุดซ่อมไม่คุ้ม, ตกรุ่น, สูญหาย" className="bg-white border-rose-100 h-12 rounded-xl font-bold focus:ring-rose-200" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-xs text-rose-700 font-bold ml-1">วิธีการจำหน่าย</Label>
+                  <Input {...register("disposalMethod")} placeholder="ขาย, บริจาค, ทิ้ง" className="bg-white border-rose-100 h-12 rounded-xl font-bold" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-rose-700 font-bold ml-1">มูลค่าจำหน่าย (บาท)</Label>
+                  <Input {...register("disposalValue")} type="number" step="0.01" placeholder="0.00" className="bg-white border-rose-100 h-12 rounded-xl font-bold" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs text-rose-700 font-bold ml-1">ผู้อนุมัติการจำหน่าย</Label>
+                <Input {...register("disposalAuthorizedBy")} className="bg-white border-rose-100 h-12 rounded-xl font-bold" />
+              </div>
+            </div>
+          )}
 
           {/* Floating Save Button at the bottom */}
           <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/80 backdrop-blur-md border-t border-gray-100 z-40 flex justify-center">

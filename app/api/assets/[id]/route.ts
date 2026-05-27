@@ -67,6 +67,13 @@ export async function PATCH(
       updatedAt: new Date(),
     };
 
+    // จัดการ Soft Delete (deletedAt) ตามสถานะ
+    if (rest.status === "retired") {
+      updateFields.deletedAt = new Date();
+    } else if (rest.status && rest.status !== "retired") {
+      updateFields.deletedAt = null;
+    }
+
     // แปลงวันที่เฉพาะเมื่อมีการส่งค่ามา และไม่เป็นค่าว่าง
     if (purchaseDate !== undefined) {
       updateFields.purchaseDate = purchaseDate && purchaseDate !== "" ? new Date(purchaseDate) : null;
@@ -125,7 +132,7 @@ export async function DELETE(
     await db.insert(logs).values({
       assetId: id,
       action: "retire",
-      notes: "จำหน่ายออก/เลิกใช้งานผ่านระบบ (Soft Delete)",
+      notes: "จำหน่ายออกผ่านระบบ (เพื่อไม่ให้เลขซ้ำ)",
       actionDate: new Date(),
     });
 

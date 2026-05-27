@@ -54,7 +54,8 @@ export default function ExportPDFPage() {
       if (categoryFilter !== "all") sp.append("category", categoryFilter);
       if (statusFilter !== "all") sp.append("status", statusFilter);
       
-      const res = await fetch(`/api/assets?${sp.toString()}&includeDeleted=false`); // เพิ่ม filter เพื่อไม่รวมรายการที่ถูกลบ
+      const includeDeleted = statusFilter === "retired";
+      const res = await fetch(`/api/assets?${sp.toString()}&includeDeleted=${includeDeleted}`); 
       if (!res.ok) throw new Error();
       const data = await res.json();
       setAssets(data);

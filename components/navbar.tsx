@@ -39,7 +39,7 @@ const navItems = [
   },
   {
     title: "รายการจำหน่ายออก (Archive)",
-    href: "/dashboard/assets?status=retired&includeDeleted=true",
+    href: "/dashboard/assets/retired",
     icon: Trash2,
   },
   {

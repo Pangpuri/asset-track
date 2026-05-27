@@ -142,19 +142,19 @@ function AssetsList() {
 
 
   const handleRetire = async (id: string, code: string | null) => {
-    if (!confirm(`คุณต้องการทำเครื่องหมายอุปกรณ์ ${code || id.substring(0,8)} เป็น 'เลิกใช้งาน' ใช่หรือไม่? อุปกรณ์จะไม่ปรากฏในรายการปกติ แต่ยังคงอยู่ในระบบเพื่อการตรวจสอบย้อนหลัง`)) return;
+    if (!confirm(`คุณต้องการทำเครื่องหมายอุปกรณ์ ${code || id.substring(0,8)} เป็น 'จำหน่ายออก' ใช่หรือไม่? อุปกรณ์จะไม่ปรากฏในรายการปกติ แต่ยังคงอยู่ในระบบเพื่อการตรวจสอบย้อนหลัง`)) return;
     
     try {
       const res = await fetch(`/api/assets/${id}?id=${id}`, { method: "DELETE" });
       if (res.ok) {
-        toast.success("อุปกรณ์ถูกทำเครื่องหมายเป็น 'เลิกใช้งาน' เรียบร้อยแล้ว");
+        toast.success("อุปกรณ์ถูกทำเครื่องหมายเป็น 'จำหน่ายออก' เรียบร้อยแล้ว");
         setLoading(true); // สั่ง loading ที่นี่แทน (ปลอดภัยเพราะอยู่ใน Event Handler)
         fetchAssets();
       } else {
         throw new Error();
       }
     } catch (err) {
-      toast.error("ไม่สามารถลบข้อมูลได้");
+      toast.error("ไม่สามารถจำหน่ายออกได้");
     }
   };
 
@@ -293,6 +293,10 @@ function AssetsList() {
           <Select 
             defaultValue={filterParam || statusParam || "all"}
             onValueChange={(val) => {
+              if (val === "retired") {
+                router.push("/dashboard/assets/retired");
+                return;
+              }
               const params = new URLSearchParams(window.location.search);
               params.delete("filter");
               params.delete("status");
@@ -414,6 +418,7 @@ function AssetsList() {
                               size="icon" 
                               className="h-9 w-9 rounded-xl bg-white border border-rose-50 shadow-sm text-rose-500 hover:bg-rose-600 hover:text-white transition-all"
                               onClick={() => handleRetire(asset.id, asset.assetCode)}
+                              title="จำหน่ายออก"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
