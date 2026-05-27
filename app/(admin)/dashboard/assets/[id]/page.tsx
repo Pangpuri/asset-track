@@ -300,10 +300,33 @@ export default function EditAssetPage() {
       }
     };
     fetchAsset();
+    
     return () => {
+      // Cleanup: ปิดทุกอย่างเมื่อออกจากหน้า
+      if (videoRef.current?.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(track => {
+          if (track.kind === "video") {
+            track.applyConstraints({ advanced: [{ torch: false } as any] }).catch(() => {});
+          }
+          track.stop();
+        });
+      }
       if (scanningLoopRef.current) cancelAnimationFrame(scanningLoopRef.current);
     };
   }, [params.id, reset, router]);
+
+  // ป้องกันกรณี Refresh หน้าจอหรือปิด Browser ทันที (หน้า Edit)
+  useEffect(() => {
+    const handleUnload = () => {
+      if (videoRef.current?.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        stream.getTracks().forEach(t => t.stop());
+      }
+    };
+    window.addEventListener("beforeunload", handleUnload);
+    return () => window.removeEventListener("beforeunload", handleUnload);
+  }, []);
 
   const onSubmit = async (data: AssetFormValues) => {
     try {
