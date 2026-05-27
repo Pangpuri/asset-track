@@ -236,22 +236,26 @@ export default function EditAssetPage() {
   };
 
   const toggleFlash = async () => {
-    const stream = videoRef.current?.srcObject as MediaStream;
-    const track = stream?.getVideoTracks()[0];
-
-    interface TorchConstraint extends MediaTrackConstraintSet {
-      torch?: boolean;
-    }
-
-    if (track && "applyConstraints" in track) {
-      try {
-        const newFlash = !isFlashOn;
-        await track.applyConstraints({
-          advanced: [{ torch: newFlash } as TorchConstraint]
-        } as MediaTrackConstraints);
-        setIsFlashOn(newFlash);
-      } catch (e) {
-        toast.error("อุปกรณ์ไม่รองรับการเปิดไฟแฟลช");
+    if (videoRef.current?.srcObject) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      const track = stream.getVideoTracks()[0];
+      
+      interface TorchConstraint extends MediaTrackConstraintSet { torch?: boolean; }
+      
+      if (track && "applyConstraints" in track) {
+        try {
+          const capabilities = (track as any).getCapabilities?.() || {};
+          if (capabilities.torch) {
+            const newFlash = !isFlashOn;
+            await track.applyConstraints({ advanced: [{ torch: newFlash } as TorchConstraint] } as MediaTrackConstraints);
+            setIsFlashOn(newFlash);
+          } else {
+             toast.error("กล้องนี้ไม่รองรับการเปิดไฟแฟลช");
+          }
+        } catch (e) { 
+          console.error("Flash error:", e);
+          toast.error("ไม่สามารถเปิดไฟแฟลชได้ในขณะนี้"); 
+        }
       }
     }
   };

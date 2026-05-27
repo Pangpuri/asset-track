@@ -94,11 +94,25 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
     const handleFlash = async () => {
       if (scannerRef.current?.isScanning) {
         try {
-          await scannerRef.current.applyVideoConstraints({
-            advanced: [{ torch: isFlashOn } as TorchConstraint]
-          } as MediaTrackConstraints);
+          // ค้นหาวิดีโอแทร็กที่กำลังทำงานอยู่
+          const videoElement = document.querySelector("#reader video") as HTMLVideoElement;
+          if (videoElement && videoElement.srcObject) {
+            const stream = videoElement.srcObject as MediaStream;
+            const track = stream.getVideoTracks()[0];
+            
+            if (track && "applyConstraints" in track) {
+              const capabilities = track.getCapabilities() as { torch?: boolean };
+              if (capabilities.torch) {
+                await track.applyConstraints({
+                  advanced: [{ torch: isFlashOn } as TorchConstraint]
+                } as MediaTrackConstraints);
+              } else {
+                console.warn("กล้องนี้ไม่รองรับไฟแฟลช");
+              }
+            }
+          }
         } catch (err) {
-          console.warn("อุปกรณ์หรือเบราว์เซอร์นี้ไม่รองรับการเปิดไฟแฟลชผ่านหน้าเว็บ");
+          console.error("Flash error:", err);
         }
       }
     };
