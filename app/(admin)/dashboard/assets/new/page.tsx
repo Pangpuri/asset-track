@@ -33,6 +33,7 @@ const assetSchema = z.object({
   ipAddress: z.string().optional(),
   status: z.string().optional(),
   factory: z.string().optional(),
+  warrantyStatus: z.string().optional(),
 });
 
 type AssetFormValues = z.infer<typeof assetSchema>;
@@ -45,6 +46,7 @@ export default function AssetEntryPage() {
       status: "active",
       category: "",
       factory: "",
+      warrantyStatus: "date",
     }
   });
 
@@ -425,7 +427,32 @@ export default function AssetEntryPage() {
 
           {/* Section 4: Delivery */}
           <div className="border-t border-gray-50 pt-8 space-y-6 pb-10">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">การส่งมอบ</p>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">การรับประกันและการส่งมอบ</p>
+            
+            <div className="space-y-2">
+              <Label className="text-xs text-gray-500 ml-1">ประเภทการรับประกัน</Label>
+              <Select 
+                onValueChange={(v) => setValue("warrantyStatus", v as string)} 
+                value={watch("warrantyStatus") || "date"}
+              >
+                <SelectTrigger className="border-none bg-gray-50 h-12 rounded-xl font-bold">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-xl shadow-2xl border-none bg-white z-[60]">
+                  <SelectItem value="date" className="font-bold text-zinc-900">ระบุวันหมดประกัน</SelectItem>
+                  <SelectItem value="none" className="font-bold text-rose-600">ไม่มีประกัน</SelectItem>
+                  <SelectItem value="lifetime" className="font-bold text-emerald-600">Lifetime Warranty</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {watch("warrantyStatus") === "date" && (
+              <div className="space-y-2 animate-in slide-in-from-top-2 duration-300">
+                <Label className="text-xs text-gray-500 ml-1">วันหมดประกัน</Label>
+                <Input id="warrantyExpire" type="date" {...register("warrantyExpire")} className="border-none bg-gray-50 h-12 rounded-xl font-bold uppercase text-[10px]" />
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-xs text-gray-500 ml-1">ผู้รับมอบ/ผู้ใช้งาน</Label>
@@ -444,10 +471,6 @@ export default function AssetEntryPage() {
                <div className="space-y-2">
                 <Label className="text-xs text-gray-500 ml-1">วันที่ส่งมอบ</Label>
                 <Input id="purchaseDate" type="date" {...register("purchaseDate")} className="border-none bg-gray-50 h-12 rounded-xl font-bold uppercase text-[10px]" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs text-gray-500 ml-1">วันหมดประกัน</Label>
-                <Input id="warrantyExpire" type="date" {...register("warrantyExpire")} className="border-none bg-gray-50 h-12 rounded-xl font-bold uppercase text-[10px]" />
               </div>
             </div>
           </div>

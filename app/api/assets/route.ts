@@ -107,7 +107,7 @@ export async function POST(req: Request) {
     const { 
       assetCode, assetName, category, brand, model, serialNumber, location, factory,
       computerName, monitorSize, ipAddress, vendor,
-      receivedBy, deliveredBy, purchaseDate, warrantyExpire
+      receivedBy, deliveredBy, purchaseDate, warrantyExpire, warrantyStatus
     } = body;
 
     // เตรียมข้อมูล specifications ตามประเภท
@@ -132,6 +132,7 @@ export async function POST(req: Request) {
       deliveredBy,
       purchaseDate: purchaseDate && purchaseDate !== "" ? new Date(purchaseDate) : null,
       warrantyExpire: warrantyExpire && warrantyExpire !== "" ? new Date(warrantyExpire) : null,
+      warrantyStatus: warrantyStatus || "date",
       status: body.status || "active",
     }).returning();
 
