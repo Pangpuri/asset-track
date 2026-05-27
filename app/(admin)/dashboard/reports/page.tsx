@@ -30,6 +30,8 @@ const columns = [
   { id: "disposalMethod", label: "วิธีการจำหน่าย", default: false },
   { id: "disposalValue", label: "มูลค่าจำหน่าย", default: false },
   { id: "disposalAuthorizedBy", label: "ผู้อนุมัติ", default: false },
+  { id: "lostDate", label: "วันที่สูญหาย", default: false },
+  { id: "lostNotes", label: "รายละเอียดการหาย", default: false },
   { id: "serialNumber", label: "Serial Number", default: true },
   { id: "purchaseDate", label: "วันที่ซื้อ", default: false },
   { id: "warrantyExpire", label: "ประกันหมด", default: false },

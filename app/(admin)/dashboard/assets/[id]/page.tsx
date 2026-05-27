@@ -36,6 +36,8 @@ const assetSchema = z.object({
   disposalMethod: z.string().optional(),
   disposalValue: z.string().optional(),
   disposalAuthorizedBy: z.string().optional(),
+  lostDate: z.string().optional(),
+  lostNotes: z.string().optional(),
 });
 
 type AssetFormValues = z.infer<typeof assetSchema>;
@@ -418,6 +420,31 @@ export default function EditAssetPage() {
               </div>
             </div>
           </div>
+
+          {watch("status") === "lost" && (
+            <div className="border-t-4 border-amber-100 bg-amber-50/30 p-6 rounded-[2rem] space-y-6 animate-in slide-in-from-top-4 duration-500">
+              <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest ml-1 flex items-center gap-2">
+                <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
+                รายงานอุปกรณ์สูญหาย (Lost Asset Report)
+              </p>
+              
+              <div className="space-y-2">
+                <Label className="text-xs text-amber-700 font-bold ml-1">วันที่ทราบว่าสูญหาย</Label>
+                <Input type="date" {...register("lostDate")} className="bg-white border-amber-100 h-12 rounded-xl font-bold focus:ring-amber-200" />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs text-amber-700 font-bold ml-1">รายละเอียดการสูญหาย</Label>
+                <Input {...register("lostNotes")} placeholder="เช่น หายระหว่างการขนย้าย, ตรวจนับพัสดุแล้วไม่พบ" className="bg-white border-amber-100 h-12 rounded-xl font-bold" />
+              </div>
+
+              <div className="p-4 bg-amber-100/50 rounded-2xl border border-amber-200/50">
+                <p className="text-[10px] font-black text-amber-800 uppercase tracking-widest mb-1">ผู้รับผิดชอบล่าสุด</p>
+                <p className="text-sm font-black text-amber-900">{watch("receivedBy") || "ไม่ระบุผู้รับมอบ"}</p>
+                <p className="text-[9px] font-bold text-amber-700/60 mt-1 uppercase tracking-tighter">* ข้อมูลอ้างอิงจากฟิลด์ผู้รับมอบด้านบน</p>
+              </div>
+            </div>
+          )}
 
           {watch("status") === "retired" && (
             <div className="border-t-4 border-rose-100 bg-rose-50/30 p-6 rounded-[2rem] space-y-6 animate-in slide-in-from-top-4 duration-500">

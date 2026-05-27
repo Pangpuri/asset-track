@@ -297,6 +297,10 @@ function AssetsList() {
                 router.push("/dashboard/assets/retired");
                 return;
               }
+              if (val === "lost") {
+                router.push("/dashboard/assets/lost");
+                return;
+              }
               const params = new URLSearchParams(window.location.search);
               params.delete("filter");
               params.delete("status");

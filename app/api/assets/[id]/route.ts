@@ -68,9 +68,9 @@ export async function PATCH(
     };
 
     // จัดการ Soft Delete (deletedAt) ตามสถานะ
-    if (rest.status === "retired") {
+    if (rest.status === "retired" || rest.status === "lost") {
       updateFields.deletedAt = new Date();
-    } else if (rest.status && rest.status !== "retired") {
+    } else if (rest.status && rest.status !== "retired" && rest.status !== "lost") {
       updateFields.deletedAt = null;
     }
 
