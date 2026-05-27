@@ -449,18 +449,38 @@ export default function ExportPDFPage() {
           @media print {
             @page { 
               size: A4 ${isLandscape ? "landscape" : "portrait"}; 
-              margin: 15mm; 
+              margin: ${isLandscape ? "10mm" : "15mm"}; 
             }
             html, body {
               background: #fff !important;
               color: #000 !important;
               font-family: 'Tahoma', 'Segoe UI', sans-serif !important;
+              width: 100%;
+              margin: 0;
+              padding: 0;
             }
             .print-header { border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-            table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-            th { background-color: #f0f0f0 !important; border: 1px solid #ccc; padding: 8px 5px; text-align: left; font-size: 11px; -webkit-print-color-adjust: exact; }
-            td { border: 1px solid #eee; padding: 6px 5px; font-size: 10px; word-wrap: break-word; vertical-align: top; }
-            .print-footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 9px; color: #666; }
+            table { 
+              width: 100%; 
+              border-collapse: collapse; 
+              table-layout: auto; /* เปลี่ยนเป็น auto เพื่อให้ความกว้างปรับตามเนื้อหา */
+            }
+            th { 
+              background-color: #f0f0f0 !important; 
+              border: 1px solid #000; 
+              padding: 6px 4px; 
+              text-align: left; 
+              font-size: ${isLandscape ? "10px" : "11px"}; 
+              -webkit-print-color-adjust: exact; 
+            }
+            td { 
+              border: 1px solid #ccc; 
+              padding: 5px 4px; 
+              font-size: ${isLandscape ? "9px" : "10px"}; 
+              word-wrap: break-word; 
+              vertical-align: top; 
+            }
+            .print-footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 8px; color: #666; }
           }
         `}} />
         
