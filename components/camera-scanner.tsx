@@ -20,6 +20,7 @@ interface TorchConstraint extends MediaTrackConstraintSet {
  */
 export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const [hasCamera, setHasCamera] = useState(false);
   
   // Target Lock Refs
@@ -28,23 +29,34 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
 
   useEffect(() => {
     const scannerId = "reader";
-    const scanner = new Html5Qrcode(scannerId, {
-      formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
-      verbose: false,
-    });
+    const scanner = new Html5Qrcode(scannerId);
     scannerRef.current = scanner;
+    let currentStream: MediaStream | null = null;
 
-    const startScanner = async () => {
+    const startCameraAndScanner = async () => {
       try {
-        const cameras = await Html5Qrcode.getCameras();
+        // 1. ขอสิทธิ์และเปิดกล้องหลังด้วยตัวเอง (เหมือนหน้า S/N ที่เวิร์กแล้ว)
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { 
+            facingMode: "environment",
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          }
+        });
         
-        if (cameras && cameras.length > 0) {
-          setHasCamera(true);
-          
+        currentStream = stream;
+        setHasCamera(true);
+
+        // 2. ดึง Device ID จาก Stream ที่เราเปิดได้จริงๆ
+        const track = stream.getVideoTracks()[0];
+        const deviceId = track.getSettings().deviceId;
+
+        // 3. เริ่มการสแกนโดยเจาะจงไปที่ Device ID ตัวนี้เท่านั้น
+        if (deviceId) {
           await scanner.start(
-            { facingMode: "environment" },
+            deviceId,
             {
-              fps: 20, // เพิ่ม FPS เพื่อการตอบสนองที่ไวขึ้น
+              fps: 20,
               qrbox: (viewWidth, viewHeight) => {
                 const size = Math.min(viewWidth, viewHeight) * 0.7;
                 return { width: size, height: size };
@@ -52,18 +64,14 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
             },
             (decodedText) => {
               if (decodedText) {
-                // ระบบ Target Lock: ต้องเจอค่าเดิมซ้ำกัน 3 ครั้งติดต่อกัน
                 if (decodedText === lastCodeRef.current) {
                   matchCountRef.current++;
-                  
                   if (matchCountRef.current >= 3) {
-                    // ล็อคเป้าสำเร็จ!
                     if (navigator.vibrate) navigator.vibrate(100);
                     onScanSuccess(decodedText);
-                    if (scanner.isScanning) scanner.stop();
+                    stopEverything();
                   }
                 } else {
-                  // เปลี่ยนค่า หรือยังไม่นิ่ง: เริ่มนับใหม่
                   lastCodeRef.current = decodedText;
                   matchCountRef.current = 1;
                 }
@@ -71,36 +79,46 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
             },
             () => {}
           );
-        } else {
-          toast.error("ไม่พบกล้องสำหรับใช้งาน");
         }
       } catch (err) {
-        console.error("Camera access error:", err);
-        toast.error("กรุณาอนุญาตสิทธิ์เข้าถึงกล้องเพื่อทำการสแกน");
+        console.error("Scanner Start Error:", err);
+        toast.error("ไม่สามารถเข้าถึงกล้องหลังได้");
       }
     };
 
-    startScanner();
-
-    return () => {
-      if (scannerRef.current?.isScanning) {
-        scannerRef.current.stop().catch(console.error);
-      }
+    const stopEverything = () => {
+        if (scanner.isScanning) {
+            scanner.stop().catch(() => {});
+        }
+        if (currentStream) {
+            currentStream.getTracks().forEach(t => t.stop());
+        }
     };
+
+    startCameraAndScanner();
+
+    return () => stopEverything();
   }, [onScanSuccess]);
 
-  // ลอจิกสำหรับเปิด/ปิดไฟแฟลช
+  // ลอจิกสำหรับเปิด/ปิดไฟแฟลช (ใช้ Track จากหน้าจอตรงๆ)
   useEffect(() => {
     const toggleFlash = async () => {
-      if (scannerRef.current && scannerRef.current.isScanning) {
-        try {
-          await scannerRef.current.applyVideoConstraints({
-            advanced: [{ torch: isFlashOn } as TorchConstraint]
-          } as MediaTrackConstraints);
-        } catch (err) {
-          // ถ้าเปิดไม่ได้ อาจเป็นเพราะเครื่องไม่รองรับหรือสิทธิ์กล้อง
-          console.warn("ไม่สามารถเปิดไฟแฟลชผ่าน Library ได้:", err);
+      try {
+        // ค้นหาวิดีโอแทร็กที่กำลังทำงานอยู่ในระบบ
+        const videoElement = document.querySelector("#reader video") as HTMLVideoElement;
+        const stream = videoElement?.srcObject as MediaStream;
+        const track = stream?.getVideoTracks()[0];
+
+        if (track && "applyConstraints" in track) {
+          const capabilities = (track as any).getCapabilities?.() || {};
+          if (capabilities.torch) {
+            await track.applyConstraints({
+              advanced: [{ torch: isFlashOn } as TorchConstraint]
+            } as MediaTrackConstraints);
+          }
         }
+      } catch (err) {
+        console.warn("Flash Toggle Error:", err);
       }
     };
     
