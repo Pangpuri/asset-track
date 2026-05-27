@@ -13,6 +13,16 @@ interface TorchConstraint extends MediaTrackConstraintSet {
   torch?: boolean;
 }
 
+interface MediaTrackCapabilitiesWithTorch extends MediaTrackCapabilities {
+  torch?: boolean;
+}
+
+interface WindowWithBarcodeDetector extends Window {
+  BarcodeDetector?: new (options?: { formats: string[] }) => {
+    detect: (image: HTMLVideoElement) => Promise<{ rawValue: string }[]>;
+  };
+}
+
 export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const pathname = usePathname(); // ติดตามการเปลี่ยนหน้า
@@ -84,7 +94,8 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
           videoRef.current.onloadedmetadata = () => {
             if (!("BarcodeDetector" in window)) return;
 
-            const BarcodeDetectorClass = (window as any).BarcodeDetector;
+            const BarcodeDetectorClass = (window as WindowWithBarcodeDetector).BarcodeDetector;
+            if (!BarcodeDetectorClass) return;
             const detector = new BarcodeDetectorClass({ formats: ["qr_code"] });
 
             const detectLoop = async () => {
@@ -153,8 +164,8 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
       if (track && "applyConstraints" in track) {
         try {
           await new Promise(resolve => setTimeout(resolve, 150));
-          const capabilities = (track as any).getCapabilities?.() || {};
-          if (capabilities.torch) {
+          const capabilities = track.getCapabilities?.() as MediaTrackCapabilitiesWithTorch | undefined;
+          if (capabilities?.torch) {
             await track.applyConstraints({
               advanced: [{ torch: isFlashOn } as TorchConstraint]
             } as MediaTrackConstraints);
