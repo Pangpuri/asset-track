@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { toast } from "sonner";
 
 interface CameraScannerProps {
@@ -9,145 +8,138 @@ interface CameraScannerProps {
   onScanSuccess: (decodedText: string) => void;
 }
 
-/** Interface สำหรับรองรับคุณสมบัติ Torch (ไฟแฟลช) ที่ยังไม่มีในมาตรฐาน TypeScript lib.dom */
 interface TorchConstraint extends MediaTrackConstraintSet {
   torch?: boolean;
 }
 
-/**
- * คอมโพเนนต์สำหรับสแกน QR Code และจัดการกล้อง
- * แก้ไข Type Error และรองรับการเปิดไฟแฟลช (Torch)
- */
 export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) {
-  const scannerRef = useRef<Html5Qrcode | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [hasCamera, setHasCamera] = useState(false);
   
   // Target Lock Refs
   const lastCodeRef = useRef<string | null>(null);
   const matchCountRef = useRef(0);
+  const scanningLoopRef = useRef<number | null>(null);
+
+  const stopScanning = useCallback(() => {
+    if (videoRef.current?.srcObject) {
+      const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
+      tracks.forEach(track => track.stop());
+    }
+    if (scanningLoopRef.current) cancelAnimationFrame(scanningLoopRef.current);
+  }, []);
 
   useEffect(() => {
-    const scannerId = "reader";
-    const scanner = new Html5Qrcode(scannerId);
-    scannerRef.current = scanner;
-    let currentStream: MediaStream | null = null;
-
-    const startCameraAndScanner = async () => {
+    const startScanner = async () => {
       try {
-        // 1. ขอสิทธิ์และเปิดกล้องหลังด้วยตัวเอง (เหมือนหน้า S/N ที่เวิร์กแล้ว)
-        const stream = await navigator.mediaDevices.getUserMedia({
+        const stream = await navigator.mediaDevices.getUserMedia({ 
           video: { 
             facingMode: "environment",
             width: { ideal: 1280 },
             height: { ideal: 720 }
-          }
+          } 
         });
         
-        currentStream = stream;
-        setHasCamera(true);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          setHasCamera(true);
+          
+          videoRef.current.onloadedmetadata = () => {
+            if (!("BarcodeDetector" in window)) {
+              // Fallback หรือแจ้งเตือน (แต่ส่วนใหญ่เบราว์เซอร์ใหม่ๆ รองรับแล้ว)
+              return;
+            }
 
-        // 2. ดึง Device ID จาก Stream ที่เราเปิดได้จริงๆ
-        const track = stream.getVideoTracks()[0];
-        const deviceId = track.getSettings().deviceId;
+            const BarcodeDetectorClass = (window as any).BarcodeDetector;
+            const detector = new BarcodeDetectorClass({ formats: ["qr_code"] });
 
-        // 3. เริ่มการสแกนโดยเจาะจงไปที่ Device ID ตัวนี้เท่านั้น
-        if (deviceId) {
-          await scanner.start(
-            deviceId,
-            {
-              fps: 20,
-              qrbox: (viewWidth, viewHeight) => {
-                const size = Math.min(viewWidth, viewHeight) * 0.7;
-                return { width: size, height: size };
+            const detectLoop = async () => {
+              if (!videoRef.current || videoRef.current.readyState !== videoRef.current.HAVE_ENOUGH_DATA) {
+                scanningLoopRef.current = requestAnimationFrame(detectLoop);
+                return;
               }
-            },
-            (decodedText) => {
-              if (decodedText) {
-                if (decodedText === lastCodeRef.current) {
-                  matchCountRef.current++;
-                  if (matchCountRef.current >= 3) {
-                    if (navigator.vibrate) navigator.vibrate(100);
-                    onScanSuccess(decodedText);
-                    stopEverything();
+
+              try {
+                const barcodes = await detector.detect(videoRef.current);
+                if (barcodes.length > 0) {
+                  const decodedText = barcodes[0].rawValue;
+                  
+                  if (decodedText === lastCodeRef.current) {
+                    matchCountRef.current++;
+                    if (matchCountRef.current >= 3) {
+                      if (navigator.vibrate) navigator.vibrate(100);
+                      onScanSuccess(decodedText);
+                      stopScanning();
+                      return;
+                    }
+                  } else {
+                    lastCodeRef.current = decodedText;
+                    matchCountRef.current = 1;
                   }
-                } else {
-                  lastCodeRef.current = decodedText;
-                  matchCountRef.current = 1;
                 }
+              } catch (e) {
+                console.error("QR Detect Error:", e);
               }
-            },
-            () => {}
-          );
+              scanningLoopRef.current = requestAnimationFrame(detectLoop);
+            };
+            
+            scanningLoopRef.current = requestAnimationFrame(detectLoop);
+          };
         }
       } catch (err) {
-        console.error("Scanner Start Error:", err);
-        toast.error("ไม่สามารถเข้าถึงกล้องหลังได้");
+        console.error("Camera Access Error:", err);
+        toast.error("ไม่สามารถเข้าถึงกล้องได้");
       }
     };
 
-    const stopEverything = () => {
-        if (scanner.isScanning) {
-            scanner.stop().catch(() => {});
-        }
-        if (currentStream) {
-            currentStream.getTracks().forEach(t => t.stop());
-        }
-    };
+    startScanner();
+    return () => stopScanning();
+  }, [onScanSuccess, stopScanning]);
 
-    startCameraAndScanner();
-
-    return () => stopEverything();
-  }, [onScanSuccess]);
-
-  // ลอจิกสำหรับเปิด/ปิดไฟแฟลช (ใช้ Track จากหน้าจอตรงๆ)
+  // ลอจิกสำหรับเปิด/ปิดไฟแฟลช (ใช้ลอจิกเดียวกับ S/N ที่เวิร์กแล้ว)
   useEffect(() => {
-    const toggleFlash = async () => {
-      try {
-        // ค้นหาวิดีโอแทร็กที่กำลังทำงานอยู่ในระบบ
-        const videoElement = document.querySelector("#reader video") as HTMLVideoElement;
-        const stream = videoElement?.srcObject as MediaStream;
-        const track = stream?.getVideoTracks()[0];
-
+    const handleFlash = async () => {
+      if (videoRef.current?.srcObject) {
+        const stream = videoRef.current.srcObject as MediaStream;
+        const track = stream.getVideoTracks()[0];
+        
         if (track && "applyConstraints" in track) {
-          const capabilities = (track as any).getCapabilities?.() || {};
-          if (capabilities.torch) {
-            await track.applyConstraints({
-              advanced: [{ torch: isFlashOn } as TorchConstraint]
-            } as MediaTrackConstraints);
+          try {
+            const capabilities = (track as any).getCapabilities?.() || {};
+            if (capabilities.torch) {
+              await track.applyConstraints({
+                advanced: [{ torch: isFlashOn } as TorchConstraint]
+              } as MediaTrackConstraints);
+            }
+          } catch (e) {
+            console.warn("Flash constraint error:", e);
           }
         }
-      } catch (err) {
-        console.warn("Flash Toggle Error:", err);
       }
     };
-    
-    toggleFlash();
+    handleFlash();
   }, [isFlashOn]);
 
   return (
     <div className="relative w-full aspect-square bg-black overflow-hidden flex items-center justify-center group">
       {/* 1. Base Reader Element */}
-      <div id="reader" className="w-full h-full object-cover"></div>
+      <video 
+        ref={videoRef} 
+        autoPlay 
+        playsInline 
+        className="w-full h-full object-cover"
+      />
 
-      {/* 2. Custom High-Tech Overlay (Always visible on top of reader) */}
+      {/* 2. Custom High-Tech Overlay */}
       <div className="absolute inset-0 pointer-events-none z-10">
-        {/* Darkened Mask with Square Hole */}
         <div className="absolute inset-0 bg-black/40 shadow-[inner_0_0_100px_rgba(0,0,0,0.5)]" />
-
-        {/* Square Target Frame */}
         <div className="absolute inset-0 flex items-center justify-center">
             <div className="w-[70%] aspect-square relative">
-                {/* 4 Corners with Glow */}
                 <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-indigo-500 rounded-tl-2xl shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
                 <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-indigo-500 rounded-tr-2xl shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
                 <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-indigo-500 rounded-bl-2xl shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
                 <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-indigo-500 rounded-br-2xl shadow-[0_0_15px_rgba(99,102,241,0.5)]" />
-
-                {/* Pulsating Laser Line */}
                 <div className="absolute top-0 left-0 w-full h-[2px] bg-red-500 shadow-[0_0_15px_rgba(239,68,68,0.8)] animate-scan-line opacity-50" />
-
-                {/* Target Information */}
                 <div className="absolute -top-10 left-0 right-0 text-center">
                     <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Aim at QR Code</span>
                 </div>
@@ -176,7 +168,6 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
         </div>
       )}
 
-      {/* Inline styles for the scan animation */}
       <style jsx global>{`
         @keyframes scan-line {
           0% { top: 0; opacity: 0.2; }
@@ -186,19 +177,7 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
         .animate-scan-line {
           animation: scan-line 2.5s infinite ease-in-out;
         }
-        #reader video {
-            object-fit: cover !important;
-            width: 100% !important;
-            height: 100% !important;
-        }
-        /* ซ่อนกรอบสีขาวและพื้นที่ซ้อนทับดั้งเดิมของ Library */
-        #reader__scan_region {
-            display: none !important;
-        }
-        #reader {
-            border: none !important;
-        }
       `}</style>
     </div>
   );
-  }
+}
