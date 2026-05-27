@@ -71,7 +71,10 @@ async function getStats() {
       total: 0, 
       active: 0, 
       broken: 0, 
-      pending: 0, 
+      pending: 0,
+      retired: 0,
+      incomplete: 0,
+      lost: 0,
       categories: { computer: 0, printer: 0, monitor: 0, network: 0, other: 0 },
       factories: { f1: 0, f2: 0, both: 0 }
     };
@@ -269,7 +272,7 @@ export default async function DashboardPage() {
                       { key: 'active', value: stats.active, color: '#10b981' }, // emerald-500
                       { key: 'broken', value: stats.broken, color: '#f43f5e' }, // rose-500
                       { key: 'pending', value: stats.pending, color: '#f59e0b' }, // amber-500
-                      { key: 'retired', value: 0, color: '#71717a' }, // Placeholder for retired if needed
+                      { key: 'lost', value: stats.lost, color: '#71717a' }, 
                     ];
                     
                     return statusConfig.map(s => {
@@ -303,7 +306,8 @@ export default async function DashboardPage() {
                 {[
                   { label: 'ใช้งานปกติ', value: stats.active, color: 'bg-emerald-500', sub: 'Healthy' },
                   { label: 'ชำรุด/เสียหาย', value: stats.broken, color: 'bg-rose-500', sub: 'Needs Repair' },
-                  { label: 'รอลงทะเบียน', value: stats.pending, color: 'bg-amber-500', sub: 'Processing' }
+                  { label: 'รอลงทะเบียน', value: stats.pending, color: 'bg-amber-500', sub: 'Processing' },
+                  { label: 'สูญหาย', value: stats.lost, color: 'bg-zinc-500', sub: 'Lost' },
                 ].map((item) => (
                   <div key={item.label} className="flex items-center justify-between group">
                     <div className="flex items-center gap-3">
