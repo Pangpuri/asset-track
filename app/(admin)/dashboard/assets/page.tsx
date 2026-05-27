@@ -114,7 +114,8 @@ function AssetsList() {
       if (factoryParam) sp.append("factory", factoryParam);
       if (queryParam) sp.append("q", queryParam);
       
-      const res = await fetch(`/api/assets?${sp.toString()}&includeDeleted=false`, { cache: "no-store" }); // เพิ่ม filter เพื่อไม่รวมรายการที่ถูกลบ
+      // รวมรายการที่ถูกลบ (จำหน่ายออก) หากมีการเลือกฟิลเตอร์สถานะเป็น retired
+      const res = await fetch(`/api/assets?${sp.toString()}&includeDeleted=${statusParam === 'retired'}`, { cache: "no-store" }); 
       if (!res.ok) throw new Error();
       
       const data: RawAsset[] = await res.json();
@@ -293,22 +294,13 @@ function AssetsList() {
           <Select 
             defaultValue={filterParam || statusParam || "all"}
             onValueChange={(val) => {
-              if (val === "retired") {
-                router.push("/dashboard/assets/retired");
-                return;
-              }
-              if (val === "lost") {
-                router.push("/dashboard/assets/lost");
-                return;
-              }
               const params = new URLSearchParams(window.location.search);
               params.delete("filter");
               params.delete("status");
+              
               if (val === "incomplete") params.set("filter", "incomplete");
-              else if (val === "pending") params.set("status", "pending");
-              else if (val === "active") params.set("status", "active");
-              else if (val === "broken") params.set("status", "broken");
-              else if (val === "lost") params.set("status", "lost");
+              else if (val && val !== "all") params.set("status", val);
+
               router.push(`/dashboard/assets?${params.toString()}`);
             }}
           >
@@ -322,6 +314,7 @@ function AssetsList() {
               <SelectItem value="pending" className="font-bold text-indigo-400 rounded-xl focus:bg-indigo-50">รอลงทะเบียน</SelectItem>
               <SelectItem value="retired" className="font-bold text-zinc-600 rounded-xl focus:bg-zinc-50">จำหน่ายออก</SelectItem>
               <SelectItem value="lost" className="font-bold text-zinc-500 rounded-xl focus:bg-zinc-50">สูญหาย</SelectItem>
+              <SelectItem value="incomplete" className="font-bold text-orange-600 rounded-xl focus:bg-orange-50">ข้อมูลไม่สมบูรณ์</SelectItem>
             </SelectContent>
           </Select>
         </div>
