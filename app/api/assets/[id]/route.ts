@@ -34,7 +34,7 @@ export async function PATCH(
     const {
       id: _,
       computerName, ipAddress, monitorSize,
-      purchaseDate, warrantyExpire,
+      purchaseDate, warrantyExpire, warrantyStatus,
       assignedTo, // รับค่าจากหน้า Register
       specifications: existingSpecs,
       ...rest
@@ -64,6 +64,7 @@ export async function PATCH(
     const updateFields: Partial<typeof assets.$inferInsert> = {
       ...rest,
       specifications: updatedSpecs,
+      warrantyStatus: warrantyStatus !== undefined ? warrantyStatus : undefined,
       updatedAt: new Date(),
     };
 

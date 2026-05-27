@@ -77,6 +77,7 @@ export const assets = pgTable("assets", {
   vendor: text("vendor"),             // ผู้จัดจำหน่าย/ร้านค้า
   purchaseDate: timestamp("purchase_date"),
   warrantyExpire: timestamp("warranty_expire"),
+  warrantyStatus: text("warranty_status").default("date"), // 'date', 'none', 'lifetime'
   receivedBy: text("received_by"),    // เพิ่มคอลัมน์ผู้รับมอบ
   deliveredBy: text("delivered_by"),  // เพิ่มคอลัมน์ผู้ส่งมอบ
   

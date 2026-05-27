@@ -111,7 +111,12 @@ export default function ExportPDFPage() {
           let val = (asset as Record<string, unknown>)[col.id];
           
           // จัดการรูปแบบข้อมูลพิเศษเหมือนในหน้า Preview
-          if (col.id.toLowerCase().includes("date") || col.id.toLowerCase().includes("expire")) {
+          if (col.id === "warrantyExpire") {
+            const status = (asset as Record<string, unknown>).warrantyStatus;
+            if (status === "none") val = "ไม่มีประกัน";
+            else if (status === "lifetime") val = "Lifetime";
+            else val = val ? new Date(val as string).toLocaleDateString("th-TH") : "-";
+          } else if (col.id.toLowerCase().includes("date") || col.id.toLowerCase().includes("expire")) {
             val = val ? new Date(val as string).toLocaleDateString("th-TH") : "-";
           }
           if (col.id === "status") {
