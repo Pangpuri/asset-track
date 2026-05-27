@@ -92,28 +92,30 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
   // ลอจิกสำหรับเปิด/ปิดไฟแฟลช
   useEffect(() => {
     const handleFlash = async () => {
-      if (scannerRef.current?.isScanning) {
-        try {
-          // ค้นหาวิดีโอแทร็กที่กำลังทำงานอยู่
-          const videoElement = document.querySelector("#reader video") as HTMLVideoElement;
-          if (videoElement && videoElement.srcObject) {
-            const stream = videoElement.srcObject as MediaStream;
-            const track = stream.getVideoTracks()[0];
-            
-            if (track && "applyConstraints" in track) {
-              const capabilities = track.getCapabilities() as { torch?: boolean };
-              if (capabilities.torch) {
-                await track.applyConstraints({
-                  advanced: [{ torch: isFlashOn } as TorchConstraint]
-                } as MediaTrackConstraints);
-              } else {
-                console.warn("กล้องนี้ไม่รองรับไฟแฟลช");
-              }
-            }
+      if (!scannerRef.current?.isScanning) return;
+
+      try {
+        // ดึง Stream ปัจจุบันจาก Video Element โดยตรง
+        const videoElement = document.querySelector("#reader video") as HTMLVideoElement;
+        if (!videoElement?.srcObject) return;
+
+        const stream = videoElement.srcObject as MediaStream;
+        const tracks = stream.getVideoTracks();
+
+        for (const track of tracks) {
+          const capabilities = (track as any).getCapabilities?.() || {};
+          
+          // ตรวจสอบว่า track นี้รองรับ torch (ไฟแฟลช) หรือไม่
+          if (capabilities.torch) {
+            await track.applyConstraints({
+              advanced: [{ torch: isFlashOn } as TorchConstraint]
+            } as MediaTrackConstraints);
+            // ถ้าเจอตัวที่มีไฟแล้วและตั้งค่าสำเร็จ ก็จบ loop
+            break;
           }
-        } catch (err) {
-          console.error("Flash error:", err);
         }
+      } catch (err) {
+        console.error("QR Flash error:", err);
       }
     };
     handleFlash();
