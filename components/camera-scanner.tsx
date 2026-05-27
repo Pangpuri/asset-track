@@ -45,17 +45,72 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
 
   useEffect(() => {
     const startScanner = async () => {
-      // ... (rest of startScanner remains the same)
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: "environment",
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          } 
+        });
+        
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          setHasCamera(true);
+          
+          videoRef.current.onloadedmetadata = () => {
+            if (!("BarcodeDetector" in window)) {
+              return;
+            }
+
+            const BarcodeDetectorClass = (window as any).BarcodeDetector;
+            const detector = new BarcodeDetectorClass({ formats: ["qr_code"] });
+
+            const detectLoop = async () => {
+              if (!videoRef.current || videoRef.current.readyState !== videoRef.current.HAVE_ENOUGH_DATA) {
+                scanningLoopRef.current = requestAnimationFrame(detectLoop);
+                return;
+              }
+
+              try {
+                const barcodes = await detector.detect(videoRef.current);
+                if (barcodes.length > 0) {
+                  const decodedText = barcodes[0].rawValue;
+                  
+                  if (decodedText === lastCodeRef.current) {
+                    matchCountRef.current++;
+                    if (matchCountRef.current >= 3) {
+                      if (navigator.vibrate) navigator.vibrate(100);
+                      onScanSuccess(decodedText);
+                      stopScanning();
+                      return;
+                    }
+                  } else {
+                    lastCodeRef.current = decodedText;
+                    matchCountRef.current = 1;
+                  }
+                }
+              } catch (e) {
+                console.error("QR Detect Error:", e);
+              }
+              scanningLoopRef.current = requestAnimationFrame(detectLoop);
+            };
+            
+            scanningLoopRef.current = requestAnimationFrame(detectLoop);
+          };
+        }
+      } catch (err) {
+        console.error("Camera Access Error:", err);
+        toast.error("ไม่สามารถเข้าถึงกล้องได้");
+      }
     };
 
     startScanner();
     
-    // Cleanup function: ทำงานเมื่อเปลี่ยนหน้า หรือปิด Component
     return () => {
       if (videoRef.current?.srcObject) {
         const stream = videoRef.current.srcObject as MediaStream;
         stream.getTracks().forEach(track => {
-          // สั่งปิดไฟแฟลชทีละ track ก่อนหยุด
           if (track.kind === "video") {
             track.applyConstraints({
               advanced: [{ torch: false } as any]
@@ -93,17 +148,13 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
 
       if (track && "applyConstraints" in track) {
         try {
-          // รอให้เครื่องเตรียม Hardware ให้พร้อมแป๊บนึง (แก้ปัญหาต้องกดหลายรอบ)
           await new Promise(resolve => setTimeout(resolve, 150));
-          
           const capabilities = (track as any).getCapabilities?.() || {};
-          
           if (capabilities.torch) {
             await track.applyConstraints({
               advanced: [{ torch: isFlashOn } as TorchConstraint]
             } as MediaTrackConstraints);
           } else if (retryCount < maxRetries) {
-            // ถ้ายังไม่เห็นความสามารถ torch ให้ลองใหม่ (บางเครื่องใช้เวลาโหลด)
             retryCount++;
             setTimeout(tryApplyFlash, 200);
           }
@@ -121,15 +172,12 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
 
   return (
     <div className="relative w-full aspect-square bg-black overflow-hidden flex items-center justify-center group">
-      {/* 1. Base Reader Element */}
       <video 
         ref={videoRef} 
         autoPlay 
         playsInline 
         className="w-full h-full object-cover"
       />
-
-      {/* 2. Custom High-Tech Overlay */}
       <div className="absolute inset-0 pointer-events-none z-10">
         <div className="absolute inset-0 bg-black/40 shadow-[inner_0_0_100px_rgba(0,0,0,0.5)]" />
         <div className="absolute inset-0 flex items-center justify-center">
@@ -145,8 +193,6 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
             </div>
         </div>
       </div>
-
-      {/* 3. Status Badge */}
       {!hasCamera ? (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-zinc-900/90 backdrop-blur-md">
           <div className="text-center space-y-4 px-10">
@@ -166,7 +212,6 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
             </div>
         </div>
       )}
-
       <style jsx global>{`
         @keyframes scan-line {
           0% { top: 0; opacity: 0.2; }
