@@ -72,7 +72,7 @@ export default function Home() {
           {isAuthenticated ? (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
               <Link href="/dashboard">
-                <Button className="w-full h-16 bg-zinc-900 text-white rounded-xl font-[1000] text-sm uppercase tracking-[0.2em] flex justify-center items-center gap-3 hover:bg-black shadow-xl shadow-indigo-500/20 active:scale-[0.98] transition-all">
+                <Button className="w-60px h-16 bg-zinc-900 text-white rounded-xl font-[1000] text-sm uppercase tracking-[0.2em] flex justify-center items-center gap-3 hover:bg-black shadow-xl shadow-indigo-500/20 active:scale-[0.98] transition-all">
                   <span>เข้าสู่ Dashboard</span>
                   <Zap size={18} fill="currentColor" />
                 </Button>
