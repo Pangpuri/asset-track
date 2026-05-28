@@ -22,7 +22,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="bg-white min-h-screen text-zinc-900 selection:bg-indigo-500/10 relative overflow-hidden">
+    <div className=" min-h-screen text-zinc-900 selection:bg-indigo-500/10 relative overflow-hidden">
       {/* Light Gamer Setup Glows */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none" />
@@ -47,7 +47,7 @@ export default function Home() {
 
         {/* Main Action Area (Scan) - Brighter with Neon Accents */}
         <Link href="/scan">
-          <div className="aspect-square bg-white flex flex-col items-center justify-center gap-10 group active:scale-[0.98] transition-all relative overflow-hidden border-y border-zinc-100 shadow-[inset_0_0_40px_rgba(0,0,0,0.02)]">
+          <div className="aspect-square flex flex-col items-center justify-center gap-10 group active:scale-[0.98] transition-all relative overflow-hidden border-y border-zinc-100 shadow-[inset_0_0_40px_rgba(0,0,0,0.02)]">
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-500/[0.03] rounded-full blur-[80px]" />
             
             {/* High-Tech Scan Button */}
