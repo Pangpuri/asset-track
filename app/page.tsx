@@ -79,7 +79,7 @@ export default function Home() {
                   <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center border border-zinc-100">
                     <Activity size={16} className="text-indigo-600" />
                   </div>
-                  <p className="text-xs font-black text-zinc-900 uppercase tracking-widest leading-none">Security Node</p>
+                  <p className="text-xs font-black text-zinc-900 uppercase tracking-widest leading-none">ระบบบริหารจัดการ</p>
                 </div>
                 <p className="text-sm text-zinc-500 leading-relaxed font-medium max-w-[280px]">
                   ข้อมูลสถานะอุปกรณ์ไอที 
@@ -100,15 +100,6 @@ export default function Home() {
             </div>
           ) : (
             <div className="pt-6 flex flex-col items-center gap-4 text-center">
-               <div className="flex gap-1.5 opacity-30">
-                  <div className="w-1 h-1 rounded-full bg-zinc-400" />
-                  <div className="w-1 h-1 rounded-full bg-zinc-400" />
-                  <div className="w-1 h-1 rounded-full bg-zinc-400" />
-               </div>
-               <p className="text-[9px] text-zinc-300 font-black uppercase tracking-[0.5em] leading-relaxed">
-                 Asset Management Terminal<br/>
-                 Version 2.0.4-Alpha
-               </p>
             </div>
           )}
         </div>
