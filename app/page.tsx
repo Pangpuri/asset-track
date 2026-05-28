@@ -65,10 +65,7 @@ export default function Home() {
                  <p className="text-zinc-400 text-[10px] font-black uppercase tracking-[0.3em]">ระบบแสกน QR พร้อมทำงาน</p>
               </div>
             </div>
-          </div>
-        </Link>
-
-        {/* Admin Access - Floating Action */}
+            {/* Admin Access - Floating Action */}
           {isAuthenticated ? (
             <div className="flex justify-center py-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
               <Link href="/dashboard">
@@ -82,6 +79,8 @@ export default function Home() {
             <div className="pt-6 flex flex-col items-center gap-4 text-center">
             </div>
           )}
+          </div>
+        </Link>
       </main>
     </div>
   );
