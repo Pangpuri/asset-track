@@ -32,30 +32,30 @@
 }
 
 :root {
-  /* Luxury Dark Theme - IG Inspired */
-  --background: oklch(0.1 0 0); /* Pure Black / Dark Zinc */
-  --foreground: oklch(0.98 0 0); /* Near White */
+  /* Instagram Light Theme */
+  --background: oklch(1 0 0); /* Pure White */
+  --foreground: oklch(0.1 0 0); /* Black Zinc */
   
-  --card: oklch(0.15 0.01 250); /* Dark Zinc Surface */
-  --card-foreground: oklch(0.98 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.1 0 0);
   
-  --primary: oklch(0.98 0 0); /* White for Primary text/actions on dark */
-  --primary-foreground: oklch(0.1 0 0);
+  --primary: oklch(0.1 0 0);
+  --primary-foreground: oklch(1 0 0);
   
-  --secondary: oklch(0.2 0 0); /* Mid Gray for secondary elements */
-  --secondary-foreground: oklch(0.9 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.1 0 0);
   
   --accent: oklch(0.6 0.2 260); /* Indigo/Purple Accent */
   --accent-foreground: oklch(1 0 0);
   
-  --muted: oklch(0.2 0 0);
-  --muted-foreground: oklch(0.6 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.5 0 0);
   
   --destructive: oklch(0.6 0.18 25);
   
-  --border: oklch(0.2 0 0 / 50%); /* Subtle dark borders */
-  --input: oklch(0.15 0 0);
-  --ring: oklch(0.6 0.2 260 / 30%);
+  --border: oklch(0.92 0 0);
+  --input: oklch(0.98 0 0);
+  --ring: oklch(0.6 0.2 260 / 10%);
   
   --radius: 24px;
 }
@@ -66,21 +66,21 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    background-color: #0A0A0A;
+    background-color: #FFFFFF;
   }
 }
 
 @layer components {
   .luxury-card {
-    @apply bg-zinc-900/50 backdrop-blur-xl border border-white/10 rounded-[2.5rem] shadow-2xl;
+    @apply bg-white border border-zinc-100 rounded-[2.5rem] shadow-xl;
   }
   
   .luxury-glow {
-    @apply absolute -inset-0.5 bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-500 rounded-[3rem] blur opacity-20;
+    @apply absolute -inset-0.5 bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-500 rounded-[3rem] blur opacity-10;
   }
 
   .text-glow {
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    text-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
   }
 
   .pb-safe {
@@ -91,7 +91,7 @@
   }
 }
 
-/* Custom Scrollbar for Luxury Look */
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -99,9 +99,9 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #27272a;
+  background: #e4e4e7;
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #3f3f46;
+  background: #d4d4d8;
 }
