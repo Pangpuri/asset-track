@@ -166,9 +166,6 @@ export default async function DashboardPage() {
                       </div>
                       <p className="text-[10px] font-bold text-zinc-400 leading-relaxed uppercase tracking-tighter">พบอุปกรณ์ข้อมูลไม่สมบูรณ์ <span className="text-rose-600 font-black">{stats.incomplete}</span> รายการ</p>
                    </div>
-                   <div className="relative z-10 bg-zinc-900 text-white p-4 rounded-xl shadow-lg group-hover:translate-x-1 transition-transform">
-                      <ArrowRight size={20} strokeWidth={3} />
-                   </div>
                  </div>
               </div>
             </Link>
