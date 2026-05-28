@@ -73,38 +73,25 @@ export default async function TrackAssetPage({
   if (asset.status === "pending") {
     return (
       <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
-        {/* Luxury Background Effect */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[500px] bg-gradient-to-b from-amber-500/10 via-transparent to-transparent pointer-events-none" />
+        {/* Background Aesthetic */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
         
-        <div className="relative z-10 space-y-12">
-          <div className="relative inline-block group">
-            <div className="absolute -inset-6 bg-amber-500/20 rounded-[3rem] blur-2xl group-hover:bg-amber-500/30 transition duration-1000" />
-            <div className="w-28 h-28 bg-zinc-900 border border-white/10 rounded-[2.5rem] flex items-center justify-center shadow-2xl relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/20 to-transparent" />
-              <QrCode size={54} className="text-amber-500 relative z-10" strokeWidth={1} />
-            </div>
+        <div className="relative z-10 space-y-8">
+          <div className="w-20 h-20 bg-zinc-900 border border-white/10 rounded-3xl flex items-center justify-center shadow-2xl mx-auto">
+            <QrCode size={40} className="text-white/20" strokeWidth={1.5} />
           </div>
 
-          <div className="space-y-4">
-            <h1 className="text-4xl font-[1000] tracking-tighter uppercase leading-[0.9]">
-              Wait for<br/>
-              <span className="text-amber-500">Config</span>
-            </h1>
-            <div className="h-[1px] w-12 bg-white/20 mx-auto" />
-            <p className="text-white/50 text-sm font-medium leading-relaxed max-w-[280px] mx-auto uppercase tracking-widest">
-              พบรหัสอุปกรณ์ในระบบแล้ว<br/>แต่ยังไม่ได้เปิดการใช้งาน
+          <div className="space-y-2">
+            <h1 className="text-3xl font-black tracking-tighter uppercase">รอการลงทะเบียน</h1>
+            <p className="text-white/40 text-sm font-medium leading-relaxed max-w-[240px] mx-auto">
+              พบรหัสในระบบแต่ยังไม่มีข้อมูลอุปกรณ์ผูกไว้ โปรดแจ้งฝ่าย MIS เพื่อเปิดใช้งาน
             </p>
-          </div>
-
-          <div className="p-6 rounded-[2rem] bg-amber-500/5 border border-amber-500/10 backdrop-blur-sm">
-             <p className="text-[10px] font-black text-amber-500 uppercase tracking-[0.3em] mb-2">Requirement</p>
-             <p className="text-sm font-bold text-white/80">โปรดแจ้งฝ่าย MIS เพื่อลงทะเบียนอุปกรณ์</p>
           </div>
 
           <div className="pt-4">
             <Link href="/">
-              <Button className="h-14 bg-white text-black hover:bg-zinc-200 rounded-2xl font-[1000] text-xs uppercase tracking-[0.3em] transition-all active:scale-[0.98] px-12">
-                Back to Home
+              <Button variant="outline" className="rounded-2xl border-white/10 text-white/60 hover:bg-white/5 hover:text-white transition-all px-8">
+                กลับหน้าหลัก
               </Button>
             </Link>
           </div>
