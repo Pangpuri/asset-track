@@ -15,8 +15,11 @@ import {
   FileText,
   Trash2,
   RefreshCw,
-  Ghost
+  Ghost,
+  Shield
 } from "lucide-react";
+import { authClient } from "@/lib/auth-client";
+import { Button } from "./ui/button";
 
 const navItems = [
   {
@@ -64,6 +67,7 @@ const navItems = [
 export function Navbar() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const { data: session, isPending } = authClient.useSession();
 
   // Lock body scroll when menu is open
   useEffect(() => {
@@ -98,28 +102,32 @@ export function Navbar() {
             </div>
           </Link>
 
-          {/* Right: Icons */}
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard/assets/new" className="active:scale-90 transition-transform">
-              <div className="p-[1.5px] rounded-lg bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600">
-                <div className="bg-white rounded-[7px] p-1 flex items-center justify-center">
-                  <PlusSquare size={20} className="text-zinc-900" />
-                </div>
+          {/* Right Area: Dynamic based on Session */}
+          <div className="flex items-center gap-2">
+            {!isPending && !session ? (
+              <Link href="/login">
+                <Button variant="ghost" size="sm" className="h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest gap-2 text-indigo-600 hover:bg-indigo-50">
+                  <Shield size={16} />
+                  MIS Login
+                </Button>
+              </Link>
+            ) : session ? (
+              <div className="flex items-center gap-3">
+                <Link href="/dashboard/assets/new" className="active:scale-90 transition-transform hidden sm:flex">
+                  <div className="p-[1.5px] rounded-lg bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600">
+                    <div className="bg-white rounded-[7px] p-1 flex items-center justify-center">
+                      <PlusSquare size={18} className="text-zinc-900" />
+                    </div>
+                  </div>
+                </Link>
+                <button 
+                  className="text-zinc-900 active:opacity-50 p-1"
+                  onClick={() => setIsOpen(true)}
+                >
+                  <Menu size={28} />
+                </button>
               </div>
-            </Link>
-            <Link href="/scan" className="active:scale-90 transition-transform">
-              <div className="p-[1.5px] rounded-lg bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600">
-                <div className="bg-white rounded-[7px] p-1 flex items-center justify-center">
-                  <QrCode size={20} className="text-zinc-900" />
-                </div>
-              </div>
-            </Link>
-            <button 
-              className="text-zinc-900 active:opacity-50 p-1"
-              onClick={() => setIsOpen(true)}
-            >
-              <Menu size={28} />
-            </button>
+            ) : null}
           </div>
         </div>
       </nav>

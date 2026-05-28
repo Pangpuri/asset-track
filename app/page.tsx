@@ -1,8 +1,13 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import { QrCode, ArrowRight, ShieldCheck, Package } from "lucide-react";
 import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
 
 export default function Home() {
+  const { data: session } = authClient.useSession();
+
   return (
     <div className="bg-white min-h-screen">
       <main className="max-w-lg mx-auto w-full">             
@@ -68,18 +73,26 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Navigation Action */}
-        <div className="p-6">
-          <Link href="/dashboard">
-            <Button className="w-full h-14 bg-zinc-900 text-white rounded-2xl font-[1000] text-sm uppercase tracking-widest flex justify-center items-center gap-3 hover:bg-black shadow-xl active:scale-[0.98] transition-all">
-              <span>Go to Asset Dashboard</span>
-              <ArrowRight size={20} />
-            </Button>
-          </Link>
-          <p className="text-center text-[10px] text-zinc-400 font-bold mt-4 uppercase tracking-[0.2em]">
-            Internal Use Only • MIS Department
-          </p>
-        </div>
+        {/* Navigation Action - Conditional based on Session */}
+        {session && (
+          <div className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <Link href="/dashboard">
+              <Button className="w-full h-14 bg-zinc-900 text-white rounded-2xl font-[1000] text-sm uppercase tracking-widest flex justify-center items-center gap-3 hover:bg-black shadow-xl active:scale-[0.98] transition-all">
+                <span>Go to Asset Dashboard</span>
+                <ArrowRight size={20} />
+              </Button>
+            </Link>
+          </div>
+        )}
+        
+        {!session && (
+          <div className="p-10 text-center">
+             <p className="text-[10px] text-zinc-300 font-black uppercase tracking-[0.4em] leading-relaxed">
+               Asset Management Portal<br/>
+               Internal Infrastructure
+             </p>
+          </div>
+        )}
       </main>
     </div>
   );
