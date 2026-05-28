@@ -85,20 +85,20 @@ export function Navbar() {
 
   return (
     <>
-      {/* Main Navbar */}
-      <nav className="sticky top-0 z-[100] w-full border-b border-zinc-200 bg-white/95 backdrop-blur-md print:hidden">
+      {/* Main Navbar - Glassmorphism Dark */}
+      <nav className="sticky top-0 z-[100] w-full border-b border-white/5 bg-black/60 backdrop-blur-xl print:hidden">
         <div className="container mx-auto flex h-14 items-center justify-between px-4 max-w-lg">
-          {/* Left: Brand */}
+          {/* Left: Brand - Luxury Glow */}
           <Link href="/" className="flex items-center gap-3 active:opacity-60 group">
-            <div className="relative flex items-center justify-center w-9 h-9 bg-zinc-900 rounded-xl overflow-hidden group-active:scale-90 transition-transform shadow-lg">
+            <div className="relative flex items-center justify-center w-9 h-9 bg-zinc-900 rounded-xl overflow-hidden group-active:scale-90 transition-transform shadow-2xl border border-white/10">
               <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 opacity-80" />
               <Package size={20} className="text-white relative z-10" strokeWidth={2.5} />
             </div>
             <div className="flex flex-col -space-y-1">
-              <span className="text-xl font-[1000] tracking-tighter text-zinc-900 leading-none">
-                ASSET<span className="text-indigo-600">TRACK</span>
+              <span className="text-xl font-[1000] tracking-tighter text-white leading-none text-glow">
+                ASSET<span className="text-indigo-400">TRACK</span>
               </span>
-              <span className="text-[8px] font-black text-zinc-400 tracking-[0.3em] uppercase">
+              <span className="text-[8px] font-black text-white/30 tracking-[0.3em] uppercase">
                 MIS Division
               </span>
             </div>
@@ -108,30 +108,26 @@ export function Navbar() {
           <div className="flex items-center gap-1.5">
             {!isLoading && !isAuthenticated ? (
               <Link href="/login">
-                <Button variant="ghost" size="sm" className="h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest gap-2 text-indigo-600 hover:bg-indigo-50">
+                <Button variant="ghost" size="sm" className="h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest gap-2 text-indigo-400 hover:bg-white/5 hover:text-white transition-all">
                   <Shield size={16} />
                   MIS Login
                 </Button>
               </Link>
             ) : isAuthenticated ? (
               <div className="flex items-center gap-1.5">
-                {/* IG Style Add Button */}
-                <Link href="/dashboard/assets/new" className="p-2 text-zinc-900 active:scale-90 transition-transform">
+                <Link href="/dashboard/assets/new" className="p-2 text-white/80 hover:text-white active:scale-90 transition-all">
                   <PlusSquare size={24} strokeWidth={2} />
                 </Link>
                 
-                {/* Logout Button on Navbar */}
                 <button 
                   onClick={handleLogout}
-                  className="p-2 text-rose-500 active:scale-90 transition-transform"
-                  title="Logout"
+                  className="p-2 text-rose-500/80 hover:text-rose-500 active:scale-90 transition-all"
                 >
                   <LogOut size={22} strokeWidth={2} />
                 </button>
 
-                {/* Burger Menu */}
                 <button 
-                  className="p-2 text-zinc-900 active:opacity-50 transition-opacity"
+                  className="p-2 text-white/80 hover:text-white active:opacity-50 transition-opacity"
                   onClick={() => setIsOpen(true)}
                 >
                   <Menu size={28} />
@@ -142,42 +138,42 @@ export function Navbar() {
         </div>
       </nav>
 
-      {/* Side Drawer Menu */}
+      {/* Side Drawer - Dark Luxury */}
       <div className={cn("fixed inset-0 z-[2000] flex justify-end transition-all duration-300", isOpen ? "visible" : "invisible")}>
-        <div className={cn("absolute inset-0 bg-black/60 backdrop-blur-[2px] transition-opacity duration-300 ease-in-out", isOpen ? "opacity-100" : "opacity-0")} onClick={() => setIsOpen(false)} />
-        <div className={cn("relative w-[80%] max-w-sm h-full bg-white shadow-2xl transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col overflow-hidden", isOpen ? "translate-x-0" : "translate-x-full")}>
-            <div className="flex items-center justify-between px-6 h-16 border-b border-zinc-100 bg-white pt-safe shrink-0">
-              <span className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">MIS Navigation</span>
-              <button onClick={() => setIsOpen(false)} className="text-black p-2 hover:bg-zinc-100 rounded-full transition-all active:scale-90">
+        <div className={cn("absolute inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300 ease-in-out", isOpen ? "opacity-100" : "opacity-0")} onClick={() => setIsOpen(false)} />
+        <div className={cn("relative w-[80%] max-w-sm h-full bg-[#0A0A0A] border-l border-white/5 shadow-2xl transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col overflow-hidden", isOpen ? "translate-x-0" : "translate-x-full")}>
+            <div className="flex items-center justify-between px-6 h-16 border-b border-white/5 bg-black pt-safe shrink-0">
+              <span className="text-xs font-black uppercase tracking-[0.2em] text-white/20">MIS Navigation</span>
+              <button onClick={() => setIsOpen(false)} className="text-white p-2 hover:bg-white/5 rounded-full transition-all active:scale-90">
                 <X size={28} />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2 bg-white">
+            
+            <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
-                  <Link key={item.href} href={item.href} onClick={() => setIsOpen(false)} className={cn("flex items-center gap-4 px-5 py-4 text-lg font-bold rounded-2xl transition-all active:scale-[0.97] duration-200", isActive ? "text-black bg-zinc-100 border border-zinc-200" : "text-zinc-500 hover:text-black hover:bg-zinc-50")}>
-                    <item.icon size={24} className={cn("transition-transform duration-300", isActive && "scale-110 text-black")} strokeWidth={isActive ? 3 : 2} />
+                  <Link key={item.href} href={item.href} onClick={() => setIsOpen(false)} className={cn("flex items-center gap-4 px-5 py-4 text-lg font-bold rounded-2xl transition-all active:scale-[0.97] duration-200", isActive ? "text-white bg-white/5 border border-white/10" : "text-white/40 hover:text-white hover:bg-white/5")}>
+                    <item.icon size={24} className={cn("transition-transform duration-300", isActive && "scale-110 text-white")} strokeWidth={isActive ? 3 : 2} />
                     <span>{item.title}</span>
                   </Link>
                 );
               })}
             </div>
             
-            {/* Quick Logout inside drawer too */}
-            <div className="p-4 px-8 border-t border-zinc-100">
+            <div className="p-4 px-8 border-t border-white/5 bg-black/50">
                <button 
                  onClick={handleLogout}
-                 className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-rose-50 text-rose-600 font-bold active:scale-[0.98] transition-all"
+                 className="w-full flex items-center justify-center gap-3 py-4 rounded-2xl bg-rose-500/10 text-rose-500 font-bold active:scale-[0.98] transition-all border border-rose-500/20"
                >
                  <LogOut size={20} />
                  <span>Sign Out</span>
                </button>
             </div>
 
-            <div className="p-8 pb-[calc(2rem+env(safe-area-inset-bottom))] text-center bg-zinc-50 shrink-0 border-t border-zinc-100">
-              <p className="text-[10px] font-black text-zinc-400 uppercase tracking-[0.3em] mb-1">Asset Tracking System</p>
-              <p className="text-[8px] font-bold text-zinc-300 uppercase tracking-widest">MIS Department v1.0</p>
+            <div className="p-8 pb-[calc(2rem+env(safe-area-inset-bottom))] text-center bg-black shrink-0 border-t border-white/5">
+              <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.3em] mb-1">Asset Tracking System</p>
+              <p className="text-[8px] font-bold text-white/10 uppercase tracking-widest">MIS Department v1.0</p>
             </div>
           </div>
         </div>

@@ -5,7 +5,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-noto-thai);
   --font-mono: var(--font-geist-mono);
   
   --color-primary: var(--primary);
@@ -24,40 +24,40 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-xl: 0px;
-  --radius-2xl: 0px;
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-2xl: 36px;
 }
 
 :root {
-  /* Instagram-inspired Minimalist Theme */
-  --background: oklch(1 0 0); /* Pure White */
-  --foreground: oklch(0.15 0 0); /* Near Black */
+  /* Luxury Dark Theme - IG Inspired */
+  --background: oklch(0.1 0 0); /* Pure Black / Dark Zinc */
+  --foreground: oklch(0.98 0 0); /* Near White */
   
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.15 0 0);
+  --card: oklch(0.15 0.01 250); /* Dark Zinc Surface */
+  --card-foreground: oklch(0.98 0 0);
   
-  --primary: oklch(0.2 0 0); /* Black for Primary Actions */
-  --primary-foreground: oklch(1 0 0);
+  --primary: oklch(0.98 0 0); /* White for Primary text/actions on dark */
+  --primary-foreground: oklch(0.1 0 0);
   
-  --secondary: oklch(0.97 0 0); /* Very Light Gray */
-  --secondary-foreground: oklch(0.15 0 0);
+  --secondary: oklch(0.2 0 0); /* Mid Gray for secondary elements */
+  --secondary-foreground: oklch(0.9 0 0);
   
-  --accent: oklch(0.6 0.2 330); /* Instagram-ish Pink/Purple Accent for highlights */
+  --accent: oklch(0.6 0.2 260); /* Indigo/Purple Accent */
   --accent-foreground: oklch(1 0 0);
   
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.5 0 0);
+  --muted: oklch(0.2 0 0);
+  --muted-foreground: oklch(0.6 0 0);
   
   --destructive: oklch(0.6 0.18 25);
   
-  --border: oklch(0.92 0 0); /* Thin gray lines */
-  --input: oklch(0.98 0 0);
-  --ring: oklch(0.15 0 0 / 10%);
+  --border: oklch(0.2 0 0 / 50%); /* Subtle dark borders */
+  --input: oklch(0.15 0 0);
+  --ring: oklch(0.6 0.2 260 / 30%);
   
-  --radius: 0px; /* Square everything per request */
+  --radius: 24px;
 }
 
 @layer base {
@@ -66,20 +66,21 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
+    background-color: #0A0A0A;
   }
 }
 
 @layer components {
-  .ig-container {
-    @apply max-w-lg mx-auto w-full min-h-screen bg-white;
+  .luxury-card {
+    @apply bg-zinc-900/50 backdrop-blur-xl border border-white/10 rounded-[2.5rem] shadow-2xl;
   }
   
-  .ig-border {
-    @apply border-b border-gray-100;
+  .luxury-glow {
+    @apply absolute -inset-0.5 bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-500 rounded-[3rem] blur opacity-20;
   }
-  
-  .ig-button {
-    @apply font-bold text-sm transition-opacity active:opacity-70;
+
+  .text-glow {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
   }
 
   .pb-safe {
@@ -88,10 +89,19 @@
   .pt-safe {
     padding-top: env(safe-area-inset-top);
   }
-  .pl-safe {
-    padding-left: env(safe-area-inset-left);
-  }
-  .pr-safe {
-    padding-right: env(safe-area-inset-right);
-  }
+}
+
+/* Custom Scrollbar for Luxury Look */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #27272a;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
 }
