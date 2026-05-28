@@ -20,7 +20,6 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LogoutButton } from "@/components/logout-button";
 
 export const dynamic = "force-dynamic";
 
@@ -107,7 +106,7 @@ export default async function DashboardPage() {
               <p className="text-zinc-400 font-black uppercase tracking-[0.3em] text-[8px]">MIS Asset Overview</p>
             </div>
             <div className="flex items-center gap-2">
-              <LogoutButton />
+              
             </div>
           </div>
 
