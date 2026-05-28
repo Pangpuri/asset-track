@@ -38,7 +38,7 @@ export default function Home() {
             <div className="flex items-center justify-center gap-3 mt-2">
                <div className="h-[1px] w-4 bg-zinc-200" />
                <p className="text-[10px] font-black text-zinc-400 tracking-[0.4em] uppercase">
-                 ระบบบริหารจัดการอุปกรณ์ MIS
+                 บริหารจัดการอุปกรณ์ ฝ่าย MIS
                </p>
                <div className="h-[1px] w-4 bg-zinc-200" />
             </div>
@@ -62,7 +62,7 @@ export default function Home() {
               <p className="text-zinc-900 font-[1000] text-3xl tracking-tighter italic">กดเพื่อแสกน QR</p>
               <div className="flex items-center justify-center gap-3">
                  <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.5)]" />
-                 <p className="text-zinc-400 text-[10px] font-black uppercase tracking-[0.3em]">Scanner Core Active</p>
+                 <p className="text-zinc-400 text-[10px] font-black uppercase tracking-[0.3em]">ระบบแสกน QR พร้อมทำงาน</p>
               </div>
             </div>
           </div>
