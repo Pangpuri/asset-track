@@ -52,7 +52,7 @@ export default function Home() {
             
             {/* High-Tech Scan Button */}
             <div className="relative p-[2px] rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-500 shadow-2xl shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-700">
-              <div className="w-48 h-44 rounded-2xl bg-white flex flex-col items-center justify-center gap-2 border-[2px] border-white overflow-hidden relative">
+              <div className="w-44 h-44 rounded-2xl bg-white flex flex-col items-center justify-center gap-2 border-[2px] border-white overflow-hidden relative">
                  <div className="absolute inset-0 bg-gradient-to-b from-zinc-50/50 to-transparent opacity-80" />
                  <QrCode size={80} strokeWidth={1} className="text-zinc-900 relative z-10 group-hover:scale-110 transition-transform duration-700" />
               </div>
