@@ -71,7 +71,7 @@ export default function Home() {
             </div>
             <p className="text-sm text-zinc-600 leading-relaxed font-medium">
               ระบบบริหารจัดการและติดตามสถานะอุปกรณ์ไอที 
-              <span className="text-indigo-600 font-bold ml-1">#SmartMIS</span>
+              <span className="text-indigo-600 font-bold ml-1">#MIS</span>
             </p>
           </div>
         </div>
