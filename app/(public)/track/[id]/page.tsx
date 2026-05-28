@@ -72,18 +72,43 @@ export default async function TrackAssetPage({
 
   if (asset.status === "pending") {
     return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8 text-center">
-        <div className="w-24 h-24 bg-zinc-50 rounded-[2.5rem] flex items-center justify-center mb-6 border border-zinc-100 shadow-sm">
-          <QrCode size={48} className="text-zinc-300" strokeWidth={1.5} />
+      <div className="min-h-screen bg-[#0A0A0A] text-white flex flex-col items-center justify-center p-8 text-center relative overflow-hidden">
+        {/* Luxury Background Effect */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-[500px] bg-gradient-to-b from-amber-500/10 via-transparent to-transparent pointer-events-none" />
+        
+        <div className="relative z-10 space-y-12">
+          <div className="relative inline-block group">
+            <div className="absolute -inset-6 bg-amber-500/20 rounded-[3rem] blur-2xl group-hover:bg-amber-500/30 transition duration-1000" />
+            <div className="w-28 h-28 bg-zinc-900 border border-white/10 rounded-[2.5rem] flex items-center justify-center shadow-2xl relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-tr from-amber-500/20 to-transparent" />
+              <QrCode size={54} className="text-amber-500 relative z-10" strokeWidth={1} />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <h1 className="text-4xl font-[1000] tracking-tighter uppercase leading-[0.9]">
+              Wait for<br/>
+              <span className="text-amber-500">Config</span>
+            </h1>
+            <div className="h-[1px] w-12 bg-white/20 mx-auto" />
+            <p className="text-white/50 text-sm font-medium leading-relaxed max-w-[280px] mx-auto uppercase tracking-widest">
+              พบรหัสอุปกรณ์ในระบบแล้ว<br/>แต่ยังไม่ได้เปิดการใช้งาน
+            </p>
+          </div>
+
+          <div className="p-6 rounded-[2rem] bg-amber-500/5 border border-amber-500/10 backdrop-blur-sm">
+             <p className="text-[10px] font-black text-amber-500 uppercase tracking-[0.3em] mb-2">Requirement</p>
+             <p className="text-sm font-bold text-white/80">โปรดแจ้งฝ่าย MIS เพื่อลงทะเบียนอุปกรณ์</p>
+          </div>
+
+          <div className="pt-4">
+            <Link href="/">
+              <Button className="h-14 bg-white text-black hover:bg-zinc-200 rounded-2xl font-[1000] text-xs uppercase tracking-[0.3em] transition-all active:scale-[0.98] px-12">
+                Back to Home
+              </Button>
+            </Link>
+          </div>
         </div>
-        <h1 className="text-2xl font-black text-zinc-900 uppercase tracking-tighter mb-2">อุปกรณ์นี้ยังไม่ลงทะเบียน</h1>
-        <p className="text-zinc-500 text-sm leading-relaxed max-w-[280px]">
-          พบรหัส QR Code ในระบบแต่ยังไม่มีการผูกข้อมูลอุปกรณ์ 
-          <span className="block mt-4 font-bold text-indigo-600 uppercase tracking-widest text-[10px]">โปรดแจ้งฝ่าย MIS เพื่อเปิดใช้งาน</span>
-        </p>
-        <Link href="/" className="mt-10">
-          <Button variant="outline" className="rounded-2xl px-8 h-12 font-bold border-zinc-200">กลับหน้าหลัก</Button>
-        </Link>
       </div>
     );
   }
