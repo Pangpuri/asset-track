@@ -16,7 +16,8 @@ import {
   Trash2,
   PackagePlus,
   Search,
-  History
+  History,
+  Factory
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -39,6 +40,16 @@ async function getStats() {
       monitor: sql<number>`count(*) filter (where ${assets.category} = 'monitor' and ${assets.deletedAt} is null)::int`,
       network: sql<number>`count(*) filter (where ${assets.category} = 'network' and ${assets.deletedAt} is null)::int`,
       other: sql<number>`count(*) filter (where (${assets.category} = 'other' or ${assets.category} is null) and ${assets.deletedAt} is null)::int`,
+      f1_comp: sql<number>`count(*) filter (where ${assets.category} = 'computer' and ${assets.factory} = 'โรงงาน 1' and ${assets.deletedAt} is null)::int`,
+      f1_print: sql<number>`count(*) filter (where ${assets.category} = 'printer' and ${assets.factory} = 'โรงงาน 1' and ${assets.deletedAt} is null)::int`,
+      f1_mon: sql<number>`count(*) filter (where ${assets.category} = 'monitor' and ${assets.factory} = 'โรงงาน 1' and ${assets.deletedAt} is null)::int`,
+      f1_net: sql<number>`count(*) filter (where ${assets.category} = 'network' and ${assets.factory} = 'โรงงาน 1' and ${assets.deletedAt} is null)::int`,
+      f1_oth: sql<number>`count(*) filter (where (${assets.category} = 'other' or ${assets.category} is null) and ${assets.factory} = 'โรงงาน 1' and ${assets.deletedAt} is null)::int`,
+      f2_comp: sql<number>`count(*) filter (where ${assets.category} = 'computer' and ${assets.factory} = 'โรงงาน 2' and ${assets.deletedAt} is null)::int`,
+      f2_print: sql<number>`count(*) filter (where ${assets.category} = 'printer' and ${assets.factory} = 'โรงงาน 2' and ${assets.deletedAt} is null)::int`,
+      f2_mon: sql<number>`count(*) filter (where ${assets.category} = 'monitor' and ${assets.factory} = 'โรงงาน 2' and ${assets.deletedAt} is null)::int`,
+      f2_net: sql<number>`count(*) filter (where ${assets.category} = 'network' and ${assets.factory} = 'โรงงาน 2' and ${assets.deletedAt} is null)::int`,
+      f2_oth: sql<number>`count(*) filter (where (${assets.category} = 'other' or ${assets.category} is null) and ${assets.factory} = 'โรงงาน 2' and ${assets.deletedAt} is null)::int`,
     }).from(assets);
 
     return {
@@ -56,12 +67,28 @@ async function getStats() {
       },
       incomplete: stats?.incomplete || 0,
       lost: stats?.lost || 0,
+      factory1: {
+        computer: stats?.f1_comp || 0,
+        printer: stats?.f1_print || 0,
+        monitor: stats?.f1_mon || 0,
+        network: stats?.f1_net || 0,
+        other: stats?.f1_oth || 0,
+      },
+      factory2: {
+        computer: stats?.f2_comp || 0,
+        printer: stats?.f2_print || 0,
+        monitor: stats?.f2_mon || 0,
+        network: stats?.f2_net || 0,
+        other: stats?.f2_oth || 0,
+      }
     };
   } catch (error) {
     console.error("Database error:", error);
     return { 
       total: 0, active: 0, broken: 0, pending: 0, retired: 0, incomplete: 0, lost: 0,
-      categories: { computer: 0, printer: 0, monitor: 0, network: 0, other: 0 }
+      categories: { computer: 0, printer: 0, monitor: 0, network: 0, other: 0 },
+      factory1: { computer: 0, printer: 0, monitor: 0, network: 0, other: 0 },
+      factory2: { computer: 0, printer: 0, monitor: 0, network: 0, other: 0 }
     };
   }
 }
@@ -82,6 +109,15 @@ export default async function DashboardPage() {
     { label: "Printer", value: stats.categories.printer, icon: Printer, color: "bg-orange-500", textColor: "text-orange-600" },
     { label: "Network", value: stats.categories.network, icon: Network, color: "bg-cyan-500", textColor: "text-cyan-600" },
     { label: "อื่นๆ", value: stats.categories.other, icon: MoreHorizontal, color: "bg-slate-400", textColor: "text-slate-600" },
+  ];
+
+  const maxFactoryVal = Math.max(...Object.values(stats.factory1), ...Object.values(stats.factory2), 1);
+  const factoryChartConfig = [
+    { label: "PC", key: "computer", icon: Laptop, color: "bg-blue-500" },
+    { label: "Mon", key: "monitor", icon: Monitor, color: "bg-purple-500" },
+    { label: "Print", key: "printer", icon: Printer, color: "bg-orange-500" },
+    { label: "Net", key: "network", icon: Network, color: "bg-cyan-500" },
+    { label: "Other", key: "other", icon: MoreHorizontal, color: "bg-slate-400" },
   ];
 
   return (
@@ -278,6 +314,61 @@ export default async function DashboardPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+          {/* Factory Status Section */}
+          <div className="bg-white rounded-3xl p-8 shadow-sm border border-zinc-100 overflow-hidden">
+            <h3 className="text-xs font-black text-zinc-900 mb-8 uppercase tracking-[0.3em] flex items-center gap-3">
+              <div className="w-1.5 h-4 bg-blue-600 rounded-full" />
+              สถิติแยกตามโรงงาน (Factory Distribution)
+            </h3>
+
+            <div className="grid grid-cols-2 gap-8">
+              {[
+                { name: "โรงงาน 1", data: stats.factory1 },
+                { name: "โรงงาน 2", data: stats.factory2 }
+              ].map((factory) => (
+                <div key={factory.name} className="space-y-6">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-lg bg-zinc-50 border border-zinc-100 flex items-center justify-center text-zinc-400">
+                       <Factory size={14} />
+                    </div>
+                    <span className="text-[11px] font-black text-zinc-900 uppercase tracking-wider">{factory.name}</span>
+                  </div>
+                  
+                  <div className="flex items-end justify-between h-32 px-1 relative">
+                    {/* Grid Lines Background */}
+                    <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                       {[...Array(4)].map((_, i) => <div key={i} className="w-full border-t border-zinc-50 h-0" />)}
+                    </div>
+                    
+                    {factoryChartConfig.map((item) => {
+                      const val = factory.data[item.key as keyof typeof factory.data] || 0;
+                      const barHeight = (val / maxFactoryVal) * 100;
+                      return (
+                        <div key={item.key} className="flex flex-col items-center gap-2 group relative z-10 flex-1">
+                           <div className="absolute -top-6 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap bg-zinc-900 text-white px-2 py-1 rounded text-[8px] font-black">
+                              {val} เครื่อง
+                           </div>
+                           <div 
+                             className={cn("w-full max-w-[20px] rounded-t-md transition-all duration-1000 ease-out shadow-sm", item.color, val === 0 ? "opacity-10 h-[2px]" : "")} 
+                             style={{ height: val === 0 ? "2px" : `${barHeight}%` }}
+                           />
+                           <item.icon size={12} className="text-zinc-300" />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-8 flex flex-wrap justify-center gap-x-4 gap-y-2 border-t border-zinc-50 pt-6">
+               {factoryChartConfig.map(item => (
+                 <div key={item.key} className="flex items-center gap-1.5">
+                   <div className={cn("w-1.5 h-1.5 rounded-full", item.color)} />
+                   <span className="text-[8px] font-bold text-zinc-400 uppercase tracking-tighter">{item.label}</span>
+                 </div>
+               ))}
             </div>
           </div>
         </div>
