@@ -47,8 +47,8 @@ export default function Home() {
 
         {/* Main Action Area (Scan) - Brighter with Neon Accents */}
         <Link href="/scan">
-          <div className="aspect-square flex flex-col items-center justify-center gap-10 group active:scale-[0.98] transition-all relative overflow-hidden border-y border-zinc-100 shadow-[inset_0_0_40px_rgba(0,0,0,0.02)]">
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-500/[0.03] rounded-full blur-[80px]" />
+          <div className="aspect-square flex flex-col items-center justify-center gap-10 group active:scale-[0.98] transition-all relative overflow-hidden border-y  shadow-[inset_0_0_40px_rgba(0,0,0,0.02)]">
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-500/[0.03] " />
             
             {/* High-Tech Scan Button */}
             <div className="relative p-[2px] rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-500 shadow-2xl shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-700">
