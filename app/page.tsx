@@ -30,14 +30,6 @@ export default function Home() {
       <main className="max-w-lg mx-auto w-full relative z-10">             
         {/* Header Area - Bright Gamer Style */}
         <div className="p-10 flex flex-col items-center justify-center text-center gap-6">
-          <div className="relative group">
-            {/* Animated RGB Border Effect */}
-            <div className="absolute -inset-1 bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-500 rounded-2xl blur opacity-20 group-hover:opacity-60 transition duration-1000" />
-            <div className="relative flex items-center justify-center w-24 h-24 bg-white rounded-2xl overflow-hidden shadow-lg border border-zinc-100 animate-in zoom-in duration-700">
-              <div className="absolute inset-0 bg-gradient-to-tr from-zinc-50 to-white" />
-              <Package size={48} className="text-zinc-900 relative z-10" strokeWidth={1.5} />
-            </div>
-          </div>
           
           <div className="flex flex-col gap-1">
             <h1 className="text-5xl font-[1000] tracking-tighter text-zinc-900 leading-none uppercase italic">
@@ -90,8 +82,8 @@ export default function Home() {
                   <p className="text-xs font-black text-zinc-900 uppercase tracking-widest leading-none">Security Node</p>
                 </div>
                 <p className="text-sm text-zinc-500 leading-relaxed font-medium max-w-[280px]">
-                  ศูนย์ควบคุมและติดตามสถานะอุปกรณ์ไอที 
-                  <span className="text-indigo-600 font-bold ml-1">#SmartMIS</span> ใช้งานภายในองค์กรเพื่อประสิทธิภาพสูงสุด
+                  ข้อมูลสถานะอุปกรณ์ไอที 
+                  <span className="text-indigo-600 font-bold ml-1">#MIS</span>
                 </p>
              </div>
           </div>

@@ -38,22 +38,38 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
-  async function checkAuth() {
-    try {
-      const res = await fetch("/api/auth/simple");
-      const data = await res.json();
-      setIsAuthenticated(data.authenticated);
-    } catch (err) {
-      setIsAuthenticated(false);
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
-    checkAuth();
+    let isMounted = true;
+
+    const performCheck = async () => {
+      try {
+        const res = await fetch("/api/auth/simple");
+        const data = await res.json();
+        if (isMounted) setIsAuthenticated(data.authenticated);
+      } catch (err) {
+        if (isMounted) setIsAuthenticated(false);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+
+    performCheck();
+
+    return () => {
+      isMounted = false;
+    };
   }, [pathname]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // ถ้าสกอลลงมามากกว่า 20px ให้เปลี่ยนสถานะ
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
@@ -86,19 +102,24 @@ export function Navbar() {
   return (
     <>
       {/* Main Navbar - Glassmorphism Dark */}
-      <nav className="sticky top-0 z-[100] w-full border-b border-white/5 bg-black/60 backdrop-blur-xl print:hidden">
+      <nav className={cn(
+        "sticky top-0 z-[100] w-full border-b transition-all duration-300 print:hidden",
+        isScrolled 
+          ? "border-white/5 bg-black/60 backdrop-blur-xl" 
+          : "border-transparent bg-black"
+      )}>
         <div className="container mx-auto flex h-14 items-center justify-between px-4 max-w-lg">
           {/* Left: Brand - Luxury Glow */}
           <Link href="/" className="flex items-center gap-3 active:opacity-60 group">
             <div className="relative flex items-center justify-center w-9 h-9 bg-zinc-900 rounded-xl overflow-hidden group-active:scale-90 transition-transform shadow-2xl border border-white/10">
-              <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 opacity-80" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-indigo-400 via-purple-400 to-pink-500 opacity-80" />
               <Package size={20} className="text-white relative z-10" strokeWidth={2.5} />
             </div>
             <div className="flex flex-col -space-y-1">
               <span className="text-xl font-[1000] tracking-tighter text-white leading-none text-glow">
-                ASSET<span className="text-indigo-400">TRACK</span>
+                ASSET<span className="text-indigo-300">TRACK</span>
               </span>
-              <span className="text-[8px] font-black text-white/30 tracking-[0.3em] uppercase">
+              <span className="text-[8px] font-black text-white tracking-[0.3em] uppercase">
                 MIS Division
               </span>
             </div>
