@@ -107,11 +107,6 @@ export default async function DashboardPage() {
               <p className="text-zinc-400 font-black uppercase tracking-[0.3em] text-[8px]">MIS Asset Overview</p>
             </div>
             <div className="flex items-center gap-2">
-              <Link href="/dashboard/users">
-                <Button variant="outline" size="icon" className="rounded-xl border-zinc-200 text-zinc-600">
-                  <User size={18} />
-                </Button>
-              </Link>
               <LogoutButton />
             </div>
           </div>

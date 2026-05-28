@@ -1,12 +1,25 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { QrCode, ArrowRight, ShieldCheck, Package } from "lucide-react";
 import Link from "next/link";
-import { authClient } from "@/lib/auth-client";
 
 export default function Home() {
-  const { data: session } = authClient.useSession();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const res = await fetch("/api/auth/simple");
+        const data = await res.json();
+        setIsAuthenticated(data.authenticated);
+      } catch (err) {
+        setIsAuthenticated(false);
+      }
+    }
+    checkAuth();
+  }, []);
 
   return (
     <div className="bg-white min-h-screen">
@@ -37,17 +50,13 @@ export default function Home() {
           {/* Main Action Area (Scan) */}
           <Link href="/scan">
             <div className="aspect-square bg-white flex flex-col items-center justify-center gap-8 group active:opacity-95 transition-all relative overflow-hidden border-y border-zinc-100">
-              {/* Animated Background Decoration */}
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-indigo-50 rounded-full blur-3xl opacity-50 group-hover:opacity-80 transition-opacity" />
-              
-              {/* Scan Button - Tech Style */}
               <div className="relative p-[4px] rounded-[3.5rem] bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 shadow-2xl shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-500">
                 <div className="w-44 h-44 rounded-[3.2rem] bg-white flex flex-col items-center justify-center gap-2 border-[4px] border-white overflow-hidden">
                   <div className="absolute inset-0 bg-zinc-50/50 group-hover:bg-transparent transition-colors" />
                   <QrCode size={80} strokeWidth={1} className="text-zinc-900 relative z-10 group-hover:scale-110 transition-transform duration-500" />
                 </div>
               </div>
-              
               <div className="text-center relative z-10">
                 <p className="text-zinc-900 font-[1000] text-2xl tracking-tighter">TAP TO SCAN</p>
                 <p className="text-zinc-400 text-[10px] font-black uppercase tracking-[0.3em] mt-1.5 flex items-center justify-center gap-2">
@@ -74,7 +83,7 @@ export default function Home() {
         </div>
 
         {/* Navigation Action - Conditional based on Session */}
-        {session && (
+        {isAuthenticated && (
           <div className="p-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <Link href="/dashboard">
               <Button className="w-full h-14 bg-zinc-900 text-white rounded-2xl font-[1000] text-sm uppercase tracking-widest flex justify-center items-center gap-3 hover:bg-black shadow-xl active:scale-[0.98] transition-all">
@@ -85,7 +94,7 @@ export default function Home() {
           </div>
         )}
         
-        {!session && (
+        {!isAuthenticated && (
           <div className="p-10 text-center">
              <p className="text-[10px] text-zinc-300 font-black uppercase tracking-[0.4em] leading-relaxed">
                Asset Management Portal<br/>
