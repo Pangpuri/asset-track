@@ -32,8 +32,8 @@ export default function Home() {
         <div className="p-10 flex flex-col items-center justify-center text-center gap-6">
           <div className="relative group">
             {/* Animated RGB Border Effect */}
-            <div className="absolute -inset-1 bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 rounded-[2.2rem] blur opacity-20 group-hover:opacity-60 transition duration-1000" />
-            <div className="relative flex items-center justify-center w-24 h-24 bg-white rounded-[2rem] overflow-hidden shadow-xl border border-zinc-100 animate-in zoom-in duration-700">
+            <div className="absolute -inset-1 bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-500 rounded-2xl blur opacity-20 group-hover:opacity-60 transition duration-1000" />
+            <div className="relative flex items-center justify-center w-24 h-24 bg-white rounded-2xl overflow-hidden shadow-lg border border-zinc-100 animate-in zoom-in duration-700">
               <div className="absolute inset-0 bg-gradient-to-tr from-zinc-50 to-white" />
               <Package size={48} className="text-zinc-900 relative z-10" strokeWidth={1.5} />
             </div>
@@ -59,8 +59,8 @@ export default function Home() {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-500/[0.03] rounded-full blur-[80px]" />
             
             {/* High-Tech Scan Button */}
-            <div className="relative p-[4px] rounded-[3.5rem] bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-500 shadow-2xl shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-700">
-              <div className="w-48 h-44 rounded-[3.4rem] bg-white flex flex-col items-center justify-center gap-2 border-[2px] border-white overflow-hidden relative">
+            <div className="relative p-[2px] rounded-2xl bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-500 shadow-2xl shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-700">
+              <div className="w-48 h-44 rounded-2xl bg-white flex flex-col items-center justify-center gap-2 border-[2px] border-white overflow-hidden relative">
                  <div className="absolute inset-0 bg-gradient-to-b from-zinc-50/50 to-transparent opacity-80" />
                  <QrCode size={80} strokeWidth={1} className="text-zinc-900 relative z-10 group-hover:scale-110 transition-transform duration-700" />
               </div>
@@ -78,13 +78,13 @@ export default function Home() {
 
         {/* Footer Info Area - Clean & Techy */}
         <div className="p-8 space-y-8">
-          <div className="bg-zinc-50/80 backdrop-blur-md p-8 rounded-[2.5rem] border border-zinc-100 relative overflow-hidden group shadow-sm">
+          <div className="bg-zinc-50/80 backdrop-blur-md p-8 rounded-2xl border border-zinc-100 relative overflow-hidden group shadow-sm">
              <div className="absolute top-0 right-0 p-6 text-zinc-200/50 -rotate-12 group-hover:scale-110 transition-transform duration-500">
                 <ShieldCheck size={100} />
              </div>
              <div className="relative z-10">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 rounded-xl bg-white shadow-sm flex items-center justify-center border border-zinc-100">
+                  <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center border border-zinc-100">
                     <Activity size={16} className="text-indigo-600" />
                   </div>
                   <p className="text-xs font-black text-zinc-900 uppercase tracking-widest leading-none">Security Node</p>
@@ -100,7 +100,7 @@ export default function Home() {
           {isAuthenticated ? (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
               <Link href="/dashboard">
-                <Button className="w-full h-16 bg-zinc-900 text-white rounded-3xl font-[1000] text-sm uppercase tracking-[0.2em] flex justify-center items-center gap-3 hover:bg-black shadow-2xl shadow-indigo-500/20 active:scale-[0.98] transition-all">
+                <Button className="w-full h-16 bg-zinc-900 text-white rounded-xl font-[1000] text-sm uppercase tracking-[0.2em] flex justify-center items-center gap-3 hover:bg-black shadow-xl shadow-indigo-500/20 active:scale-[0.98] transition-all">
                   <span>เข้าสู่ Dashboard</span>
                   <Zap size={18} fill="currentColor" />
                 </Button>

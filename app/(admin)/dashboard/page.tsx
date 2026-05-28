@@ -90,7 +90,7 @@ export default async function DashboardPage() {
       <div className="max-w-lg mx-auto">
         
         {/* Header - Light IG Style */}
-        <div className="bg-white px-6 py-8 border-b border-zinc-100 rounded-b-[2.5rem] shadow-sm">
+        <div className="bg-white px-6 py-8 border-b border-zinc-100 rounded-b-3xl shadow-sm">
           <div className="flex justify-between items-start mb-6">
             <div className="space-y-1">
               <h1 className="text-3xl font-[1000] tracking-tighter text-zinc-900 leading-none uppercase">
@@ -120,7 +120,7 @@ export default async function DashboardPage() {
               <Link 
                 key={item.label}
                 href={`/dashboard/assets?category=${item.label.toLowerCase()}`}
-                className="flex-shrink-0 flex items-center gap-2 bg-zinc-50 border border-zinc-100 px-4 py-2.5 rounded-2xl active:scale-95 transition-all shadow-sm"
+                className="flex-shrink-0 flex items-center gap-2 bg-zinc-50 border border-zinc-100 px-4 py-2.5 rounded-xl active:scale-95 transition-all shadow-sm"
               >
                 <div className={cn("p-1.5 rounded-lg bg-white shadow-sm", item.textColor)}>
                   <item.icon size={14} />
@@ -140,8 +140,8 @@ export default async function DashboardPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {statusCards.map((card) => (
               <Link key={card.title} href={card.href} className="group active:scale-95 transition-transform">
-                <div className="bg-white p-5 rounded-[2rem] shadow-sm border border-white flex flex-col items-center text-center gap-3 h-full">
-                  <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center shadow-inner", card.bgColor)}>
+                <div className="bg-white p-5 rounded-2xl shadow-sm border border-white flex flex-col items-center text-center gap-3 h-full">
+                  <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center shadow-inner", card.bgColor)}>
                     <card.icon className={card.color} size={24} />
                   </div>
                   <div className="space-y-0.5">
@@ -156,9 +156,9 @@ export default async function DashboardPage() {
           {/* Featured Sections */}
           <div className="grid grid-cols-1 gap-4">
             <Link href="/dashboard/assets?filter=incomplete">
-              <div className="relative group active:scale-[0.98] transition-all overflow-hidden rounded-[2.5rem] bg-zinc-900 shadow-xl p-[1px]">
+              <div className="relative group active:scale-[0.98] transition-all overflow-hidden rounded-3xl bg-zinc-900 shadow-xl p-[1px]">
                  <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-500 opacity-20" />
-                 <div className="relative bg-white rounded-[2.4rem] p-6 flex items-center justify-between overflow-hidden">
+                 <div className="relative bg-white rounded-[23px] p-6 flex items-center justify-between overflow-hidden">
                    <div className="relative z-10 flex-1 pr-4">
                       <div className="flex items-center gap-2 mb-1">
                          <div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse" />
@@ -166,7 +166,7 @@ export default async function DashboardPage() {
                       </div>
                       <p className="text-[10px] font-bold text-zinc-400 leading-relaxed uppercase tracking-tighter">พบอุปกรณ์ข้อมูลไม่สมบูรณ์ <span className="text-rose-600 font-black">{stats.incomplete}</span> รายการ</p>
                    </div>
-                   <div className="relative z-10 bg-zinc-900 text-white p-4 rounded-[1.5rem] shadow-lg group-hover:translate-x-1 transition-transform">
+                   <div className="relative z-10 bg-zinc-900 text-white p-4 rounded-xl shadow-lg group-hover:translate-x-1 transition-transform">
                       <ArrowRight size={20} strokeWidth={3} />
                    </div>
                  </div>
@@ -175,7 +175,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Status Distribution - Circular Chart (RESTORING AS REQUESTED) */}
-          <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-zinc-100 overflow-hidden">
+          <div className="bg-white rounded-3xl p-8 shadow-sm border border-zinc-100 overflow-hidden">
             <h3 className="text-xs font-black text-zinc-900 mb-8 uppercase tracking-[0.3em] flex items-center gap-3">
               <div className="w-1.5 h-4 bg-indigo-600 rounded-full" />
               ภาพรวมสถานะอุปกรณ์ (Status Overview)
@@ -220,7 +220,7 @@ export default async function DashboardPage() {
                 ].map((item) => (
                   <div key={item.label} className="flex items-center justify-between group">
                     <div className="flex items-center gap-4">
-                      <div className={cn("w-2.5 h-2.5 rounded-full shadow-sm", item.color)} />
+                      <div className={cn("w-2 h-2 rounded-full shadow-sm", item.color)} />
                       <div className="flex flex-col">
                         <span className="text-[13px] font-black text-zinc-700 leading-none">{item.label}</span>
                         <span className="text-[9px] font-bold text-zinc-300 uppercase tracking-tight mt-1">{item.sub}</span>
@@ -237,7 +237,7 @@ export default async function DashboardPage() {
           </div>
 
           {/* Category Insights Section */}
-          <div className="bg-white rounded-[2.5rem] p-8 shadow-sm border border-zinc-100">
+          <div className="bg-white rounded-3xl p-8 shadow-sm border border-zinc-100">
             <h3 className="text-xs font-black text-zinc-900 mb-8 uppercase tracking-[0.3em] flex items-center gap-3">
               <div className="w-1.5 h-4 bg-purple-600 rounded-full" />
               แยกตามประเภทอุปกรณ์ (Category Distribution)

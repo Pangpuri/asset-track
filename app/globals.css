@@ -24,11 +24,12 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
-  --radius-sm: 12px;
-  --radius-md: 16px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
-  --radius-2xl: 36px;
+  /* Reduced Border Radius to prevent text clipping */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
 }
 
 :root {
@@ -57,7 +58,7 @@
   --input: oklch(0.98 0 0);
   --ring: oklch(0.6 0.2 260 / 10%);
   
-  --radius: 24px;
+  --radius: 12px;
 }
 
 @layer base {
@@ -72,11 +73,11 @@
 
 @layer components {
   .luxury-card {
-    @apply bg-white border border-zinc-100 rounded-[2.5rem] shadow-xl;
+    @apply bg-white border border-zinc-100 rounded-[1.5rem] shadow-xl;
   }
   
   .luxury-glow {
-    @apply absolute -inset-0.5 bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-500 rounded-[3rem] blur opacity-10;
+    @apply absolute -inset-0.5 bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-500 rounded-[1.5rem] blur opacity-10;
   }
 
   .text-glow {
