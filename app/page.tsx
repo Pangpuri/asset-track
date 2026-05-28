@@ -26,13 +26,7 @@ export default function Home() {
       <main className="max-w-lg mx-auto w-full">             
         {/* Main Logo Header Area */}
         <div className="border-b border-zinc-100 bg-zinc-50/30">          
-          <div className="p-8 flex flex-col items-center justify-center text-center gap-4">
-            {/* New Modern IT Icon Badge */}
-            <div className="relative flex items-center justify-center w-20 h-20 bg-zinc-900 rounded-[2rem] overflow-hidden shadow-2xl animate-in zoom-in duration-500">
-              <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 opacity-90" />
-              <Package size={40} className="text-white relative z-10" strokeWidth={2} />
-            </div>
-            
+          <div className="p-8 flex flex-col items-center justify-center text-center gap-4">                      
             <div className="flex flex-col">
               <h1 className="text-4xl font-[1000] tracking-tighter text-zinc-900 leading-none">
                 ASSET<span className="text-indigo-600">TRACK</span>
@@ -92,16 +86,7 @@ export default function Home() {
               </Button>
             </Link>
           </div>
-        )}
-        
-        {!isAuthenticated && (
-          <div className="p-10 text-center">
-             <p className="text-[10px] text-zinc-300 font-black uppercase tracking-[0.4em] leading-relaxed">
-               Asset Management Portal<br/>
-               Internal Infrastructure
-             </p>
-          </div>
-        )}
+        )}       
       </main>
     </div>
   );

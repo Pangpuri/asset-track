@@ -96,152 +96,170 @@ export default async function TrackAssetPage({
   };
 
   const statusLabels: Record<string, string> = {
-    active: "ใช้งานปกติ",
-    broken: "ชำรุด/ส่งซ่อม",
-    lost: "สูญหาย",
-    retired: "เลิกใช้งาน",
+    active: "Operating Normally",
+    broken: "Needs Service",
+    lost: "Unit Missing",
+    retired: "Decommissioned",
+  };
+
+  const statusSub: Record<string, string> = {
+    active: "Everything looks good",
+    broken: "Repairs in progress",
+    lost: "Last seen recently",
+    retired: "Out of inventory",
   };
 
   const specs = asset.specifications || {};
 
   return (
-    <div className="min-h-screen bg-[#FAFAFA]">
-      <div className="max-w-lg mx-auto bg-white min-h-screen shadow-[0_0_50px_rgba(0,0,0,0.02)]">
-        {/* Header - IG Style */}
-        <div className="flex items-center justify-between px-4 h-14 border-b border-zinc-100 sticky top-0 bg-white/90 backdrop-blur-md z-20">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="active:opacity-50 transition-opacity">
-              <ArrowLeft className="h-6 w-6 text-zinc-900" />
+    <div className="min-h-screen bg-[#0A0A0A] text-white selection:bg-indigo-500/30">
+      <div className="max-w-lg mx-auto bg-black min-h-screen relative shadow-2xl">
+        {/* Story-like Background Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-gradient-to-b from-indigo-600/20 via-purple-600/10 to-transparent pointer-events-none" />
+
+        {/* Top Navigation - IG Minimal */}
+        <div className="flex items-center justify-between px-6 h-16 sticky top-0 bg-black/60 backdrop-blur-xl z-50 border-b border-white/5">
+          <div className="flex items-center gap-4">
+            <Link href="/" className="active:scale-90 transition-transform">
+              <ArrowLeft className="h-6 w-6 text-white" />
             </Link>
-            <span className="text-base font-bold tracking-tight text-zinc-900">Asset Details</span>
+            <div className="flex flex-col">
+              <span className="text-xs font-black uppercase tracking-[0.2em] text-white/40 leading-none mb-1">Asset Profile</span>
+              <span className="text-sm font-bold tracking-tight text-white">ID: {asset.assetCode || "---"}</span>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-50 border border-zinc-100">
-            <div className={`w-1.5 h-1.5 rounded-full ${statusColors[asset.status] || "bg-zinc-400"}`}></div>
-            <span className="text-[10px] font-black uppercase tracking-wider text-zinc-600">{statusLabels[asset.status] || asset.status}</span>
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md">
+            <div className={`w-2 h-2 rounded-full animate-pulse ${statusColors[asset.status] || "bg-zinc-400"}`}></div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-white/80">{statusLabels[asset.status] || asset.status}</span>
           </div>
         </div>
 
-        <div className="p-5 space-y-8 pb-32">
-          {/* Main Visual Card - Professional IG Style */}
+        <div className="px-6 py-8 space-y-10 pb-40">
+          {/* Hero Visual Card - High-End Product Style */}
           <div className="relative group">
-            <div className="absolute -inset-1 bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] rounded-[2.5rem] blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
-            <div className="relative bg-white rounded-[2.2rem] overflow-hidden border border-zinc-100 shadow-xl">
-              {/* Card Header Pattern */}
-              <div className="h-24 bg-zinc-900 relative overflow-hidden">
-                <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-100 via-transparent to-transparent"></div>
-                <div className="absolute top-6 right-6 text-white/10">
-                  <Package size={80} strokeWidth={1} />
+            <div className="absolute -inset-0.5 bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-500 rounded-[3rem] blur opacity-30 group-hover:opacity-50 transition duration-1000"></div>
+            <div className="relative bg-[#121212] rounded-[2.8rem] overflow-hidden border border-white/10 shadow-2xl">
+              {/* Product Header Photo Area */}
+              <div className="h-48 bg-zinc-900 relative flex items-center justify-center overflow-hidden">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,_var(--tw-gradient-stops))] from-white/10 via-transparent to-transparent opacity-50"></div>
+                <div className="absolute top-0 right-0 p-8 text-white/5 rotate-12">
+                   <Package size={200} strokeWidth={0.5} />
                 </div>
-                <div className="absolute bottom-4 left-6">
-                  <div className="px-3 py-1 rounded-lg bg-white/10 backdrop-blur-md border border-white/10">
-                    <p className="text-[9px] font-black text-white/80 uppercase tracking-[0.2em]">Hardware Asset</p>
-                  </div>
+                <div className="relative z-10 flex flex-col items-center">
+                   <div className="w-20 h-20 bg-black/40 backdrop-blur-2xl rounded-3xl border border-white/10 flex items-center justify-center mb-4 shadow-2xl">
+                      <Cpu size={40} className="text-indigo-400" />
+                   </div>
+                   <div className="px-4 py-1.5 rounded-full bg-indigo-500/20 border border-indigo-500/30 backdrop-blur-md">
+                      <p className="text-[10px] font-black text-indigo-300 uppercase tracking-[0.3em]">{asset.category || "Hardware"}</p>
+                   </div>
                 </div>
               </div>
 
-              <div className="p-8 pt-6">
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <h2 className="text-4xl font-[1000] text-zinc-900 uppercase tracking-tighter leading-none mb-1">
-                      {asset.brand || "UNBRANDED"}
-                    </h2>
-                    <p className="text-lg font-bold text-zinc-400 tracking-tight">{asset.model || "Standard Model"}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Code</p>
-                    <p className="text-xl font-black text-indigo-600 tracking-tighter leading-none">#{asset.assetCode || "N/A"}</p>
-                  </div>
+              {/* Product Info */}
+              <div className="p-8 space-y-6">
+                <div>
+                  <h2 className="text-5xl font-[1000] tracking-tighter uppercase leading-none mb-2 bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent">
+                    {asset.brand || "SYSTEM"}
+                  </h2>
+                  <p className="text-xl font-bold text-white/40 tracking-tight">{asset.model || "Universal Unit"}</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-100">
-                    <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Category</p>
-                    <p className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-                      <Tag size={14} className="text-indigo-500" />
-                      {asset.category || "General"}
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-100">
-                    <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Location</p>
-                    <p className="text-sm font-bold text-zinc-900 flex items-center gap-2">
-                      <MapPin size={14} className="text-rose-500" />
-                      <span className="truncate">{asset.location || "Office"}</span>
-                    </p>
-                  </div>
+                <div className="flex items-center gap-4 pt-4 border-t border-white/5">
+                   <div className="flex-1">
+                      <p className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-1">Serial Number</p>
+                      <p className="text-sm font-bold text-white tracking-wide font-mono">{asset.serialNumber || "---"}</p>
+                   </div>
+                   <div className="h-10 w-[1px] bg-white/5"></div>
+                   <div className="flex-1">
+                      <p className="text-[10px] font-black text-white/30 uppercase tracking-widest mb-1">Location</p>
+                      <p className="text-sm font-bold text-white tracking-tight truncate">{asset.location || "Office"}</p>
+                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* MIS Alert Message - High Visibility */}
-          <div className="p-6 rounded-[2rem] bg-indigo-50 border-2 border-indigo-100 relative overflow-hidden group">
-            <div className="absolute top-0 right-0 p-4 text-indigo-200/50 group-hover:scale-110 transition-transform duration-500">
-              <Info size={64} />
-            </div>
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center">
-                  <Activity size={12} className="text-white" />
-                </div>
-                <span className="text-xs font-black text-indigo-900 uppercase tracking-widest">MIS Help Desk</span>
-              </div>
-              <p className="text-sm font-bold text-indigo-900/80 leading-relaxed">
-                หากอุปกรณ์มีปัญหา ชำรุด หรือต้องการความช่วยเหลือ 
-                <span className="block text-indigo-600 font-black mt-1">กรุณาแจ้งฝ่าย MIS ทันที (โทร. 1234)</span>
-              </p>
-            </div>
-          </div>
-
-          {/* Details Sections */}
-          <div className="space-y-10 px-1">
-            {/* General Info */}
-            <section>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-[1px] flex-1 bg-zinc-100"></div>
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">General Information</h3>
-                <div className="h-[1px] flex-1 bg-zinc-100"></div>
-              </div>
-              <div className="grid grid-cols-1 gap-1">
-                <InfoRow label="Serial Number" value={asset.serialNumber} icon={Barcode} colorClass="text-zinc-900" />
-                <InfoRow label="Employee Name" value={asset.receivedBy} icon={User} colorClass="text-zinc-900" />
-                <InfoRow label="Department" value={asset.department} icon={Package} colorClass="text-zinc-900" />
-                <InfoRow 
-                  label="Warranty Status" 
-                  value={asset.warrantyExpire ? format(new Date(asset.warrantyExpire), "d MMMM yyyy", { locale: th }) : "No Warranty"} 
-                  icon={ShieldCheck} 
-                  colorClass={asset.warrantyExpire && new Date(asset.warrantyExpire) < new Date() ? "text-rose-500" : "text-emerald-500"} 
-                />
-              </div>
-            </section>
-
-            {/* Technical Specs */}
-            <section>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-[1px] flex-1 bg-zinc-100"></div>
-                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Technical Specs</h3>
-                <div className="h-[1px] flex-1 bg-zinc-100"></div>
-              </div>
-              <div className="grid grid-cols-1 gap-1">
-                <InfoRow label="Host Name" value={specs.computerName} icon={Monitor} colorClass="text-zinc-900" />
-                <InfoRow label="IP Address" value={specs.ipAddress} icon={Activity} colorClass="text-zinc-900" />
-                <InfoRow label="CPU / Processor" value={specs.cpu} icon={Cpu} colorClass="text-zinc-900" />
-                <InfoRow label="Memory (RAM)" value={specs.ram} icon={Activity} colorClass="text-zinc-900" />
-                <InfoRow label="Storage" value={specs.storage} icon={Package} colorClass="text-zinc-900" />
-              </div>
-            </section>
-          </div>
-          
-          <div className="pt-10 flex flex-col items-center justify-center gap-4 border-t border-zinc-100">
-             <div className="flex items-center gap-2 opacity-20">
-                <div className="w-1.5 h-1.5 rounded-full bg-zinc-900"></div>
-                <div className="w-1.5 h-1.5 rounded-full bg-zinc-900"></div>
-                <div className="w-1.5 h-1.5 rounded-full bg-zinc-900"></div>
+          {/* MIS Help Section - Modern Alert Style */}
+          <div className="relative overflow-hidden p-6 rounded-[2.5rem] bg-indigo-600/10 border border-indigo-500/20 group">
+             <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:scale-110 transition-transform duration-700">
+                <Info size={100} />
              </div>
-             <p className="text-[9px] font-black text-zinc-300 uppercase tracking-[0.4em]">Asset Tracking System</p>
+             <div className="relative z-10">
+                <div className="flex items-center gap-2 mb-3">
+                   <div className="w-8 h-8 rounded-2xl bg-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/40">
+                      <Activity size={16} className="text-white" />
+                   </div>
+                   <span className="text-xs font-black text-indigo-300 uppercase tracking-[0.2em]">MIS Support Center</span>
+                </div>
+                <h3 className="text-lg font-black text-white mb-1">มีปัญหาเกี่ยวกับการใช้งาน?</h3>
+                <p className="text-sm font-medium text-white/60 leading-relaxed">
+                  หากอุปกรณ์ชำรุด ต้องการความช่วยเหลือ หรือแจ้งปัญหา
+                  <span className="block mt-2 font-black text-indigo-400 uppercase tracking-widest">โปรดแจ้ง MIS ทันที (โทร. 1234)</span>
+                </p>
+             </div>
+          </div>
+
+          {/* Detailed Stats Grid */}
+          <div className="grid grid-cols-2 gap-4">
+             <StatCard label="Current User" value={asset.receivedBy || "None"} icon={User} color="text-indigo-400" />
+             <StatCard label="Department" value={asset.department || "General"} icon={Tag} color="text-purple-400" />
+             <StatCard label="IP Address" value={specs.ipAddress || "---"} icon={Activity} color="text-emerald-400" />
+             <StatCard label="Warranty" value={asset.warrantyExpire ? format(new Date(asset.warrantyExpire), "d MMM yy") : "No Data"} icon={ShieldCheck} color="text-rose-400" />
+          </div>
+
+          {/* Technical Specs - Sleek List */}
+          <div className="space-y-6 pt-4">
+            <div className="flex items-center gap-4">
+               <span className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] whitespace-nowrap">Technical Matrix</span>
+               <div className="h-[1px] w-full bg-white/5" />
+            </div>
+            
+            <div className="space-y-2">
+               <SpecRow label="Processor" value={specs.cpu} />
+               <SpecRow label="Memory" value={specs.ram} />
+               <SpecRow label="Storage" value={specs.storage} />
+               <SpecRow label="Hostname" value={specs.computerName} />
+            </div>
+          </div>
+
+          {/* Footer Branding */}
+          <div className="pt-20 pb-10 flex flex-col items-center gap-4 text-center">
+             <div className="flex items-center gap-3 opacity-20">
+                <div className="w-1 h-1 rounded-full bg-white" />
+                <div className="w-1 h-1 rounded-full bg-white" />
+                <div className="w-1 h-1 rounded-full bg-white" />
+             </div>
+             <div>
+                <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.5em] mb-1">MIS Infrastructure</p>
+                <p className="text-[8px] font-bold text-white/10 uppercase tracking-widest">Asset Tracking Protocol v2.0</p>
+             </div>
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+function StatCard({ label, value, icon: Icon, color }: { label: string, value: string, icon: any, color: string }) {
+  return (
+    <div className="bg-[#121212] p-6 rounded-[2.2rem] border border-white/5 shadow-xl relative overflow-hidden group">
+       <div className={`absolute top-0 right-0 p-4 opacity-5 group-hover:scale-110 transition-transform duration-500 ${color}`}>
+          <Icon size={40} />
+       </div>
+       <p className="text-[9px] font-black text-white/30 uppercase tracking-widest mb-1 relative z-10">{label}</p>
+       <p className="text-sm font-bold text-white tracking-tight truncate relative z-10">{value}</p>
+    </div>
+  );
+}
+
+function SpecRow({ label, value }: { label: string, value?: string }) {
+  if (!value) return null;
+  return (
+    <div className="flex items-center justify-between py-4 border-b border-white/5 group active:bg-white/5 px-2 rounded-xl transition-colors">
+       <span className="text-xs font-bold text-white/40 uppercase tracking-widest">{label}</span>
+       <span className="text-sm font-black text-white tracking-tight">{value}</span>
+    </div>
+  );
+}
+
 
