@@ -1,6 +1,5 @@
 "use client";
 
-import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
@@ -10,14 +9,18 @@ export function LogoutButton() {
   const router = useRouter();
 
   const handleLogout = async () => {
-    await authClient.signOut({
-      fetchOptions: {
-        onSuccess: () => {
-          toast.success("Logged out successfully");
-          router.push("/login");
-        },
-      },
-    });
+    try {
+      const res = await fetch("/api/auth/simple", {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        toast.success("ออกจากระบบสำเร็จ");
+        window.location.href = "/login";
+      }
+    } catch (err) {
+      toast.error("เกิดข้อผิดพลาด");
+    }
   };
 
   return (

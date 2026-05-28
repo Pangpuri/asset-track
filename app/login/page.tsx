@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { authClient } from "@/lib/auth-client"; // I need to create this
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ShieldCheck, Package } from "lucide-react";
+import { Loader2, Package, ShieldCheck } from "lucide-react";
 
 export default function LoginPage() {
   const [password, setPassword] = useState("");
@@ -17,24 +15,23 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== "88888888") {
-      toast.error("รหัสผ่านไม่ถูกต้อง");
-      return;
-    }
-
     setIsLoading(true);
+
     try {
-      const { data, error } = await authClient.signIn.email({
-        email: "missupport@company.com", // Predefined MIS team email
-        password: "88888888",
-        callbackURL: "/dashboard",
+      const res = await fetch("/api/auth/simple", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
       });
 
-      if (error) {
-        toast.error(error.message || "การเข้าสู่ระบบล้มเหลว");
-      } else {
+      const data = await res.json();
+
+      if (data.success) {
         toast.success("ยินดีต้อนรับทีม MIS");
-        router.push("/dashboard");
+        // Force a full refresh to update Navbar state
+        window.location.href = "/dashboard";
+      } else {
+        toast.error(data.message || "การเข้าสู่ระบบล้มเหลว");
       }
     } catch (err) {
       toast.error("เกิดข้อผิดพลาดในการเชื่อมต่อ");
@@ -45,7 +42,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-sm space-y-12">
+      <div className="w-full max-sm:w-full max-w-sm space-y-12">
         {/* Brand Header */}
         <div className="flex flex-col items-center text-center gap-6">
           <div className="relative group">
@@ -82,6 +79,7 @@ export default function LoginPage() {
                 <Input
                   type="password"
                   required
+                  autoFocus
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -117,4 +115,3 @@ export default function LoginPage() {
     </div>
   );
 }
-
