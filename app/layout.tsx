@@ -24,7 +24,7 @@ export default function RootLayout({
         <div className="fixed inset-0 pointer-events-none z-[-1] overflow-hidden flex items-center justify-center select-none">
           <QrCode 
             size={800} 
-            className="text-indigo-500/[0.08] rotate-[15deg] translate-x-1/4 translate-y-1/4" 
+            className="text-indigo-500/[0.2] rotate-[15deg] translate-x-1/4 translate-y-1/4" 
           />
         </div>
 
