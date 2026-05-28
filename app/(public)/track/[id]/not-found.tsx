@@ -21,7 +21,7 @@ export default function NotFound() {
 
         <div className="space-y-3">
           <h1 className="text-4xl font-[1000] tracking-tighter uppercase italic bg-gradient-to-r from-white via-white to-white/40 bg-clip-text text-transparent">
-            Invalid Asset
+            Invalid QR
           </h1>
           <div className="flex flex-col gap-2">
             <p className="text-indigo-300/80 text-[10px] font-black uppercase tracking-[0.4em]">
@@ -29,7 +29,6 @@ export default function NotFound() {
             </p>
             <p className="text-zinc-500 text-sm font-medium leading-relaxed">
                 รหัส QR Code นี้ไม่มีอยู่ในระบบ <br/>
-                หรืออาจถูกจำหน่ายออกจากคลังแล้ว
             </p>
           </div>
         </div>
