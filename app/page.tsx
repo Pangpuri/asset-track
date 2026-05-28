@@ -68,27 +68,7 @@ export default function Home() {
           </div>
         </Link>
 
-        {/* Footer Info Area - Clean & Techy */}
-        <div className="p-8 space-y-8">
-          <div className="bg-zinc-50/80 backdrop-blur-md p-8 rounded-2xl border border-zinc-100 relative overflow-hidden group shadow-sm">
-             <div className="absolute top-0 right-0 p-6 text-zinc-200/50 -rotate-12 group-hover:scale-110 transition-transform duration-500">
-                <ShieldCheck size={100} />
-             </div>
-             <div className="relative z-10">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center border border-zinc-100">
-                    <Activity size={16} className="text-indigo-600" />
-                  </div>
-                  <p className="text-xs font-black text-zinc-900 uppercase tracking-widest leading-none">ระบบบริหารจัดการ</p>
-                </div>
-                <p className="text-sm text-zinc-500 leading-relaxed font-medium max-w-[280px]">
-                  ข้อมูลสถานะอุปกรณ์ไอที 
-                  <span className="text-indigo-600 font-bold ml-1">#MIS</span>
-                </p>
-             </div>
-          </div>
-
-          {/* Admin Access - Floating Action */}
+        {/* Admin Access - Floating Action */}
           {isAuthenticated ? (
             <div className="animate-in fade-in slide-in-from-bottom-4 duration-700">
               <Link href="/dashboard">
@@ -102,7 +82,6 @@ export default function Home() {
             <div className="pt-6 flex flex-col items-center gap-4 text-center">
             </div>
           )}
-        </div>
       </main>
     </div>
   );
