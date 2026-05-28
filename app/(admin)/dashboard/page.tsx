@@ -151,7 +151,7 @@ export default async function DashboardPage() {
             ))}
           </div>
 
-          {/* Featured Sections */}
+          {/* Featured Sections - incomplete */}
           <div className="grid grid-cols-1 gap-4">
             <Link href="/dashboard/assets?filter=incomplete">
               <div className="relative group active:scale-[0.98] transition-all overflow-hidden rounded-3xl bg-zinc-900 shadow-xl p-[1px]">
@@ -160,9 +160,30 @@ export default async function DashboardPage() {
                    <div className="relative z-10 flex-1 pr-4">
                       <div className="flex items-center gap-2 mb-1">
                          <div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse" />
-                         <h3 className="text-xl font-[1000] text-zinc-900 tracking-tight uppercase">Incomplete Data</h3>
+                         <h3 className="text-xl font-[1000] text-zinc-900 tracking-tight uppercase">ข้อมูลไม่สมบูรณ์</h3>
                       </div>
                       <p className="text-[10px] font-bold text-zinc-400 leading-relaxed uppercase tracking-tighter">พบอุปกรณ์ข้อมูลไม่สมบูรณ์ <span className="text-rose-600 font-black">{stats.incomplete}</span> รายการ</p>
+                   </div>
+                   <div className="relative z-10 bg-zinc-900 text-white p-4 rounded-xl shadow-lg group-hover:translate-x-1 transition-transform">
+                      <ArrowRight size={20} strokeWidth={3} />
+                   </div>
+                 </div>
+              </div>
+            </Link>
+          </div>
+
+          {/* Featured Sections - Lost */}
+          <div className="grid grid-cols-1 gap-4">
+            <Link href="/dashboard/assets/lost">
+              <div className="relative group active:scale-[0.98] transition-all overflow-hidden rounded-3xl bg-zinc-900 shadow-xl p-[1px]">
+                 <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500 via-purple-600 to-pink-500 opacity-20" />
+                 <div className="relative bg-white rounded-[23px] p-6 flex items-center justify-between overflow-hidden">
+                   <div className="relative z-10 flex-1 pr-4">
+                      <div className="flex items-center gap-2 mb-1">
+                         <div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse" />
+                         <h3 className="text-xl font-[1000] text-zinc-900 tracking-tight uppercase">ข้อมูลอุปกรณ์สูญหาย</h3>
+                      </div>
+                      <p className="text-[10px] font-bold text-zinc-400 leading-relaxed uppercase tracking-tighter">อุปกรณ์ข้อมูลสูญหาย <span className="text-rose-600 font-black">{stats.lost}</span> รายการ</p>
                    </div>
                    <div className="relative z-10 bg-zinc-900 text-white p-4 rounded-xl shadow-lg group-hover:translate-x-1 transition-transform">
                       <ArrowRight size={20} strokeWidth={3} />
