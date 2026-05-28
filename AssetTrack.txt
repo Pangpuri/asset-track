@@ -1,14 +1,18 @@
 ชื่อโปรเจค AssetTrack
 
-เครื่องมือที่ใช้ NextJs16 การทำงานแบบ Webapp ใช้ลิงค์ เพื่อเข้าถึงได้หลายอุปกรณ์แบบอิสระ 
-เครื่องมือ
+เครื่องมือที่ใช้ Next.js 15 การทำงานแบบ Webapp ใช้ลิงก์เพื่อเข้าถึงได้หลายอุปกรณ์แบบอิสระ 
 
--nextjs16
--drizzle
--camerascanerที่มีในอุปกรณ์เคลื่อนที่อยู่แล้ว
--pg sql
--better auth
--QR รูปแบบ
+เทคโนโลยีหลัก
+- Next.js 15 (App Router)
+- Drizzle ORM
+- Supabase (PostgreSQL)
+- Tailwind CSS v4
+- Better Auth (Authentication System - Schema Defined)
+- html5-qrcode (Mobile Camera Scanner)
+- Lucide React (Icons)
+- jspdf / html2canvas (Export Report)
+
+QR รูปแบบ
  +-------------------------+
 |  [ [QR CODE] ]  AssetID |
 |  [  IMAGES   ]  P001234 |
@@ -16,86 +20,106 @@
 |  AssetTrack System      |
 +-------------------------+
 
+ระบบแบ่งออกเป็น 8 ส่วนหลัก:
 
+1. ชั้นจัดการ QR (QR Management)
+- เพิ่มข้อมูลจาก Dashboard
+- ระบบ Generate QR Code ทั้งแบบรายชิ้นและแบบล็อตใหญ่ (Bulk Print)
 
-1.ชั้นจัดการ QR
--เพิ่มข้อมูลจาก Dashboard 
--เพิ่มข้อมูลจากการแสกน QR เปล่า
--จัดการ generate QR รองรับทั้งแบบเปล่า และแบบ คีย์ข้อมูลแล้ว
+2. ชั้นการแสดงผล (Display Layer)
+- เมื่อสแกน QR จะนำไปยังหน้าข้อมูลอุปกรณ์โดยตรงในรูปแบบที่สวยงาม
+- รองรับการเข้าถึงผ่านลิงก์ URL ได้ทันที
 
-2.ชั้นการแสดงผล
--เมื่อมีการแสกน QR มีการแสดงผลข้อมูล
+3. ชั้นสิทธิ์การใช้งาน (Authorization)
+- บุคคลทั่วไป: ดูข้อมูลผ่านหน้า Public Track (Read-Only) ในรูปแบบ IG Style และสแกน QR Code ได้ แต่ไม่สามารถแก้ไขข้อมูลได้
+- หน้า Public Track: แสดงข้อมูลครบถ้วน พร้อมระบบแจ้งเตือน "หากอุปกรณ์มีปัญหา โปรดแจ้งฝ่าย MIS"
+- Admin (MIS Staff): เข้าถึง Dashboard เพื่อจัดการข้อมูลทั้งหมด, ปรับสถานะ, แก้ไขรายละเอียด, ลบข้อมูล, ดูรายงาน และจัดการบัญชีผู้ใช้งาน
 
-3.ชั้นระดับสิทธิ์
--เมื่อมีการแสดงผลข้อมูล ระดับสิทธิ์ที่สามารถเปลี่ยนแปลงข้อมูลได้คือ admin
--เมื่อมีการบันทึกข้อมูล สามารถบันทึกข้อมูลได้สำหรับทุกคนที่มีลิงค์ ไม่จำกัดข้อมูลในการบันทึกกรณี
-ที่อุปกรณ์นั้นอยู่ไกลการควบคุมของพนักงาน บึคคลอื่นควรบันทึกข้อมูลได้ด้วย
--เมื่อมีการแสกนข้อมูล มีขอมูลโชว์ขึ้นมาให้ดูได้ทุกคน เผื่อมีการสอบถามข้อมูลในระยะไกล พนักงานไม่ต้องเดินทางไปเพียงแต่
-ฝากลิงค์ให้ใครก็ได้แสกน
--สามารถปรับเปลี่ยน เพิ่ม แก้ไข ข้อมูลแต่ละอุปกรณ์ได้ด้วยสิทธิ์ admin อย่างอิสระ
--ยอมรับการกรอกข้อมูลไม่ครบกรณีเร่งรีบ เพื่อสามารถนำมากรองข้อมูลทีหลังได้ แต่ต้องมีการแจ้งเตือนเอาไว้ที่ Dashbord ว่ามี QR
-ไหนบ้างที่ยังกรอกข้อมูลไม่ครบ
+4. ชั้นข้อมูลอุปกรณ์ (Data Layer)
+- ข้อมูลพื้นฐาน: รหัส (UUID/P-ID), ยี่ห้อ, รุ่น, ซีเรียลนัมเบอร์, ระยะประกัน
+- สถานะวงจรชีวิต: ปกติ (Active), ส่งซ่อม (Repair), สูญหาย (Lost), จำหน่ายออก (Retired)
+- ประวัติการทำงาน (Logs): จุดติดตั้ง, ชื่อผู้รับ-ส่งมอบ, วันเวลาที่ทำรายการ
 
-4.ชั้นฐานข้อมูลเบื้องต้น
--แยกประเภทอุปกรณ์
--ข้อมูลต่างๆเช่นรหัส ยี่ห้อ ซีเรียลนัมเบอร์ ระยะเวลาประกัน จุดติดตั้ง หรือส่งมอบแก่แผนกไหน วันส่งมอบ ชื่อผู้รับมอบ ชื่อผู้ส่ง ฯลฯ
--แยกข้อมูลอุปกรณ์เสียหาย ข้อมูลสาเหตุการเสียหาย หรือสูญหาย
+5. ส่วนติดต่อผู้ใช้ (User Interface)
+- ดีไซน์สไตล์ Modern IT Dashboard (Zinc/Indigo/Purple)
+- หน้า User View ออกแบบในสไตล์ Instagram (IG Style) เพื่อความสวยงามและใช้งานง่าย
+- รองรับ Responsive 100% ใช้งานได้ดีทั้ง Mobile (Scanner) และ Desktop
 
-5.ชั้น Ui
--การแสดงผลรองรับทุกอุปกรณ์การทำงาน 
+6. ระบบติดตามสถานะ (Lifecycle Tracking)
+- ติดตามอุปกรณ์ตั้งแต่รับเข้า จนถึงจำหน่ายออก
+- บันทึกประวัติการเปลี่ยนแปลงสถานะอัตโนมัติ
 
-7.หลักฐานการทำงาน
--สามารถ export เอกสารออกมาเพื่อทำรายงานบันทึกในรูปแบบเอกสารได้ CSV/PDF
+7. การออกรายงานและเอกสาร (Reporting)
+- Export ข้อมูลเป็นไฟล์ CSV
+- พิมพ์ใบรายการหรือสติกเกอร์ QR เป็น PDF
+
+8. ระบบสมาชิกและการรักษาความปลอดภัย (Auth & Security)
+- ใช้ Better Auth สำหรับระบบยืนยันตัวตน (Email & Password)
+- Middleware ป้องกันส่วน Dashboard และ Admin API ทั้งหมด
+- ระบบจัดการเจ้าหน้าที่ (Staff Management) สำหรับเพิ่ม/ดูรายชื่อทีม MIS ที่มีสิทธิ์เข้าถึงระบบ
+
+---
+
+โครงสร้างโฟลเดอร์ (Project Structure):
 
 asset-track/
 │
-├── app/                              # 🌐 ชั้น App Router (Next.js 16)
-│   ├── (public)/                     # ชั้นการแสดงผล & ชั้น Service (ดูได้ทุกคนโดยไม่ต้องล็อกอิน)
+├── app/                              # 🌐 Next.js App Router
+│   ├── (public)/                     # 🌍 ส่วนที่ทุกคนเข้าถึงได้
 │   │   └── track/
-│   │       └── [id]/                 # รองรับลิงก์ URL จาก QR Code (https://domain.com/track/[UUID])
-│   │           ├── page.tsx          # [ชั้น 2] สแกน QR ปุ๊บ ดึงข้อมูลจาก DB มาแสดงผลทันที 
-│   │           ├── register/
-│   │           │   └── page.tsx      # [ชั้น 1, 3] ฟอร์มผูกข้อมูลเครื่อง/บันทึกเพิ่มหน้างาน (ทุกคนเข้าถึงได้) 
+│   │       └── [id]/                 # หน้าแสดงข้อมูลอุปกรณ์ (Read-Only IG Style)
 │   │
-│   ├── (admin)/                      # 🔐 ชั้นจัดการของ Admin (ต้องผ่านสิทธิ์ Better-Auth เท่านั้น) 
+│   ├── (admin)/                      # 🔐 ส่วนจัดการของ Admin (Dashboard)
 │   │   └── dashboard/
-│   │       ├── page.tsx              # หน้าหลัก Dashboard ไอที ส่องสถานะอุปกรณ์ทั้งหมด 
-│   │       ├── assets/
-│   │       │   ├── page.tsx          # หน้าแสดงตารางอุปกรณ์หลัก (คัดกรองตามประเภทคอม, โน๊ตบุ๊ค, ปริ๊นเตอร์) 
-│   │       │   ├── [id]/
-│   │       │   │   └── page.tsx      # [ชั้น 3] หน้าให้ Admin แก้ไข/ปรับเปลี่ยนข้อมูลหลักของเครื่องได้อย่างอิสระ
-│   │       │   └── print-qr/
-│   │       │       └── page.tsx      # [ชั้น 1] หน้าสำหรับสั่งเจนฯ และพิมพ์สติกเกอร์ QR Code ล็อตใหญ่ 
-│   │       │
-│   │       └── reports/
-│   │           └── page.tsx          # [ชั้น 7] หน้ากรอกเงื่อนไขเพื่อกด Export รายงานออกมาเป็น CSV / PDF 
+│   │       ├── page.tsx              # ภาพรวมระบบ (Overview) + ปุ่มจัดการ Staff
+│   │       ├── assets/               # การจัดการอุปกรณ์แยกตามสถานะ
+│   │       │   ├── page.tsx          # ตารางอุปกรณ์ทั้งหมด
+│   │       │   ├── [id]/             # แก้ไขข้อมูลอุปกรณ์
+│   │       │   ├── new/              # เพิ่มอุปกรณ์ใหม่
+│   │       │   ├── repairs/          # รายการส่งซ่อม
+│   │       │   ├── lost/             # รายการสูญหาย
+│   │       │   ├── print-qr/         # สั่งพิมพ์ QR Code
+│   │       │   └── retired/          # รายการจำหน่ายออก
+│   │       └── users/                # ระบบจัดการเจ้าหน้าที่ MIS (Staff Management)
+│   │           ├── page.tsx          # รายชื่อเจ้าหน้าที่
+│   │           └── new/              # เพิ่มเจ้าหน้าที่ใหม่
+│   │       └── reports/              # ระบบออกรายงาน
 │   │
-│   ├── api/                          # ⚙️ เซิร์ฟเวอร์ API Endpoints
-│   │   ├── auth/
-│   │   │   └── [...auth]/            # Better-Auth Route Handlers 
-│   │   ├── export/
-│   │   │   └── route.ts              # API จัดการดาวน์โหลดเอกสารรายงาน CSV/PDF 
+│   ├── api/                          # ⚙️ API Endpoints
+│   │   ├── auth/                     # Better Auth Route Handlers
+│   │   ├── assets/                   # จัดการ CRUD Assets (Protected)
+│   │   └── logs/                     # บันทึกประวัติ (Protected)
 │   │
-│   ├── layout.tsx                    # Global Layout
-│   └── page.tsx                      # หน้าแรกสุดของเว็บแอป (Landing / Login page)
+│   ├── login/                        # 🔑 หน้าเข้าสู่ระบบสำหรับเจ้าหน้าที่ MIS
+│   ├── scan/                         # 📷 หน้าสแกน QR ผ่านกล้องมือถือ (Public)
+│   ├── layout.tsx                    # Global Layout & Providers
+│   └── page.tsx                      # Landing Page (Scan Entry)
 │
-├── components/                       # 🧩 คอมโพเนนต์ UI ส่วนกลางที่เรียกซ้ำได้
-│   ├── ui/                           # ปุ่ม, อินพุต, การ์ด สไตล์ Responsive รองรับทุกอุปกรณ์ [ชั้น 5] 
-│   ├── camera-scanner.tsx            # [ชั้น 2] ตัวเปิดกล้องสแกน QR บนเบราว์เซอร์มือถือ ('use client') 
+├── components/                       # 🧩 UI Components
+│   ├── ui/                           # Base UI (Button, Card, Input ฯลฯ)
+│   ├── logout-button.tsx             # ปุ่มออกจากระบบ
+│   ├── camera-scanner.tsx            # ระบบกล้องสแกนเนอร์
+│   ├── asset-repair-disposal-dialog.tsx # จัดการส่งซ่อม/จำหน่าย
+│   ├── asset-replace-dialog.tsx      # เปลี่ยนเครื่องใหม่
+│   ├── bulk-print-selected.tsx       # ป๊อปอัพพิมพ์ QR หลายรายการ
+│   ├── qr-print-wrapper.tsx          # หน้าตัวอย่างสำหรับพิมพ์ QR
+│   └── service-status-update.tsx      # จัดการอัปเดตสถานะงานซ่อม
 │
-├── db/                               # 🗄️ ชั้นฐานข้อมูล (PostgreSQL + Drizzle ORM) 
+├── db/                               # 🗄️ Database Layer (Drizzle + Supabase)
 │   ├── schema/
-│   │   ├── assets.ts                 # [ชั้น 4] ตารางหลักอุปกรณ์ แยกประเภท, ซีเรียล, ประกัน, ข้อมูลชำรุด 
-│   │   ├── logs.ts                   # [ชั้น 4] ตารางประวัติการเคลื่อนไหว (จุดติดตั้ง, วันส่งมอบ, ชื่อผู้รับ) 
-│   ├── index.ts                      # เชื่อมต่อฐานข้อมูลด้วย Drizzle Client 
-│   └── relations.ts                  # กำหนดความสัมพันธ์ One-to-Many ของแต่ละตาราง
+│   │   ├── assets.ts                 # ตารางอุปกรณ์ (Main)
+│   │   ├── logs.ts                   # ตารางประวัติ (Action Logs)
+│   │   ├── auth.ts                   # ตารางระบบสมาชิก (Better Auth Schema)
+│   │   └── relations.ts              # ความสัมพันธ์ระหว่างตาราง
+│   └── index.ts                      # Database Connection (Postgres.js)
 │
-├── lib/                              # 🛠️ เครื่องมือและฟังก์ชันช่วยเหลือ (Helper Functions)
-│   ├── auth.ts                       # ตั้งค่า Better-Auth Client & Server Configurations 
-│   └── qr.ts                         # ลอจิกสำหรับสร้างภาพ QR Code ตามรูปแบบสติกเกอร์ที่กำหนด
+├── lib/                              # 🛠️ Helpers & Utilities
+│   ├── auth.ts                       # Better Auth Server Config
+│   ├── auth-client.ts                # Better Auth Client Config
+│   ├── qr.ts                         # Logic สร้าง QR Code
+│   └── utils.ts                      # Tailwind Merge & Other Utils
 │
-├── public/                           # 📁 ไฟล์ Static (โลโก้, ไอคอน, สติกเกอร์เทมเพลต)
-├── middleware.ts                     # 🛡️ ตัวล็อกประตู (คอยดักจับสิทธิ์หน้า /dashboard ไม่ให้คนทั่วไปเข้า)
-├── drizzle.config.ts                 # ไฟล์ตั้งค่าการ Migration ของ Drizzle
+├── middleware.ts                     # 🛡️ ระบบป้องกันเส้นทาง (Auth Middleware)
+├── drizzle.config.ts                 # Drizzle Configuration
 ├── package.json
-└── .env                              # ไฟล์เก็บ Connection String ของ PostgreSQL และรหัสลับ Better-Auth 
+└── .env                              # Environment Variables

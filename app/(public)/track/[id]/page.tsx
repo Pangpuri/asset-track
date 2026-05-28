@@ -71,149 +71,177 @@ export default async function TrackAssetPage({
   }
 
   if (asset.status === "pending") {
-    redirect(`/track/${id}/register`);
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8 text-center">
+        <div className="w-24 h-24 bg-zinc-50 rounded-[2.5rem] flex items-center justify-center mb-6 border border-zinc-100 shadow-sm">
+          <QrCode size={48} className="text-zinc-300" strokeWidth={1.5} />
+        </div>
+        <h1 className="text-2xl font-black text-zinc-900 uppercase tracking-tighter mb-2">อุปกรณ์นี้ยังไม่ลงทะเบียน</h1>
+        <p className="text-zinc-500 text-sm leading-relaxed max-w-[280px]">
+          พบรหัส QR Code ในระบบแต่ยังไม่มีการผูกข้อมูลอุปกรณ์ 
+          <span className="block mt-4 font-bold text-indigo-600 uppercase tracking-widest text-[10px]">โปรดแจ้งฝ่าย MIS เพื่อเปิดใช้งาน</span>
+        </p>
+        <Link href="/" className="mt-10">
+          <Button variant="outline" className="rounded-2xl px-8 h-12 font-bold border-zinc-200">กลับหน้าหลัก</Button>
+        </Link>
+      </div>
+    );
   }
 
   const statusColors: Record<string, string> = {
-    active: "bg-green-500",
-    broken: "bg-red-500",
-    lost: "bg-gray-900",
-    retired: "bg-gray-400",
+    active: "bg-emerald-500",
+    broken: "bg-rose-500",
+    lost: "bg-zinc-900",
+    retired: "bg-zinc-400",
   };
 
   const statusLabels: Record<string, string> = {
     active: "ใช้งานปกติ",
-    broken: "ชำรุด",
+    broken: "ชำรุด/ส่งซ่อม",
     lost: "สูญหาย",
     retired: "เลิกใช้งาน",
-    pending: "รอลงทะเบียน",
   };
 
   const specs = asset.specifications || {};
 
   return (
-    <div className="min-h-screen bg-slate-50/50">
-      <div className="max-w-lg mx-auto bg-white min-h-screen shadow-sm">
-        {/* Header - Modern Sticky */}
-        <div className="flex items-center justify-between px-4 h-16 border-b border-gray-100 sticky top-0 bg-white/80 backdrop-blur-md z-20">
+    <div className="min-h-screen bg-[#FAFAFA]">
+      <div className="max-w-lg mx-auto bg-white min-h-screen shadow-[0_0_50px_rgba(0,0,0,0.02)]">
+        {/* Header - IG Style */}
+        <div className="flex items-center justify-between px-4 h-14 border-b border-zinc-100 sticky top-0 bg-white/90 backdrop-blur-md z-20">
           <div className="flex items-center gap-3">
-            <Link href="/scan" className="p-2 -ml-2 active:scale-90 transition-transform">
-              <ArrowLeft className="h-6 w-6 text-black" />
+            <Link href="/" className="active:opacity-50 transition-opacity">
+              <ArrowLeft className="h-6 w-6 text-zinc-900" />
             </Link>
-            <div>
-              <h1 className="text-sm font-black uppercase tracking-tight">ระบบติดตามอุปกรณ์</h1>
-              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none">ข้อมูลแบบเรียลไทม์</p>
-            </div>
+            <span className="text-base font-bold tracking-tight text-zinc-900">Asset Details</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full animate-pulse ${statusColors[asset.status] || "bg-gray-400"}`}></div>
-            <span className="text-[10px] font-black uppercase tracking-tighter">{statusLabels[asset.status] || asset.status}</span>
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-50 border border-zinc-100">
+            <div className={`w-1.5 h-1.5 rounded-full ${statusColors[asset.status] || "bg-zinc-400"}`}></div>
+            <span className="text-[10px] font-black uppercase tracking-wider text-zinc-600">{statusLabels[asset.status] || asset.status}</span>
           </div>
         </div>
-        </div>
 
-
-        <div className="p-4 space-y-6 pb-32">
-          {/* Instagram Story Border Style Card */}
-          <div className="p-[3px] rounded-[3rem] bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 shadow-xl shadow-pink-500/10">
-            <div className="relative overflow-hidden p-8 rounded-[2.9rem] bg-white border border-white shadow-inner">
-              <div className="absolute top-0 right-0 p-8 opacity-[0.03] text-zinc-900">
-                <QrCode size={150} />
-              </div>
-
-              <div className="relative z-10">
-                <div className="flex items-center gap-2 mb-4">
-                   <span className="w-2 h-2 rounded-full bg-zinc-900"></span>
-                   <p className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Asset Information</p>
+        <div className="p-5 space-y-8 pb-32">
+          {/* Main Visual Card - Professional IG Style */}
+          <div className="relative group">
+            <div className="absolute -inset-1 bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] rounded-[2.5rem] blur opacity-20 group-hover:opacity-30 transition duration-1000"></div>
+            <div className="relative bg-white rounded-[2.2rem] overflow-hidden border border-zinc-100 shadow-xl">
+              {/* Card Header Pattern */}
+              <div className="h-24 bg-zinc-900 relative overflow-hidden">
+                <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-zinc-100 via-transparent to-transparent"></div>
+                <div className="absolute top-6 right-6 text-white/10">
+                  <Package size={80} strokeWidth={1} />
                 </div>
-                
-                <h2 className="text-4xl font-black text-zinc-900 uppercase leading-none mb-2">
-                  {asset.brand || "ทั่วไป"}
-                </h2>
-                <p className="text-xl font-bold text-zinc-500">{asset.model || "ไม่ระบุรุ่น"}</p>
-
-                <div className="mt-10 flex items-center gap-2">
-                  <div className="px-4 py-2 bg-zinc-100 rounded-2xl border border-zinc-200">
-                    <p className="text-xs font-black text-zinc-900 tracking-tight uppercase">#{asset.assetCode || "---"}</p>
-                  </div>
-                  <div className="px-4 py-2 bg-zinc-900 rounded-2xl">
-                    <p className="text-xs font-black text-white tracking-tight uppercase">{asset.category || "ทั่วไป"}</p>
+                <div className="absolute bottom-4 left-6">
+                  <div className="px-3 py-1 rounded-lg bg-white/10 backdrop-blur-md border border-white/10">
+                    <p className="text-[9px] font-black text-white/80 uppercase tracking-[0.2em]">Hardware Asset</p>
                   </div>
                 </div>
               </div>
+
+              <div className="p-8 pt-6">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h2 className="text-4xl font-[1000] text-zinc-900 uppercase tracking-tighter leading-none mb-1">
+                      {asset.brand || "UNBRANDED"}
+                    </h2>
+                    <p className="text-lg font-bold text-zinc-400 tracking-tight">{asset.model || "Standard Model"}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-1">Code</p>
+                    <p className="text-xl font-black text-indigo-600 tracking-tighter leading-none">#{asset.assetCode || "N/A"}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-100">
+                    <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Category</p>
+                    <p className="text-sm font-bold text-zinc-900 flex items-center gap-2">
+                      <Tag size={14} className="text-indigo-500" />
+                      {asset.category || "General"}
+                    </p>
+                  </div>
+                  <div className="p-4 rounded-2xl bg-zinc-50 border border-zinc-100">
+                    <p className="text-[9px] font-black text-zinc-400 uppercase tracking-widest mb-1">Location</p>
+                    <p className="text-sm font-bold text-zinc-900 flex items-center gap-2">
+                      <MapPin size={14} className="text-rose-500" />
+                      <span className="truncate">{asset.location || "Office"}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Quick Actions */}
-          <div className="grid grid-cols-1 gap-3">
-            <Link href={`/track/${id}/register`} className="flex flex-col items-center gap-2 p-4 rounded-3xl bg-indigo-50 border border-indigo-100 active:scale-95 transition-transform">
-              <History className="text-indigo-500" size={24} />
-              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">แก้ไขข้อมูล</span>
-            </Link>
+          {/* MIS Alert Message - High Visibility */}
+          <div className="p-6 rounded-[2rem] bg-indigo-50 border-2 border-indigo-100 relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-4 text-indigo-200/50 group-hover:scale-110 transition-transform duration-500">
+              <Info size={64} />
+            </div>
+            <div className="relative z-10">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-6 h-6 rounded-full bg-indigo-600 flex items-center justify-center">
+                  <Activity size={12} className="text-white" />
+                </div>
+                <span className="text-xs font-black text-indigo-900 uppercase tracking-widest">MIS Help Desk</span>
+              </div>
+              <p className="text-sm font-bold text-indigo-900/80 leading-relaxed">
+                หากอุปกรณ์มีปัญหา ชำรุด หรือต้องการความช่วยเหลือ 
+                <span className="block text-indigo-600 font-black mt-1">กรุณาแจ้งฝ่าย MIS ทันที (โทร. 1234)</span>
+              </p>
+            </div>
           </div>
 
-          {/* Details List */}
-          <div className="space-y-6">
+          {/* Details Sections */}
+          <div className="space-y-10 px-1">
+            {/* General Info */}
             <section>
-              <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
-                <Info size={14} /> ข้อมูลทั่วไป
-              </h3>
-              <div className="bg-gray-50/50 rounded-3xl p-2 border border-gray-100">
-                <InfoRow label="หมายเลขซีเรียล" value={asset.serialNumber} icon={Barcode} colorClass="text-blue-500" />
-                <InfoRow label="สถานที่ติดตั้ง" value={asset.location} icon={MapPin} colorClass="text-rose-500" />
-                <InfoRow label="ประเภทอุปกรณ์" value={asset.category} icon={Tag} colorClass="text-emerald-500" />
-                <InfoRow 
-                  label="วันหมดประกัน" 
-                  value={asset.warrantyExpire ? format(new Date(asset.warrantyExpire), "d MMMM yyyy", { locale: th }) : null} 
-                  icon={Calendar} 
-                  colorClass="text-emerald-500" 
-                />
-                <InfoRow label="ผู้รับมอบ" value={asset.receivedBy} icon={User} colorClass="text-indigo-500" />
-                <InfoRow label="ผู้ส่งมอบ" value={asset.deliveredBy} icon={User} colorClass="text-gray-400" />
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-[1px] flex-1 bg-zinc-100"></div>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">General Information</h3>
+                <div className="h-[1px] flex-1 bg-zinc-100"></div>
               </div>
-            </section>
-
-            <section>
-              <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
-                <Activity size={14} /> สเปกเครื่อง
-              </h3>
-              <div className="bg-gray-50/50 rounded-3xl p-2 border border-gray-100">
-                <InfoRow label="ชื่อเครื่อง (Host)" value={specs.computerName} icon={Monitor} colorClass="text-indigo-500" />
-                <InfoRow label="เลขไอพี (IP)" value={specs.ipAddress} icon={Activity} colorClass="text-cyan-500" />
-                <InfoRow label="ขนาดจอ" value={specs.monitorSize} icon={Monitor} colorClass="text-purple-500" />
-                <InfoRow label="หน่วยความจำ (RAM)" value={specs.ram} icon={Cpu} colorClass="text-orange-500" />
-                <InfoRow label="ความจุ (Storage)" value={specs.storage} icon={Package} colorClass="text-slate-500" />
-              </div>
-            </section>
-
-            <section>
-              <h3 className="px-2 text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-2 flex items-center gap-2">
-                <Calendar size={14} /> วันที่สำคัญ
-              </h3>
-              <div className="bg-gray-50/50 rounded-3xl p-2 border border-gray-100">
+              <div className="grid grid-cols-1 gap-1">
+                <InfoRow label="Serial Number" value={asset.serialNumber} icon={Barcode} colorClass="text-zinc-900" />
+                <InfoRow label="Employee Name" value={asset.receivedBy} icon={User} colorClass="text-zinc-900" />
+                <InfoRow label="Department" value={asset.department} icon={Package} colorClass="text-zinc-900" />
                 <InfoRow 
-                  label="วันที่ซื้อ" 
-                  value={asset.purchaseDate ? format(new Date(asset.purchaseDate), "d MMMM yyyy", { locale: th }) : null} 
-                  icon={Calendar} 
-                  colorClass="text-gray-500" 
-                />
-                <InfoRow 
-                  label="วันหมดประกัน" 
-                  value={asset.warrantyExpire ? format(new Date(asset.warrantyExpire), "d MMMM yyyy", { locale: th }) : null} 
+                  label="Warranty Status" 
+                  value={asset.warrantyExpire ? format(new Date(asset.warrantyExpire), "d MMMM yyyy", { locale: th }) : "No Warranty"} 
                   icon={ShieldCheck} 
-                  colorClass={asset.warrantyExpire && new Date(asset.warrantyExpire) < new Date() ? "text-red-500" : "text-green-500"} 
-                />
-                <InfoRow 
-                  label="แก้ไขล่าสุด" 
-                  value={format(new Date(asset.updatedAt), "d MMM yyyy HH:mm", { locale: th })} 
-                  icon={Clock} 
-                  colorClass="text-gray-400" 
+                  colorClass={asset.warrantyExpire && new Date(asset.warrantyExpire) < new Date() ? "text-rose-500" : "text-emerald-500"} 
                 />
               </div>
             </section>
+
+            {/* Technical Specs */}
+            <section>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-[1px] flex-1 bg-zinc-100"></div>
+                <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-400">Technical Specs</h3>
+                <div className="h-[1px] flex-1 bg-zinc-100"></div>
+              </div>
+              <div className="grid grid-cols-1 gap-1">
+                <InfoRow label="Host Name" value={specs.computerName} icon={Monitor} colorClass="text-zinc-900" />
+                <InfoRow label="IP Address" value={specs.ipAddress} icon={Activity} colorClass="text-zinc-900" />
+                <InfoRow label="CPU / Processor" value={specs.cpu} icon={Cpu} colorClass="text-zinc-900" />
+                <InfoRow label="Memory (RAM)" value={specs.ram} icon={Activity} colorClass="text-zinc-900" />
+                <InfoRow label="Storage" value={specs.storage} icon={Package} colorClass="text-zinc-900" />
+              </div>
+            </section>
+          </div>
+          
+          <div className="pt-10 flex flex-col items-center justify-center gap-4 border-t border-zinc-100">
+             <div className="flex items-center gap-2 opacity-20">
+                <div className="w-1.5 h-1.5 rounded-full bg-zinc-900"></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-zinc-900"></div>
+                <div className="w-1.5 h-1.5 rounded-full bg-zinc-900"></div>
+             </div>
+             <p className="text-[9px] font-black text-zinc-300 uppercase tracking-[0.4em]">Asset Tracking System</p>
           </div>
         </div>
-
+      </div>
     </div>
   );
 }
+

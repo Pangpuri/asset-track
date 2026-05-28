@@ -13,32 +13,32 @@ import {
   Laptop,
   MoreHorizontal,
   ArrowRight,
-  Trash2
+  Trash2,
+  User,
+  PackagePlus
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { LogoutButton } from "@/components/logout-button";
 
 export const dynamic = "force-dynamic";
 
 async function getStats() {
   try {
-    const [stats] = await db.select({ // เพิ่มเงื่อนไข deletedAt IS NULL ในทุกๆ count
+    const [stats] = await db.select({ 
       total: sql<number>`count(*) filter (where ${assets.deletedAt} is null)::int`,
       active: sql<number>`count(*) filter (where ${assets.status} = 'active' and ${assets.deletedAt} is null)::int`,
       broken: sql<number>`count(*) filter (where ${assets.status} = 'broken' and ${assets.deletedAt} is null)::int`,
       pending: sql<number>`count(*) filter (where ${assets.status} = 'pending' and ${assets.deletedAt} is null)::int`,
       retired: sql<number>`count(*) filter (where ${assets.deletedAt} is not null)::int`,
-      // ข้อมูลไม่สมบูรณ์
       incomplete: sql<number>`count(*) filter (where ${assets.status} = 'active' and ${assets.deletedAt} is null and (${assets.serialNumber} is null or ${assets.serialNumber} = '' or ${assets.brand} is null or ${assets.brand} = '' or ${assets.location} is null or ${assets.location} = ''))::int`,
-      // สูญหาย
       lost: sql<number>`count(*) filter (where ${assets.status} = 'lost' and ${assets.deletedAt} is null)::int`,
-      // แยกตามประเภท
       computer: sql<number>`count(*) filter (where ${assets.category} = 'computer' and ${assets.deletedAt} is null)::int`,
       printer: sql<number>`count(*) filter (where ${assets.category} = 'printer' and ${assets.deletedAt} is null)::int`,
       monitor: sql<number>`count(*) filter (where ${assets.category} = 'monitor' and ${assets.deletedAt} is null)::int`,
       network: sql<number>`count(*) filter (where ${assets.category} = 'network' and ${assets.deletedAt} is null)::int`,
       other: sql<number>`count(*) filter (where (${assets.category} = 'other' or ${assets.category} is null) and ${assets.deletedAt} is null)::int`,
-      // แยกตามโรงงาน
       f1: sql<number>`count(*) filter (where (${assets.factory} ilike '%โรงงาน 1%' or ${assets.factory} ilike '%Factory 1%') and ${assets.deletedAt} is null)::int`,
       f2: sql<number>`count(*) filter (where (${assets.factory} ilike '%โรงงาน 2%' or ${assets.factory} ilike '%Factory 2%') and ${assets.deletedAt} is null)::int`,
       both: sql<number>`count(*) filter (where (${assets.factory} ilike '%ทั้ง 2 โรงงาน%' or ${assets.factory} ilike '%both%') and ${assets.deletedAt} is null)::int`,
@@ -68,13 +68,7 @@ async function getStats() {
   } catch (error) {
     console.error("Database error:", error);
     return { 
-      total: 0, 
-      active: 0, 
-      broken: 0, 
-      pending: 0,
-      retired: 0,
-      incomplete: 0,
-      lost: 0,
+      total: 0, active: 0, broken: 0, pending: 0, retired: 0, incomplete: 0, lost: 0,
       categories: { computer: 0, printer: 0, monitor: 0, network: 0, other: 0 },
       factories: { f1: 0, f2: 0, both: 0 }
     };
@@ -85,38 +79,10 @@ export default async function DashboardPage() {
   const stats = await getStats();
 
   const statusCards = [
-    {
-      title: "ใช้งานปกติ",
-      value: stats.active,
-      icon: CheckCircle2,
-      color: "text-emerald-500",
-      bgColor: "bg-emerald-50",
-      href: "/dashboard/assets?status=active"
-    },
-    {
-      title: "ชำรุด",
-      value: stats.broken,
-      icon: AlertTriangle,
-      color: "text-rose-500",
-      bgColor: "bg-rose-50",
-      href: "/dashboard/assets/repairs"
-    },
-    {
-      title: "รอลงทะเบียน",
-      value: stats.pending,
-      icon: Clock,
-      color: "text-amber-500",
-      bgColor: "bg-amber-50",
-      href: "/dashboard/assets?status=pending"
-    },
-    {
-      title: "จำหน่ายออก",
-      value: stats.retired,
-      icon: Trash2,
-      color: "text-zinc-500",
-      bgColor: "bg-zinc-100",
-      href: "/dashboard/assets/retired"
-    }
+    { title: "ใช้งานปกติ", value: stats.active, icon: CheckCircle2, color: "text-emerald-500", bgColor: "bg-emerald-50", href: "/dashboard/assets?status=active" },
+    { title: "ชำรุด", value: stats.broken, icon: AlertTriangle, color: "text-rose-500", bgColor: "bg-rose-50", href: "/dashboard/assets/repairs" },
+    { title: "รอลงทะเบียน", value: stats.pending, icon: Clock, color: "text-amber-500", bgColor: "bg-amber-50", href: "/dashboard/assets?status=pending" },
+    { title: "จำหน่ายออก", value: stats.retired, icon: Trash2, color: "text-zinc-500", bgColor: "bg-zinc-100", href: "/dashboard/assets/retired" }
   ];
 
   const categoryItems = [
@@ -140,10 +106,27 @@ export default async function DashboardPage() {
               </h1>
               <p className="text-zinc-400 font-black uppercase tracking-[0.3em] text-[8px]">MIS Asset Overview</p>
             </div>
-            <div className="flex flex-col items-end">
+            <div className="flex items-center gap-2">
+              <Link href="/dashboard/users">
+                <Button variant="outline" size="icon" className="rounded-xl border-zinc-200 text-zinc-600">
+                  <User size={18} />
+                </Button>
+              </Link>
+              <LogoutButton />
+            </div>
+          </div>
+
+          <div className="flex justify-between items-end mb-6">
+            <div className="flex flex-col">
                <span className="text-[9px] font-black text-zinc-400 uppercase tracking-widest leading-none mb-1">Total Assets</span>
                <span className="text-3xl font-[1000] text-zinc-900 leading-none tracking-tighter">{stats.total}</span>
             </div>
+            <Link href="/dashboard/assets/new">
+              <Button className="bg-zinc-900 text-white rounded-xl font-bold text-xs h-9 px-4 gap-2">
+                <PackagePlus size={14} />
+                New Asset
+              </Button>
+            </Link>
           </div>
 
           {/* Quick Actions / Categories Horizontal Scroll */}
@@ -168,7 +151,7 @@ export default async function DashboardPage() {
 
         <div className="px-5 py-6 space-y-6">
           
-          {/* Status Grid - 4 Columns (Scrollable on Mobile) */}
+          {/* Status Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {statusCards.map((card) => (
               <Link key={card.title} href={card.href} className="group active:scale-95 transition-transform">
@@ -185,7 +168,7 @@ export default async function DashboardPage() {
             ))}
           </div>
 
-          {/* Featured Action Card - Compact data integrity */}
+          {/* Featured Action Cards */}
           <Link href="/dashboard/assets?filter=incomplete">
             <div className="relative group active:scale-[0.98] transition-all overflow-hidden rounded-[2.2rem] bg-zinc-900 shadow-xl p-[2px]">
                <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 opacity-80" />
@@ -205,7 +188,6 @@ export default async function DashboardPage() {
             </div>
           </Link>
 
-          {/* Featured Action Card - Compact lost assets */}
           <Link href="/dashboard/assets/lost">
             <div className="relative group active:scale-[0.98] transition-all overflow-hidden rounded-[2.2rem] bg-zinc-900 shadow-xl p-[2px]">
                <div className="absolute inset-0 bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 opacity-80" />
@@ -225,7 +207,7 @@ export default async function DashboardPage() {
             </div>
           </Link>
 
-          {/* Category Progress - Density Refinement */}
+          {/* Insights Sections */}
           <div className="bg-white rounded-[2.2rem] p-7 shadow-sm border border-zinc-100">
             <h3 className="text-xs font-black text-zinc-900 mb-6 uppercase tracking-[0.2em] flex items-center gap-2">
               <div className="w-1.5 h-4 bg-indigo-600 rounded-full" />
@@ -244,17 +226,14 @@ export default async function DashboardPage() {
                     <span className="text-xs font-[1000] text-zinc-900">{item.value}</span>
                   </div>
                   <div className="h-1.5 w-full bg-zinc-50 rounded-full overflow-hidden border border-zinc-100/50">
-                    <div 
-                      className={cn("h-full transition-all duration-1000", item.color)} 
-                      style={{ width: `${stats.total > 0 ? (item.value / stats.total) * 100 : 0}%` }}
-                    />
+                    <div className={cn("h-full transition-all duration-1000", item.color)} style={{ width: `${stats.total > 0 ? (item.value / stats.total) * 100 : 0}%` }} />
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* New: Visual Status Distribution (Donut Chart) */}
+          {/* Status Distribution */}
           <div className="bg-white rounded-[2.2rem] p-8 shadow-sm border border-zinc-100 overflow-hidden">
             <h3 className="text-xs font-black text-zinc-900 mb-8 uppercase tracking-[0.2em] flex items-center gap-2">
               <div className="w-1.5 h-4 bg-emerald-500 rounded-full" />
@@ -262,35 +241,25 @@ export default async function DashboardPage() {
             </h3>
             
             <div className="flex flex-col sm:flex-row items-center gap-10">
-              {/* SVG Donut Chart */}
               <div className="relative w-36 h-36 flex-shrink-0">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
                   <circle cx="18" cy="18" r="16" fill="none" className="stroke-zinc-50" strokeWidth="4" />
                   {(() => {
                     let offset = 0;
                     const statusConfig = [
-                      { key: 'active', value: stats.active, color: '#10b981' }, // emerald-500
-                      { key: 'broken', value: stats.broken, color: '#f43f5e' }, // rose-500
-                      { key: 'pending', value: stats.pending, color: '#f59e0b' }, // amber-500
-                      { key: 'lost', value: stats.lost, color: '#71717a' }, 
+                      { key: 'active', value: stats.active, color: '#10b981' },
+                      { key: 'broken', value: stats.broken, color: '#f43f5e' },
+                      { key: 'pending', value: stats.pending, color: '#f59e0b' },
+                      { key: 'lost', value: stats.lost, color: '#71717a' },
                     ];
-                    
                     return statusConfig.map(s => {
                       if (s.value === 0 || stats.total === 0) return null;
                       const percentage = (s.value / stats.total) * 100;
                       const strokeDasharray = `${percentage} ${100 - percentage}`;
                       const currentOffset = offset;
                       offset += percentage;
-                      
                       return (
-                        <circle 
-                          key={s.key}
-                          cx="18" cy="18" r="16" fill="none" 
-                          stroke={s.color} strokeWidth="4" 
-                          strokeDasharray={strokeDasharray}
-                          strokeDashoffset={-currentOffset}
-                          className="transition-all duration-1000 ease-out"
-                        />
+                        <circle key={s.key} cx="18" cy="18" r="16" fill="none" stroke={s.color} strokeWidth="4" strokeDasharray={strokeDasharray} strokeDashoffset={-currentOffset} className="transition-all duration-1000 ease-out" />
                       );
                     });
                   })()}
@@ -301,7 +270,6 @@ export default async function DashboardPage() {
                 </div>
               </div>
 
-              {/* Legend */}
               <div className="flex-1 w-full space-y-3">
                 {[
                   { label: 'ใช้งานปกติ', value: stats.active, color: 'bg-emerald-500', sub: 'Healthy' },
@@ -326,46 +294,8 @@ export default async function DashboardPage() {
               </div>
             </div>
           </div>
-
-          {/* New: Factory Distribution Progress Bars */}
-          <div className="bg-white rounded-[2.2rem] p-8 shadow-sm border border-zinc-100">
-            <h3 className="text-xs font-black text-zinc-900 mb-8 uppercase tracking-[0.2em] flex items-center gap-2">
-              <div className="w-1.5 h-4 bg-purple-500 rounded-full" />
-              Factory Distribution
-            </h3>
-            
-            <div className="space-y-6">
-              {[
-                { label: 'โรงงาน 1', value: stats.factories.f1, color: 'from-blue-500 to-indigo-600' },
-                { label: 'โรงงาน 2', value: stats.factories.f2, color: 'from-purple-500 to-pink-600' },
-                { label: 'ทั้ง 2 โรงงาน', value: stats.factories.both, color: 'from-amber-400 to-orange-500' }
-              ].map((f) => {
-                if (f.value === 0 && stats.total > 0) return null;
-                const percentage = stats.total > 0 ? (f.value / stats.total) * 100 : 0;
-                return (
-                  <div key={f.label} className="space-y-2">
-                    <div className="flex justify-between items-end px-1">
-                      <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">{f.label}</span>
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-xs font-black text-zinc-900">{f.value}</span>
-                        <span className="text-[9px] font-bold text-zinc-300">({percentage.toFixed(0)}%)</span>
-                      </div>
-                    </div>
-                    <div className="h-3 w-full bg-zinc-50 rounded-full overflow-hidden border border-zinc-100/50 p-[1px]">
-                      <div 
-                        className={cn("h-full rounded-full transition-all duration-1000 ease-out bg-gradient-to-r shadow-sm", f.color)} 
-                        style={{ width: `${percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
         </div>
 
-        {/* Footer info */}
         <div className="text-center px-10 pb-4">
            <p className="text-[8px] font-black text-zinc-300 uppercase tracking-[0.4em]">MIS Management Portal v1.0</p>
         </div>
