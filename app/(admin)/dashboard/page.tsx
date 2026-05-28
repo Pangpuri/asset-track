@@ -21,7 +21,6 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { LogoutButton } from "@/components/logout-button";
 
 export const dynamic = "force-dynamic";
 
@@ -98,7 +97,6 @@ export default async function DashboardPage() {
               </h1>
               <p className="text-zinc-400 font-black uppercase tracking-[0.3em] text-[8px]">MIS Asset Management</p>
             </div>
-            <LogoutButton />
           </div>
 
           <div className="flex justify-between items-end mb-6">
@@ -165,6 +163,9 @@ export default async function DashboardPage() {
                          <h3 className="text-xl font-[1000] text-zinc-900 tracking-tight uppercase">Incomplete Data</h3>
                       </div>
                       <p className="text-[10px] font-bold text-zinc-400 leading-relaxed uppercase tracking-tighter">พบอุปกรณ์ข้อมูลไม่สมบูรณ์ <span className="text-rose-600 font-black">{stats.incomplete}</span> รายการ</p>
+                   </div>
+                   <div className="relative z-10 bg-zinc-900 text-white p-4 rounded-xl shadow-lg group-hover:translate-x-1 transition-transform">
+                      <ArrowRight size={20} strokeWidth={3} />
                    </div>
                  </div>
               </div>
@@ -258,10 +259,6 @@ export default async function DashboardPage() {
               ))}
             </div>
           </div>
-        </div>
-
-        <div className="text-center px-10 pb-6 mt-10">
-           <p className="text-[9px] font-black text-zinc-300 uppercase tracking-[0.5em]">MIS Enterprise Resource Planning v2.0</p>
         </div>
       </div>
     </div>
