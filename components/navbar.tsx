@@ -129,7 +129,7 @@ export function Navbar() {
           <div className="flex items-center gap-1.5">
             {!isLoading && !isAuthenticated ? (
               <Link href="/login">
-                <Button variant="ghost" size="sm" className="h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest gap-2 text-indigo-400 hover:bg-white/5 hover:text-white transition-all">
+                <Button variant="ghost" size="sm" className="h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest gap-2 text-indigo-400 border border-indigo-400/40 hover:bg-indigo-400/10 hover:text-white hover:border-indigo-400 transition-all">
                   <Shield size={16} />
                   MIS Login
                 </Button>
