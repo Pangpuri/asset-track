@@ -8,10 +8,10 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get("category");
     const factory = searchParams.get("factory");
+    const count = parseInt(searchParams.get("count") || "1");
     const checkCode = searchParams.get("checkCode");
-    const excludeId = searchParams.get("excludeId"); // สำหรับกรณีหน้า Edit ไม่ให้เช็คซ้ำกับตัวเอง
+    const excludeId = searchParams.get("excludeId");
 
-    // ลอจิกสำหรับเช็คว่ารหัสซ้ำหรือไม่
     if (checkCode) {
       const query = excludeId 
         ? sql`SELECT id FROM assets WHERE asset_code = ${checkCode} AND id != ${excludeId} LIMIT 1`
@@ -42,7 +42,6 @@ export async function GET(req: Request) {
 
     const fullPrefix = `${prefixMap[category] || "E"}${factoryMap[factory] || "E"}`;
 
-    // ค้นหาเลขล่าสุดที่ขึ้นต้นด้วย fullPrefix นี้
     const lastAsset = await db.execute(sql`
       SELECT asset_code 
       FROM assets 
@@ -61,12 +60,15 @@ export async function GET(req: Request) {
       }
     }
 
-    const nextNumber = lastNumber + 1;
-    const nextCode = `${fullPrefix}${nextNumber.toString().padStart(5, '0')}`;
+    const nextCodes = [];
+    for (let i = 1; i <= count; i++) {
+      const nextNumber = lastNumber + i;
+      nextCodes.push(`${fullPrefix}${nextNumber.toString().padStart(5, '0')}`);
+    }
 
-    return NextResponse.json({ nextCode });
+    return NextResponse.json({ nextCodes });
   } catch (error) {
-    console.error("Error fetching next code:", error);
+    console.error("Error fetching next codes:", error);
     return NextResponse.json(
       { error: "ไม่สามารถคำนวณรหัสถัดไปได้" },
       { status: 500 }
@@ -76,80 +78,85 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const { count, category, factory } = await req.json();
-    const numToCreate = parseInt(count) || 1;
-
-    if (numToCreate <= 0 || numToCreate > 100) {
-      return NextResponse.json(
-        { error: "จำนวนต้องอยู่ระหว่าง 1 ถึง 100" },
-        { status: 400 }
-      );
-    }
-
-    // กำหนด Prefix ตามหมวดหมู่
-    const prefixMap: Record<string, string> = {
-      computer: "PC",
-      printer: "PT",
-      monitor: "MO",
-      network: "NW",
-      other: "E",
-    };
-
-    const categoryPrefix = prefixMap[category as string] || "E";
+    const body = await req.json();
     
-    // กำหนดรหัสโรงงานสำหรับ Prefix
-    const factoryMap: Record<string, string> = {
-      "โรงงาน 1": "1",
-      "โรงงาน 2": "2",
-      "อื่นๆ": "E",
-    };
-    const factoryCode = factoryMap[factory as string] || "1";
-    
-    // รวมเป็น Full Prefix เช่น PC1, PC2, PCE
-    const fullPrefix = `${categoryPrefix}${factoryCode}`;
+    // Support both single config (backward compatibility) and array of configs
+    const configs = Array.isArray(body) ? body : [body];
+    const allNewAssets: any[] = [];
 
-    // ค้นหาเลขล่าสุดที่ขึ้นต้นด้วย fullPrefix นี้เท่านั้น เพื่อแยก Sequence ของแต่ละโรงงาน
-    const lastAsset = await db.execute(sql`
-      SELECT asset_code 
-      FROM assets 
-      WHERE asset_code LIKE ${fullPrefix + '%'} 
-      ORDER BY length(asset_code) DESC, asset_code DESC 
-      LIMIT 1
-    `);
+    // Map for current sequence trackers to handle multiple items of same type in one batch
+    const sequenceTrackers: Record<string, number> = {};
 
-    let lastNumber = 0;
-    if (lastAsset.length > 0) {
-      const row = lastAsset[0] as unknown as { asset_code: string };
-      const lastCode = row.asset_code;
+    for (const config of configs) {
+      const { count, category, factory } = config;
+      const numToCreate = parseInt(count) || 1;
+
+      const prefixMap: Record<string, string> = {
+        computer: "PC",
+        printer: "PT",
+        monitor: "MO",
+        network: "NW",
+        other: "E",
+      };
+      const categoryPrefix = prefixMap[category as string] || "E";
       
-      // ตัดเอาเฉพาะส่วนที่เป็นตัวเลขต่อจาก Prefix (เช่น PC100005 ตัด PC1 ออกเหลือ 00005)
-      const suffix = lastCode.substring(fullPrefix.length);
-      if (suffix) {
-        lastNumber = parseInt(suffix) || 0;
+      const factoryMap: Record<string, string> = {
+        "โรงงาน 1": "1",
+        "โรงงาน 2": "2",
+        "อื่นๆ": "E",
+      };
+      const factoryCode = factoryMap[factory as string] || "1";
+      const fullPrefix = `${categoryPrefix}${factoryCode}`;
+
+      // Initialize tracker if not exists
+      if (sequenceTrackers[fullPrefix] === undefined) {
+        const lastAsset = await db.execute(sql`
+          SELECT asset_code 
+          FROM assets 
+          WHERE asset_code LIKE ${fullPrefix + '%'} 
+          ORDER BY length(asset_code) DESC, asset_code DESC 
+          LIMIT 1
+        `);
+
+        let lastNumber = 0;
+        if (lastAsset.length > 0) {
+          const row = lastAsset[0] as unknown as { asset_code: string };
+          const lastCode = row.asset_code;
+          const suffix = lastCode.substring(fullPrefix.length);
+          if (suffix) {
+            lastNumber = parseInt(suffix) || 0;
+          }
+        }
+        sequenceTrackers[fullPrefix] = lastNumber;
+      }
+
+      for (let i = 1; i <= numToCreate; i++) {
+        sequenceTrackers[fullPrefix]++;
+        const assetCode = `${fullPrefix}${sequenceTrackers[fullPrefix].toString().padStart(5, '0')}`;
+        
+        allNewAssets.push({
+          assetCode,
+          category: category || "other",
+          factory: factory || "โรงงาน 1",
+          status: "pending" as const,
+        });
       }
     }
 
-    const newAssets = [];
-    for (let i = 1; i <= numToCreate; i++) {
-      const nextNumber = lastNumber + i;
-      // ทำเลขให้เป็น 5 หลัก เช่น PC00001
-      const assetCode = `${fullPrefix}${nextNumber.toString().padStart(5, '0')}`;
-      
-      newAssets.push({
-        assetCode,
-        category: category || "other",
-        factory: factory || "โรงงาน 1", // บันทึกชื่อโรงงานลงไปด้วยเพื่อให้ Filter ในระบบทำงานได้
-        status: "pending" as const,
-      });
+    if (allNewAssets.length === 0) {
+      return NextResponse.json({ error: "No assets to create" }, { status: 400 });
     }
 
-    const created = await db.insert(assets).values(newAssets).returning();
+    if (allNewAssets.length > 200) {
+       return NextResponse.json({ error: "จำกัดการสร้างไม่เกิน 200 รายการต่อครั้ง" }, { status: 400 });
+    }
 
+    const created = await db.insert(assets).values(allNewAssets).returning();
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
     console.error("Error creating bulk assets:", error);
     return NextResponse.json(
-      { error: "ไม่สามารถสร้างข้อมูลชุดใหญ่ได้" },
+      { error: "ไม่สามารถสร้างข้อมูลได้" },
       { status: 500 }
     );
   }

@@ -83,7 +83,12 @@ async function getStats() {
       }
     };
   } catch (error) {
-    console.error("Database error:", error);
+    // ตรวจสอบว่าเป็นปัญหาเรื่องการเชื่อมต่อหรือไม่ (เช่น ENOTFOUND)
+    if (error instanceof Error && 'code' in error && error.code === 'ENOTFOUND') {
+      console.error("Database connection failed: DNS lookup error (ENOTFOUND). Please check server's DNS settings or Supabase status.");
+    } else {
+      console.error("Dashboard Stats Fetch Error:", error);
+    }
     return { 
       total: 0, active: 0, broken: 0, pending: 0, retired: 0, incomplete: 0, lost: 0,
       categories: { computer: 0, printer: 0, monitor: 0, network: 0, other: 0 },

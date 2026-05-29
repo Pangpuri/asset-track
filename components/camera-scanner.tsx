@@ -76,9 +76,18 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
   }, [pathname, killCamera]);
 
   useEffect(() => {
+    let isMounted = true;
+
     const startScanner = async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
+        if (!isMounted) return;
+        // ตรวจสอบว่าเบราว์เซอร์รองรับ mediaDevices หรือไม่
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          toast.error("เบราว์เซอร์ของคุณไม่รองรับการเข้าถึงกล้อง หรือไม่ได้ใช้งานผ่าน HTTPS");
+          return;
+        }
+
+        const stream = await navigator.mediaDevices.getUserMedia({
           video: { 
             facingMode: "environment",
             width: { ideal: 1280 },
@@ -86,6 +95,11 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
           } 
         });
         
+        if (!isMounted) {
+          stream.getTracks().forEach(track => track.stop());
+          return;
+        }
+
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -105,7 +119,7 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
 
               try {
                 const barcodes = await detector.detect(videoRef.current);
-                if (barcodes.length > 0) {
+                if (barcodes.length > 0 && isMounted) {
                   const decodedText = barcodes[0].rawValue;
                   
                   if (decodedText === lastCodeRef.current) {
@@ -122,20 +136,27 @@ export function CameraScanner({ isFlashOn, onScanSuccess }: CameraScannerProps) 
                   }
                 }
               } catch (e) {}
-              scanningLoopRef.current = requestAnimationFrame(detectLoop);
+              if (isMounted) {
+                scanningLoopRef.current = requestAnimationFrame(detectLoop);
+              }
             };
             
             scanningLoopRef.current = requestAnimationFrame(detectLoop);
           };
         }
       } catch (err) {
-        console.error("Camera Access Error:", err);
-        toast.error("ไม่สามารถเข้าถึงกล้องได้");
+        if (isMounted) {
+          console.error("Camera Access Error:", err);
+          toast.error("ไม่สามารถเข้าถึงกล้องได้: " + (err instanceof Error ? err.message : "Unknown error"));
+        }
       }
     };
 
     startScanner();
-    return () => { killCamera(); };
+    return () => { 
+      isMounted = false;
+      killCamera(); 
+    };
   }, [onScanSuccess, killCamera]);
 
   // ป้องกันกรณี Refresh หน้าจอหรือปิด Browser ทันที
