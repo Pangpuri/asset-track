@@ -338,7 +338,12 @@ export default function BulkPrintPage() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-black text-zinc-900 capitalize">{batch.category}</span>
+                          <span className="font-black text-zinc-900">
+                            {batch.category === "computer" ? "คอมพิวเตอร์/โน้ตบุ๊ค" :
+                             batch.category === "printer" ? "เครื่องพิมพ์" :
+                             batch.category === "monitor" ? "จอภาพ" :
+                             batch.category === "network" ? "อุปกรณ์เครือข่าย" : "อื่นๆ"}
+                          </span>
                           <span className="text-[10px] bg-zinc-100 px-2 py-0.5 rounded-full font-bold text-zinc-500 uppercase">{batch.factory}</span>
                         </div>
                         <p className="text-[10px] font-mono font-bold text-indigo-600 mt-1">
