@@ -78,6 +78,8 @@ export default function LoginPage() {
               <div className="relative">
                 <Input
                   type="password"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   required
                   autoFocus
                   placeholder="••••••••"
