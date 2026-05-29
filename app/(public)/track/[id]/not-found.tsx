@@ -20,7 +20,7 @@ export default function NotFound() {
         </div>
 
         <div className="space-y-3">
-          <h1 className="text-4xl font-[1000] tracking-tighter uppercase italic bg-gradient-to-r from-white via-white to-white/40 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-[1000] tracking-tighter uppercase italic bg-gradient-to-r from-white via-white to-white/40 bg-clip-text text-transparent pr-2">
             Invalid QR
           </h1>
           <div className="flex flex-col gap-2">
