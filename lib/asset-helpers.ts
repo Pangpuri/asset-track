@@ -2,6 +2,34 @@ import { assets } from "@/db/schema";
 import { isNull, and, or, ilike, eq } from "drizzle-orm";
 
 /**
+ * แผนผังคำนำหน้าสำหรับประเภทอุปกรณ์
+ */
+export const prefixMap: Record<string, string> = {
+  computer: "PC",
+  printer: "PT",
+  monitor: "MO",
+  network: "NW",
+  other: "E",
+};
+
+/**
+ * แผนผังรหัสสำหรับโรงงาน
+ */
+export const factoryMap: Record<string, string> = {
+  "โรงงาน 1": "1",
+  "โรงงาน 2": "2",
+  "อื่นๆ": "E",
+  "ทั้ง 2 โรงงาน": "E",
+};
+
+/**
+ * ตรวจสอบว่าสถานะที่ส่งมาควรทำการ Soft Delete หรือไม่
+ */
+export function isSoftDeleteStatus(status?: string | null) {
+  return status === "retired" || status === "lost";
+}
+
+/**
  * Logic สำหรับการเตรียมข้อมูล Specifications ตามประเภทอุปกรณ์
  */
 export function formatSpecifications(data: any) {

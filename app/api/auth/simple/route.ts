@@ -3,8 +3,9 @@ import { cookies } from "next/headers";
 
 export async function POST(request: Request) {
   const { password } = await request.json();
+  const adminPassword = process.env.ADMIN_PASSWORD || "88888888";
 
-  if (password === "88888888") {
+  if (password === adminPassword) {
     const cookieStore = await cookies();
     
     // เซต Cookie สำหรับเซสชัน MIS (หมดอายุใน 7 วัน)

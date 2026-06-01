@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { assets, logs } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { formatSpecifications, isSoftDeleteStatus } from "@/lib/asset-helpers";
 
 // Method สำหรับดึงข้อมูลอุปกรณ์ตัวเดียว
 export async function GET(
@@ -30,75 +31,57 @@ export async function PATCH(
     const { id } = await params;
     const body = await req.json();
 
-    // 1. แยกค่าที่ต้องจัดการพิเศษออกมา
     const {
       id: _,
-      computerName, ipAddress, monitorSize,
       purchaseDate, warrantyExpire, warrantyStatus,
-      assignedTo, // รับค่าจากหน้า Register
+      assignedTo,
       specifications: existingSpecs,
       ...rest
     } = body;
 
-    if (!id) {
-      return NextResponse.json({ error: "Missing id" }, { status: 400 });
-    }
+    if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
-    // ดึงข้อมูลเดิมเพื่อตรวจสอบความถูกต้อง (Defensive Programming)
     const currentAsset = await db.query.assets.findFirst({
       where: eq(assets.id, id),
     });
 
     if (!currentAsset) return NextResponse.json({ error: "Asset not found" }, { status: 404 });
 
-    // 2. จัดการข้อมูล specifications (JSONB)
-    // รวบรวมข้อมูลสเปกจาก root level ของ body มาใส่ใน object เดียวกัน
+    // ใช้ Helper ในการจัดรูปแบบ specifications และรวบรวมกับข้อมูลเดิม
     const updatedSpecs = {
       ...(currentAsset.specifications || {}),
-      ...(computerName !== undefined && { computerName: computerName || null }),
-      ...(ipAddress !== undefined && { ipAddress: ipAddress || null }),
-      ...(monitorSize !== undefined && { monitorSize: monitorSize || null }),
+      ...formatSpecifications(body),
     };
 
-    // 3. เตรียมข้อมูลสำหรับการอัปเดต (กรองค่า undefined ออก)
     const updateFields: Partial<typeof assets.$inferInsert> = {
       ...rest,
       specifications: updatedSpecs,
-      warrantyStatus: warrantyStatus !== undefined ? warrantyStatus : undefined,
       updatedAt: new Date(),
     };
 
-    // จัดการ Soft Delete (deletedAt) ตามสถานะ
-    if (rest.status === "retired" || rest.status === "lost") {
+    // ใช้ Helper จัดการ Soft Delete
+    if (isSoftDeleteStatus(rest.status)) {
       updateFields.deletedAt = new Date();
-    } else if (rest.status && rest.status !== "retired" && rest.status !== "lost") {
+    } else if (rest.status) {
       updateFields.deletedAt = null;
     }
 
-    // แปลงวันที่เฉพาะเมื่อมีการส่งค่ามา และไม่เป็นค่าว่าง
     if (purchaseDate !== undefined) {
       updateFields.purchaseDate = purchaseDate && purchaseDate !== "" ? new Date(purchaseDate) : null;
     }
     if (warrantyExpire !== undefined) {
       updateFields.warrantyExpire = warrantyExpire && warrantyExpire !== "" ? new Date(warrantyExpire) : null;
     }
-    // จัดการเรื่องผู้รับมอบให้รองรับทั้งจากหน้า Admin และหน้า Register
     if (assignedTo !== undefined) {
       updateFields.receivedBy = assignedTo || null;
     }
 
-    // ทำการอัปเดตข้อมูลในฐานข้อมูล
     const updated = await db
       .update(assets)
       .set(updateFields)
       .where(eq(assets.id, id))
       .returning();
 
-    if (updated.length === 0) {
-      return NextResponse.json({ error: "Asset not found" }, { status: 404 });
-    }
-
-    // ล้าง Cache เพื่อให้หน้า Dashboard และหน้าติดตามแสดงข้อมูลใหม่ทันที
     revalidatePath("/dashboard/assets");
     revalidatePath(`/track/${id}`);
     revalidatePath("/dashboard");
@@ -116,24 +99,25 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
+    if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
-    if (!id) {
-      return NextResponse.json({ error: "Missing id" }, { status: 400 });
-    }
+    const retired = await db.update(assets)
+      .set({ 
+        deletedAt: new Date(), 
+        status: "retired", 
+        updatedAt: new Date() 
+      })
+      .where(eq(assets.id, id))
+      .returning();
 
-    // ทำการ Soft Delete โดยการอัปเดต deletedAt และเปลี่ยนสถานะเป็น retired
-    const retired = await db.update(assets).set({ deletedAt: new Date(), status: "retired", updatedAt: new Date() }).where(eq(assets.id, id)).returning();
-    revalidatePath("/dashboard/assets"); // ล้าง cache ของหน้า Assets List
+    revalidatePath("/dashboard/assets");
 
-    if (retired.length === 0) {
-      return NextResponse.json({ error: "Asset not found" }, { status: 404 });
-    }
+    if (retired.length === 0) return NextResponse.json({ error: "Asset not found" }, { status: 404 });
 
-    // บันทึก Log การจำหน่ายออกเพื่อใช้ทำรายงานภายหลัง
     await db.insert(logs).values({
       assetId: id,
       action: "retire",
-      notes: "จำหน่ายออกผ่านระบบ (เพื่อไม่ให้เลขซ้ำ)",
+      notes: "จำหน่ายออกผ่านระบบ (เพื่อให้เลขไม่ซ้ำ)",
       actionDate: new Date(),
     });
 

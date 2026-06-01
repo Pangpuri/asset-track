@@ -28,14 +28,13 @@ export function BulkPrintSelected({ selectedAssets, onClear }: BulkPrintSelected
     if (windowPrint) {
       const stickersHTML = selectedAssets.map(asset => `
         <div class="sticker">
-            <div class="sticker-header">
-              <img src="${asset.qrData}" alt="QR" class="qr-img" />
-              <div class="asset-info">
-                <div class="label">รหัสทรัพย์สิน</div>
-                <div class="value">${asset.assetCode || "NEW-QR"}</div>
-              </div>
-            </div>
-            <div class="footer">ฝ่าย MIS</div>
+          <div class="qr-section">
+            <img src="${asset.qrData}" alt="QR" />
+          </div>
+          <div class="info-section">
+            <div class="dept-label">ฝ่าย MIS</div>
+            <div class="asset-code">${asset.assetCode || "NEW-QR"}</div>
+          </div>
         </div>
       `).join('');
 
@@ -44,29 +43,49 @@ export function BulkPrintSelected({ selectedAssets, onClear }: BulkPrintSelected
           <head>
             <title>Print Bulk QR Codes</title>
             <style>
-              body { font-family: sans-serif; margin: 0; padding: 20px; }
-              .grid { display: grid; grid-template-columns: repeat(auto-fill, 170px); gap: 0; }
+              @page { size: auto; margin: 0mm; }
+              body { margin: 5mm; padding: 0; font-family: sans-serif; background: #f0f0f0; }
+              .grid { 
+                display: grid; 
+                grid-template-columns: repeat(auto-fill, 48mm); 
+                gap: 2mm; 
+                justify-content: center;
+              }
               .sticker { 
-                width: 170px; 
-                height: 95px;
-                border: 1px solid black; 
-                padding: 5px; 
-                text-align: center;
-                page-break-inside: avoid;
+                width: 48mm; 
+                height: 28mm; 
+                padding: 2mm;
+                box-sizing: border-box;
                 background: white;
                 display: flex;
-                flex-direction: column;
-                justify-content: space-between;
-                box-sizing: border-box;
+                align-items: center;
+                justify-content: center;
+                gap: 2mm;
+                page-break-inside: avoid;
+                border: 0.1mm solid #eee;
+                color: black;
               }
-              .sticker-header { display: flex; align-items: center; justify-content: flex-start; gap: 8px; flex: 1; }
-              .qr-img { width: 50px; height: 50px; }
-              .asset-info { text-align: left; flex: 1; min-width: 0; } /* เพิ่ม flex: 1 และ min-width: 0 */
-              .label { font-size: 7px; font-weight: bold; color: #666; text-transform: uppercase; }
-              .value { font-size: 12px; font-weight: bold; color: black; word-break: break-all; line-height: 1.2; } /* ลดขนาดและเพิ่ม word-break */
-              .footer { border-top: 0.5px solid #eee; padding-top: 2px; font-size: 8px; font-weight: bold; }
+              .qr-section { width: 22mm; flex-shrink: 0; }
+              .qr-section img { width: 100%; height: auto; display: block; }
+              .info-section { 
+                display: flex; 
+                flex-direction: column; 
+                justify-content: center;
+                text-align: left;
+                flex-grow: 1;
+                min-width: 0;
+              }
+              .dept-label { font-size: 7pt; font-weight: bold; margin-bottom: 0.5mm; }
+              .asset-code { 
+                fontSize: 11pt; 
+                font-weight: 900; 
+                line-height: 1;
+                word-break: break-all;
+              }
               @media print {
-                .no-print { display: none; }
+                body { margin: 0; background: none; }
+                .grid { gap: 0; }
+                .sticker { border: none; }
               }
             </style>
           </head>
@@ -74,7 +93,12 @@ export function BulkPrintSelected({ selectedAssets, onClear }: BulkPrintSelected
             <div class="grid">
               ${stickersHTML}
             </div>
-            <script>setTimeout(() => { window.print(); window.close(); }, 500);</script>
+            <script>
+              setTimeout(() => { 
+                window.print(); 
+                window.close(); 
+              }, 500);
+            </script>
           </body>
         </html>
       `);

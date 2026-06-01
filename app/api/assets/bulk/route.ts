@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
-import { assets } from "@/db/schema/assets";
+import { assets } from "@/db/schema";
 import { sql } from "drizzle-orm";
+import { prefixMap, factoryMap } from "@/lib/asset-helpers";
 
 export async function GET(req: Request) {
   try {
@@ -24,21 +25,6 @@ export async function GET(req: Request) {
     if (!category || !factory) {
       return NextResponse.json({ error: "Missing params" }, { status: 400 });
     }
-
-    const prefixMap: Record<string, string> = {
-      computer: "PC",
-      printer: "PT",
-      monitor: "MO",
-      network: "NW",
-      other: "E",
-    };
-
-    const factoryMap: Record<string, string> = {
-      "โรงงาน 1": "1",
-      "โรงงาน 2": "2",
-      "อื่นๆ": "E",
-      "ทั้ง 2 โรงงาน": "E",
-    };
 
     const fullPrefix = `${prefixMap[category] || "E"}${factoryMap[factory] || "E"}`;
 
@@ -82,7 +68,7 @@ export async function POST(req: Request) {
     
     // Support both single config (backward compatibility) and array of configs
     const configs = Array.isArray(body) ? body : [body];
-    const allNewAssets: any[] = [];
+    const allNewAssets: (typeof assets.$inferInsert)[] = [];
 
     // Map for current sequence trackers to handle multiple items of same type in one batch
     const sequenceTrackers: Record<string, number> = {};
@@ -91,20 +77,7 @@ export async function POST(req: Request) {
       const { count, category, factory } = config;
       const numToCreate = parseInt(count) || 1;
 
-      const prefixMap: Record<string, string> = {
-        computer: "PC",
-        printer: "PT",
-        monitor: "MO",
-        network: "NW",
-        other: "E",
-      };
       const categoryPrefix = prefixMap[category as string] || "E";
-      
-      const factoryMap: Record<string, string> = {
-        "โรงงาน 1": "1",
-        "โรงงาน 2": "2",
-        "อื่นๆ": "E",
-      };
       const factoryCode = factoryMap[factory as string] || "1";
       const fullPrefix = `${categoryPrefix}${factoryCode}`;
 
