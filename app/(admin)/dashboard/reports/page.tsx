@@ -203,23 +203,25 @@ export default function ExportPDFPage() {
               </div>
             ))}
             
-            <Button 
-                className="w-full h-14 mt-8 bg-zinc-900 hover:bg-black text-white rounded-2xl font-[1000] text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all gap-3" 
-                onClick={handlePrint}
-                disabled={isExporting}
-            >
-                {isExporting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Printer className="h-5 w-5" />}
-                Print PDF
-            </Button>
+            <div className="hidden md:flex flex-col space-y-4 mt-8">
+              <Button 
+                  className="w-full h-14 bg-zinc-900 hover:bg-black text-white rounded-2xl font-[1000] text-sm uppercase tracking-widest shadow-xl active:scale-95 transition-all gap-3" 
+                  onClick={handlePrint}
+                  disabled={isExporting}
+              >
+                  {isExporting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Printer className="h-5 w-5" />}
+                  Print PDF
+              </Button>
 
-            <Button 
-                className="w-full h-14 mt-4 bg-white hover:bg-zinc-50 text-zinc-900 border-2 border-zinc-200 rounded-2xl font-[1000] text-sm uppercase tracking-widest active:scale-95 transition-all gap-3 shadow-sm" 
-                onClick={handleExportCsv}
-                disabled={isCsvExporting}
-            >
-                {isCsvExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-5 w-5 text-indigo-600" />}
-                Export CSV
-            </Button>
+              <Button 
+                  className="w-full h-14 bg-white hover:bg-zinc-50 text-zinc-900 border-2 border-zinc-200 rounded-2xl font-[1000] text-sm uppercase tracking-widest active:scale-95 transition-all gap-3 shadow-sm" 
+                  onClick={handleExportCsv}
+                  disabled={isCsvExporting}
+              >
+                  {isCsvExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-5 w-5 text-indigo-600" />}
+                  Export CSV
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -294,26 +296,6 @@ export default function ExportPDFPage() {
                 </div>
             </div>
 
-            {/* Mobile Actions (Visible only on Mobile) */}
-            <div className="grid grid-cols-2 gap-3 mb-8 md:hidden">
-                <Button 
-                    className="h-14 bg-zinc-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest gap-2 shadow-lg" 
-                    onClick={handlePrint}
-                    disabled={isExporting}
-                >
-                    {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
-                    PDF
-                </Button>
-                <Button 
-                    className="h-14 bg-white text-zinc-900 border-2 border-zinc-100 rounded-2xl font-black text-xs uppercase tracking-widest gap-2 shadow-sm" 
-                    onClick={handleExportCsv}
-                    disabled={isCsvExporting}
-                >
-                    {isCsvExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4 text-indigo-600" />}
-                    CSV
-                </Button>
-            </div>
-
             <div className="flex-1 flex flex-col items-center justify-center text-center p-6 border-2 border-dashed border-zinc-200 rounded-[2rem] bg-white/50 min-h-[200px]">
                 {loading ? (
                     <div className="space-y-4">
@@ -332,6 +314,27 @@ export default function ExportPDFPage() {
                                 ตรงตามเงื่อนไขที่คุณเลือก
                             </p>
                         </div>
+
+                        {/* Actions for Mobile and Desktop when ready */}
+                        <div className="grid grid-cols-2 gap-3 w-full max-w-sm mx-auto md:hidden">
+                            <Button 
+                                className="h-14 bg-zinc-900 hover:bg-black text-white rounded-2xl font-black text-xs uppercase tracking-widest gap-2 shadow-lg active:scale-95 transition-all" 
+                                onClick={handlePrint}
+                                disabled={isExporting}
+                            >
+                                {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Printer className="h-4 w-4" />}
+                                PDF
+                            </Button>
+                            <Button 
+                                className="h-14 bg-white text-zinc-900 border-2 border-zinc-100 rounded-2xl font-black text-xs uppercase tracking-widest gap-2 shadow-sm active:scale-95 transition-all" 
+                                onClick={handleExportCsv}
+                                disabled={isCsvExporting}
+                            >
+                                {isCsvExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4 text-indigo-600" />}
+                                CSV
+                            </Button>
+                        </div>
+
                         <div className="bg-white px-6 py-3 rounded-2xl shadow-sm border border-zinc-100 inline-flex items-center gap-2">
                             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
                             <span className="text-[9px] font-black uppercase tracking-[0.2em] text-zinc-400">
