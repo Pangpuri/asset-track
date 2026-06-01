@@ -92,21 +92,28 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const assetId = searchParams.get("assetId");
 
-    if (!assetId) {
-      return NextResponse.json(
-        { error: "Missing assetId parameter" },
-        { status: 400 }
-      );
+    let result;
+    if (assetId) {
+      // ดึงประวัติทั้งหมดสำหรับ asset นี้ พร้อมข้อมูลพนักงาน
+      result = await db.query.logs.findMany({
+        where: eq(logs.assetId, assetId),
+        orderBy: [desc(logs.actionDate)],
+        with: {
+          employee: true,
+          asset: true
+        }
+      });
+    } else {
+      // ดึงประวัติทั้งหมดของระบบ (สำหรับหน้า Global Logs)
+      result = await db.query.logs.findMany({
+        orderBy: [desc(logs.actionDate)],
+        limit: 100, // จำกัดไว้ที่ 100 รายการล่าสุด
+        with: {
+          employee: true,
+          asset: true
+        }
+      });
     }
-
-    // ดึงประวัติทั้งหมดสำหรับ asset นี้ พร้อมข้อมูลพนักงาน
-    const result = await db.query.logs.findMany({
-      where: eq(logs.assetId, assetId),
-      orderBy: [desc(logs.actionDate)],
-      with: {
-        employee: true
-      }
-    });
 
     return NextResponse.json(result);
   } catch (error) {

@@ -17,7 +17,8 @@ import {
   RefreshCw,
   Ghost,
   Shield,
-  LogOut
+  LogOut,
+  History as HistoryIcon
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { toast } from "sonner";
@@ -31,6 +32,7 @@ const navItems = [
   { title: "อุปกรณ์สูญหาย (Lost Assets)", href: "/dashboard/assets/lost", icon: Ghost }, 
   { title: "รายการจำหน่ายออก (Archive)", href: "/dashboard/assets/retired", icon: Trash2 },
   { title: "รายงาน PDF (Export)", href: "/dashboard/reports", icon: FileText },
+  { title: "ประวัติการทำรายการ (Logs)", href: "/dashboard/logs", icon: HistoryIcon },
 ];
 
 export function Navbar() {
