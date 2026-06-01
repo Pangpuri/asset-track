@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { assets } from "@/db/schema";
-import { eq, and, or, ilike, isNull, desc } from "drizzle-orm";
+import { eq, and, desc, ilike } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { 
+  formatSpecifications, 
+  activeOnly, 
+  buildSearchCondition, 
+  isIncomplete 
+} from "@/lib/asset-helpers";
 
 export async function GET(req: Request) {
   try {
@@ -25,10 +31,10 @@ export async function GET(req: Request) {
 
     // กรองเอาเฉพาะข้อมูลที่ยังไม่ถูกลบ (Soft Delete) เป็นค่าเริ่มต้น
     if (!includeDeleted) {
-      conditions.push(isNull(assets.deletedAt));
+      conditions.push(activeOnly);
     }
 
-    // กรองตามสถานะ (เช่น active, broken, pending)
+    // กรองตามสถานะ
     if (status && status !== "all") {
       conditions.push(eq(assets.status, status as "active" | "broken" | "lost" | "retired" | "pending"));
     }
@@ -38,50 +44,19 @@ export async function GET(req: Request) {
       conditions.push(eq(assets.category, category));
     }
 
-    // กรองตามโรงงาน (โรงงาน 1, โรงงาน 2, ทั้ง 2 โรงงาน)
-    // ใช้ ilike เพื่อรองรับกรณีข้อมูลเก่าที่เป็นภาษาอังกฤษ (Factory 1) และข้อมูลใหม่ที่เป็นภาษาไทย
+    // กรองตามโรงงาน
     if (factory && factory !== "all") {
-      if (factory === "โรงงาน 1") {
-        conditions.push(or(ilike(assets.factory, "%โรงงาน 1%"), ilike(assets.factory, "%Factory 1%")));
-      } else if (factory === "โรงงาน 2") {
-        conditions.push(or(ilike(assets.factory, "%โรงงาน 2%"), ilike(assets.factory, "%Factory 2%")));
-      } else {
-        conditions.push(ilike(assets.factory, `%${factory}%`));
-      }
+      conditions.push(ilike(assets.factory, `%${factory}%`));
     }
 
     // ค้นหาด้วยคำสำคัญ (Search)
     if (q) {
-      conditions.push(
-        or(
-          ilike(assets.assetCode, `%${q}%`),
-          ilike(assets.assetName, `%${q}%`),
-          ilike(assets.serialNumber, `%${q}%`),
-          ilike(assets.brand, `%${q}%`),
-          ilike(assets.model, `%${q}%`),
-          ilike(assets.location, `%${q}%`),
-          ilike(assets.department, `%${q}%`),
-          ilike(assets.factory, `%${q}%`)
-        )
-      );
+      conditions.push(buildSearchCondition(q));
     }
 
     // กรองข้อมูลที่ยังไม่สมบูรณ์ (Incomplete)
-    // Logic: สถานะเป็น active แต่ขาดข้อมูลสำคัญ (S/N, Brand, หรือ Location)
     if (filter === "incomplete") {
-      conditions.push(
-        and(
-          eq(assets.status, "active"),
-          or(
-            isNull(assets.serialNumber),
-            eq(assets.serialNumber, ""),
-            isNull(assets.brand),
-            eq(assets.brand, ""),
-            isNull(assets.location),
-            eq(assets.location, "")
-          )
-        )
-      );
+      conditions.push(isIncomplete);
     }
 
     const query = db.select().from(assets);
@@ -90,7 +65,6 @@ export async function GET(req: Request) {
       query.where(and(...conditions));
     }
 
-    // เรียงลำดับตามวันที่สร้างล่าสุด
     query.orderBy(desc(assets.createdAt));
 
     const allAssets = await query;
@@ -106,16 +80,11 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { 
       assetCode, assetName, category, brand, model, serialNumber, location, factory,
-      computerName, monitorSize, ipAddress, vendor,
-      receivedBy, deliveredBy, purchaseDate, warrantyExpire, warrantyStatus
+      vendor, receivedBy, deliveredBy, purchaseDate, warrantyExpire, warrantyStatus
     } = body;
 
-    // เตรียมข้อมูล specifications ตามประเภท
-    const specifications = {
-      ...(computerName && { computerName }),
-      ...(monitorSize && { monitorSize }),
-      ...(ipAddress && { ipAddress }),
-    };
+    // ใช้ Helper ในการจัดรูปแบบ specifications
+    const specifications = formatSpecifications(body);
 
     const newAsset = await db.insert(assets).values({
       assetCode,
