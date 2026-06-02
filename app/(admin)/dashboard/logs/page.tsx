@@ -12,7 +12,8 @@ import {
   ArrowRight,
   Loader2,
   Package,
-  ClipboardList
+  ClipboardList,
+  LucideIcon
 } from "lucide-react";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
@@ -35,7 +36,7 @@ interface LogEntry {
   } | null;
 }
 
-const actionMap: Record<string, { label: string; color: string; icon: any }> = {
+const actionMap: Record<string, { label: string; color: string; icon: LucideIcon }> = {
   create: { label: "สร้างอุปกรณ์", color: "bg-blue-500", icon: Package },
   update: { label: "แก้ไขข้อมูล", color: "bg-amber-500", icon: ClipboardList },
   assign: { label: "ส่งมอบอุปกรณ์", color: "bg-emerald-500", icon: User },

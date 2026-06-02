@@ -29,22 +29,22 @@ export default function BulkPrintPage() {
   const [category, setCategory] = useState("computer");
   const [factory, setFactory] = useState("โรงงาน 1");
   
-  const [queue, setQueue] = useState<QueuedBatch[]>([]);
+  const [queue, setQueue] = useState<QueuedBatch[]>(() => {
+    if (typeof window !== "undefined") {
+      const savedQueue = localStorage.getItem("asset_track_bulk_queue");
+      if (savedQueue) {
+        try {
+          return JSON.parse(savedQueue);
+        } catch (e) {
+          console.error("Failed to parse saved queue");
+        }
+      }
+    }
+    return [];
+  });
   const [isAdding, setIsAdding] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedQRs, setGeneratedQRs] = useState<GeneratedAsset[]>([]);
-
-  // Persistence: Load queue from localStorage on mount
-  useEffect(() => {
-    const savedQueue = localStorage.getItem("asset_track_bulk_queue");
-    if (savedQueue) {
-      try {
-        setQueue(JSON.parse(savedQueue));
-      } catch (e) {
-        console.error("Failed to parse saved queue");
-      }
-    }
-  }, []);
 
   // Persistence: Save queue to localStorage whenever it changes
   useEffect(() => {
@@ -109,7 +109,7 @@ export default function BulkPrintPage() {
 
       const assets = await response.json();
       
-      const qrs = await Promise.all(assets.map(async (asset: any) => ({
+      const qrs = await Promise.all((assets as { id: string; assetCode: string }[]).map(async (asset) => ({
         id: asset.id,
         assetCode: asset.assetCode,
         qrData: await generateAssetQRCode(asset.id)
